@@ -11,7 +11,7 @@ export default function Home() {
 
       {/* Logo */}
       <div className="absolute bottom-[15%] right-[10%] z-10">
-        <Image src="/turtle.svg" alt="Turtle Logo" width={240} height={240} />
+        <Image src="/obi_turtle.svg" alt="Turtle Logo" width={240} height={240} />
       </div>
 
       {/* Content Container */}
