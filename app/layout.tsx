@@ -24,7 +24,10 @@ const oi = Oi({
 export const metadata: Metadata = {
   title: "Obi - Learn Crypto",
   description: "Learn crypto. Slow and steady.",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: {
+    icon: '/favicon_obi_32.svg',
+  }
 }
 
 export default function RootLayout({
