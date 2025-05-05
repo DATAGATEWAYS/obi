@@ -53,7 +53,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 bg-[#987048] text-white px-8 py-3 rounded-full hover:bg-[#87603d] transition-all"
           >
-            <span>Launch app</span>
+            <span>Launch App</span>
           </Link>
         </div>
       </div>
