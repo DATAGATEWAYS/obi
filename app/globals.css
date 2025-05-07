@@ -1,3 +1,4 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,6 +13,18 @@
 .atma-light {
   font-family: var(--font-atma), system-ui;
   font-weight: 300;
+  font-style: normal;
+}
+
+.satoshi-light {
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.satoshi-regular {
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 400;
   font-style: normal;
 }
 

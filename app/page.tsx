@@ -20,7 +20,7 @@ export default function Home() {
         <h1 className="oi-regular text-6xl md:text-8xl mb-4 text-[#987048]">Obi</h1>
 
         {/* Tagline */}
-        <p className="atma-light text-xl md:text-2xl mb-8 text-[#987048]">learn crypto. slow and steady</p>
+        <p className="satoshi-light text-xl md:text-2xl mb-8 text-[#987048]">learn crypto. slow and steady</p>
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -31,7 +31,7 @@ export default function Home() {
             className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border border-[#987048] text-[#987048] px-6 py-3 rounded-full hover:bg-white/30 transition-all"
           >
             <Image src="/telegram.svg" alt="Telegram" width={24} height={24} />
-            <span>Telegram</span>
+            <span className="satoshi-regular">Telegram</span>
           </Link>
 
           <Link
@@ -41,7 +41,7 @@ export default function Home() {
             className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border border-[#987048] text-[#987048] px-6 py-3 rounded-full hover:bg-white/30 transition-all"
           >
             <Image src="/whatsapp.svg" alt="WhatsApp" width={24} height={24} />
-            <span>WhatsApp</span>
+            <span className="satoshi-regular">WhatsApp</span>
           </Link>
         </div>
 
@@ -53,7 +53,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 bg-[#987048] text-white px-8 py-3 rounded-full hover:bg-[#87603d] transition-all"
           >
-            <span>Launch App</span>
+            <span className="satoshi-regular">Launch App</span>
           </Link>
         </div>
       </div>
