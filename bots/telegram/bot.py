@@ -9,7 +9,7 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def command_start(message: types.Message):
-    await message.reply("Привет! Задайте мне вопрос, и я спрошу ответ у AI.")
+    await message.reply("Hello! Ask me any question, and I’ll get the answer from AI.")
 
 @dp.message()
 async def handle_question(message: types.Message):
@@ -19,13 +19,13 @@ async def handle_question(message: types.Message):
         return
     payload = {"user_id": user_id, "question": question}
     async with httpx.AsyncClient() as client:
-        response = await client.post("http://fastapi:8000/ask", json=payload)
+        response = await client.post("http://ai_api:8000/ask", json=payload)
     if response.status_code == 200:
         answer = response.json().get("answer")
         await message.answer(answer)
     else:
-        await message.answer("Извините, не смог обработать запрос.")
+        await message.answer("Sorry, I couldn’t process the request.")
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(dp.start_polling())
+    asyncio.run(dp.start_polling(bot))
