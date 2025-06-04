@@ -1,0 +1,52 @@
+version: '3.9'
+services:
+  telegram_bot:
+    build: ./bots/telegram
+    env_file:
+      - .env
+    depends_on:
+      - ai_api
+    restart: always
+
+  whatsapp_bot:
+    build: ./bots/whatsapp
+    env_file:
+      - .env
+    depends_on:
+      - ai_api
+    restart: always
+
+  ai_api:
+    build: ./services/ai_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    restart: always
+
+  database:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  admin_panel:
+    build: ./admin
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - database
+    restart: always
+
+volumes:
+  db_data:
