@@ -54,6 +54,13 @@ services:
 #    depends_on:
 #      - database
 #    restart: always
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: obi_web
+    ports:
+      - "3000:3000"
 
 volumes:
   db_data:
