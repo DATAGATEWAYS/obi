@@ -2,6 +2,8 @@ import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 import httpx
+import asyncio
+import contextlib
 
 MAX_MSG_LEN = 4096
 
@@ -107,6 +109,15 @@ def markdown_to_telegram_html(text: str) -> str:
     return text
 
 
+async def typing_indicator(chat):
+    try:
+        while True:
+            await chat.do("typing")
+            await asyncio.sleep(2)
+    except asyncio.CancelledError:
+        pass
+
+
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -119,24 +130,30 @@ async def command_start(message: types.Message):
 
 @dp.message()
 async def handle_question(message: types.Message):
-    await message.chat.do("typing")
-
-    user_id = message.from_user.id
-    question = message.text.strip()
-    if not question:
-        return
-    payload = {"user_id": user_id, "question": question}
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post("http://ai_api:8000/ask", json=payload)
-    if response.status_code == 200:
-        answer = response.json().get("answer")
-        answer = markdown_to_telegram_html(answer)
-        await send_message(message, answer)
-    else:
-        await message.answer("Sorry, I couldn’t process the request.", parse_mode="HTML")
+    typing_task = asyncio.create_task(typing_indicator(message.chat))
+    try:
+        user_id = message.from_user.id
+        question = message.text.strip()
+        if not question:
+            return
+        payload = {"user_id": user_id, "question": question}
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post("http://ai_api:8000/ask", json=payload)
+                response.raise_for_status()
+                answer = response.json().get("answer")
+                answer = markdown_to_telegram_html(answer)
+                await send_message(message, answer)
+        except Exception as e:
+            await message.answer(
+                f"Sorry, I couldn’t process the request.\nError: {e}",
+                parse_mode="HTML"
+            )
+    finally:
+        typing_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await typing_task
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(dp.start_polling(bot))
