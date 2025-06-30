@@ -1,7 +1,7 @@
 
 # OBI Platform
 
-A multifunctional system that includes a Telegram bot, AI API, web interface, and PostgreSQL database – all containerized with Docker .
+A multifunctional system that includes a Telegram bot, AI API, web interface, and PostgreSQL database – all containerized with Docker.
 
 ## 📦 Tech Stack
 
@@ -38,7 +38,7 @@ A multifunctional system that includes a Telegram bot, AI API, web interface, an
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/DATAGATEWAYS/obi>
 cd obi
 ```
 
