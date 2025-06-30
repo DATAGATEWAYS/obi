@@ -38,7 +38,7 @@ A multifunctional system that includes a Telegram bot, AI API, web interface, an
 ### 1. Clone the Repository
 
 ```bash
-git clone <https://github.com/DATAGATEWAYS/obi>
+git clone https://github.com/DATAGATEWAYS/obi
 cd obi
 ```
 
@@ -85,14 +85,18 @@ curl -sSL https://get.docker.com | sh
 
 4. Upload your project:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/DATAGATEWAYS/obi
 cd obi
 ```
 Or use `scp` to upload your ZIP archive.
 
 5. Start services:
 ```bash
-docker compose up --build -d
+docker compose up --build
+```
+to shut down services use:
+```bash
+docker compose down
 ```
 
 ### Option 2: DigitalOcean App Platform (Optional)
