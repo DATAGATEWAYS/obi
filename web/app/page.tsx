@@ -25,7 +25,7 @@ export default function Home() {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <Link
-            href="https://t.me/yourlink"
+            href="https://t.me/obiAssistantBot"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border border-[#987048] text-[#987048] px-6 py-3 rounded-full hover:bg-white/30 transition-all"
@@ -35,7 +35,7 @@ export default function Home() {
           </Link>
 
           <Link
-            href="https://wa.me/yourlink"
+            href="https://wa.me/obiAssistantBot"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border border-[#987048] text-[#987048] px-6 py-3 rounded-full hover:bg-white/30 transition-all"
