@@ -44,7 +44,11 @@ cd obi
 
 ### 2. Ensure Docker & Docker Compose are Installed
 
-Follow [Docker installation guide](https://docs.docker.com/engine/install/)
+This script will automatically download Docker
+```bash
+chmod +x install_docker.sh
+./install_docker.sh
+```
 
 ### 3. Create an `.env` file
 
@@ -106,7 +110,7 @@ This approach supports Git-based deployments, but requires splitting services an
 
 - WhatsApp bot and Admin panel are currently commented out in `docker-compose.yml`
 - Make sure to review and adjust environment variables in `.env`
-- Consider setting up a domain name and HTTPS using Nginx or Caddy if exposed publicly
+- Consider setting up a domain name and HTTPS using Nginx or Caddy if exposed publicly (for obi website)
 
 ## ✅ TODO
 
