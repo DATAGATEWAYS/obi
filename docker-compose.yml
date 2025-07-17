@@ -1,29 +1,32 @@
 services:
-  telegram_bot:
-    build:
-      context: ./bots/telegram
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    depends_on:
-      - ai_api
-
-#  whatsapp_bot:
-#    build: ./bots/whatsapp
+#  telegram_bot:
+#    build:
+#      context: ./bots/telegram
+#      dockerfile: Dockerfile
 #    env_file:
 #      - .env
 #    depends_on:
 #      - ai_api
-#    restart: always
+
+  whatsapp_bot:
+    build:
+      context: .
+      dockerfile: bots/whatsapp/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    depends_on:
+      - ai_api
 
   ai_api:
     build:
       context: .
       dockerfile: services/ai_api/Dockerfile
-    ports:
-      - "8000:8000"
     env_file:
       - .env
+    ports:
+      - "8000:8000"
     depends_on:
       - init_db
 

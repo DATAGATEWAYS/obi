@@ -1,13 +1,15 @@
 import os
+from datetime import datetime
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+
 from services.ai_api.deepseek_client import get_deepseek_answer
 from services.database.models import QA
-from services.database.models import Base
-from dotenv import load_dotenv
+
 load_dotenv()
 
 class QuestionPayload(BaseModel):
