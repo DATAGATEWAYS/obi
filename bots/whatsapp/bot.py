@@ -3,7 +3,6 @@ import re
 
 import httpx
 import requests
-from aiohttp import payload
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
@@ -42,14 +41,14 @@ async def receive_message(request: Request):
             message = value['messages'][0]
             from_number = message['from']
             msg_text = message['text']['body']
-
+            payload = {"user_id": from_number, "question": msg_text}
             print(f"✅ New message from {from_number}: {msg_text}")
 
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     response = await client.post("http://ai_api:8000/ask", json=payload)
                     response.raise_for_status()
-                    resp_json = await response.json()
+                    resp_json = response.json()
                     answer = resp_json.get("answer")
                     answer = markdown_to_whatsapp(answer)
                     await send_message(from_number, answer)
