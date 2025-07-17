@@ -49,8 +49,9 @@ async def receive_message(request: Request):
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     response = await client.post("http://ai_api:8000/ask", json=payload)
                     response.raise_for_status()
-                    answer = response.json().get("answer")
-                    answer = markdown_list_to_whatsapp(answer)
+                    resp_json = await response.json()
+                    answer = resp_json.get("answer")
+                    answer = markdown_to_whatsapp(answer)
                     await send_message(from_number, answer)
             except Exception as e:
                 await message.answer(
