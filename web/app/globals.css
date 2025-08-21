@@ -3,6 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body { height: 100%; }
+body { background-color: #F0EAD2; }
 /* Font classes as specified */
 .oi-regular {
   font-family: var(--font-oi), serif;
@@ -26,6 +28,10 @@
   font-family: 'Satoshi', sans-serif;
   font-weight: 400;
   font-style: normal;
+}
+
+.gasoek {
+  font-family: var(--font-gasoek);
 }
 
 :root {

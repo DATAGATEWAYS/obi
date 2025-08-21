@@ -1,0 +1,15 @@
+@font-face {
+    font-family: "Lobster";
+    src: url("/fonts/Lobster-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+.lobster {
+    font-family: "Lobster", cursive;
+    font-size: 59px;
+    line-height: 108%;
+    letter-spacing: 0.03em;
+    color: #A47F5A;
+}

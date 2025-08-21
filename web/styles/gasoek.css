@@ -1,0 +1,16 @@
+@font-face {
+    font-family: "Gasoek One";
+    src: url("/fonts/GasoekOne-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+.gasoek {
+    font-family: "Gasoek One", sans-serif;
+    font-weight: 500;
+    font-size: 40px;
+    line-height: 1.18;
+    letter-spacing: 0.03em;
+    color: #ADC178;
+}
