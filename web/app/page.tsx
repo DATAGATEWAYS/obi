@@ -24,15 +24,41 @@ export default function Home() {
 
                 {/* Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                    <Link
-                        href="https://t.me/obiAssistantBot"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border border-[#987048] text-[#987048] px-6 py-3 rounded-full hover:bg-white/30 transition-all"
-                    >
-                        <Image src="/telegram.svg" alt="Telegram" width={24} height={24}/>
-                        <span className="satoshi-regular">Telegram</span>
-                    </Link>
+                    {/*<Link*/}
+                    {/*    href="https://t.me/obiAssistantBot"*/}
+                    {/*    target="_blank"*/}
+                    {/*    rel="noopener noreferrer"*/}
+                    {/*    className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm border border-[#987048] text-[#987048] px-6 py-3 rounded-full hover:bg-white/30 transition-all"*/}
+                    {/*>*/}
+                    {/*    <Image src="/telegram.svg" alt="Telegram" width={24} height={24}/>*/}
+                    {/*    <span className="satoshi-regular">Telegram</span>*/}
+                    {/*</Link>*/}
+
+                    {/* Telegram (disabled + sticker) */}
+                    <div className="relative">
+                        <div
+                            aria-disabled="true"
+                            tabIndex={-1}
+                            title="Недоступно"
+                            className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm
+               border border-[#987048]/50 text-[#987048]/50 px-6 py-3 rounded-full
+               cursor-not-allowed select-none pointer-events-none"
+                        >
+                            <Image src="/telegram.svg" alt="Telegram" width={24} height={24}/>
+                            <span className="satoshi-regular">Telegram</span>
+                        </div>
+
+                        {/* Sticker “soon” above the btn */}
+                        <Image
+                            src="/stickers/soon.svg"
+                            alt="Coming soon"
+                            width={146}
+                            height={40}
+                            priority
+                            className="pointer-events-none absolute -top-4 -right-3 md:-top-5 md:-right-4
+               rotate-[-2deg] select-none"
+                        />
+                    </div>
 
                     {/* WhatsApp (disabled + sticker) */}
                     <div className="relative">
@@ -48,7 +74,7 @@ export default function Home() {
                             <span className="satoshi-regular">WhatsApp</span>
                         </div>
 
-                        {/* Стикер “soon” поверх кнопки */}
+                        {/* Sticker “soon” above the btn */}
                         <Image
                             src="/stickers/soon.svg"
                             alt="Coming soon"
