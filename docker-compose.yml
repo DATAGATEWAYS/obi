@@ -7,6 +7,7 @@ services:
       - .env
     depends_on:
       - ai_api
+    restart: unless-stopped
 
   whatsapp_bot:
     build:
@@ -29,6 +30,7 @@ services:
       - "8000:8000"
     depends_on:
       - init_db
+    restart: unless-stopped
 
   database:
     image: postgres:15
