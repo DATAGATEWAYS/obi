@@ -44,61 +44,84 @@ export default function Page() {
   }, []);
 
   const statusPrivy = useMemo(() => {
-    if (!ready) return { cls: "wait", text: "Загружаю…" };
-    if (authenticated) return { cls: "ok", text: "Успешно" };
-    return { cls: "fail", text: "Не авторизован" };
-  }, [ready, authenticated]);
+  if (!ready) return { cls: "wait", text: "Loading…" };
+  if (authenticated) return { cls: "ok", text: "Success" };
+  return { cls: "fail", text: "Not authenticated" };
+}, [ready, authenticated]);
 
-  return (
-    <div className="container">
-      <div className="card">
-        <h1>Privy × Telegram Mini App</h1>
-        <p>Шаблон Next.js + React + PrivyProvider. Открой из бота как <code>web_app</code> — авторизация пройдёт автоматически (seamless).</p>
-      </div>
-
-      <div className="card">
-        <h2>Статус Privy:&nbsp;
-          <span className={`status ${statusPrivy.cls}`}>{statusPrivy.text}</span>
-        </h2>
-        {ready && !authenticated && (
-          <p><small>Если это открыто вне Telegram WebApp, включи Telegram-логин в Dashboard Privy и используй кнопку входа на отдельной странице.</small></p>
-        )}
-        {authenticated && (
-          <>
-            <h3>Данные пользователя Privy</h3>
-            <pre>{JSON.stringify({
-              privy_user_id: user?.id,
-              telegram: user?.telegram
-            }, null, 2)}</pre>
-            <button onClick={logout}>Выйти</button>
-          </>
-        )}
-      </div>
-
-      <div className="card">
-        <h2>Telegram WebApp окружение</h2>
-        <p>Обнаружен Telegram: {tgDetected ? "✅ Да" : "❌ Нет"}</p>
-        <details>
-          <summary>initData (сырой)</summary>
-          <pre>{initData || "—"}</pre>
-        </details>
-        <details>
-          <summary>initDataUnsafe (распарсено на клиенте)</summary>
-          <pre>{JSON.stringify(initDataUnsafe, null, 2) || "—"}</pre>
-        </details>
-
-        <h3>Проверка initData на сервере</h3>
-        <p>
-          Результат валидации:{" "}
-          <span className={`status ${verifyResult?.ok ? "ok" : (verifyResult ? "fail" : "wait")}`}>
-            {verifyResult ? (verifyResult.ok ? "ОК" : "Ошибка") : "Жду…"}
-          </span>
-        </p>
-        {verifyResult && (
-          <pre>{JSON.stringify(verifyResult, null, 2)}</pre>
-        )}
-        <p><small>Проверка выполняется на сервере по HMAC (SHA256) с секретом бота. По умолчанию окно валидности 10 минут.</small></p>
-      </div>
+return (
+  <div className="container">
+    <div className="card">
+      <h1>Privy × Telegram Mini App</h1>
+      <p>
+        Next.js + React + PrivyProvider template. Open from your bot as{" "}
+        <code>web_app</code> — login will happen automatically (seamless).
+      </p>
     </div>
+
+    <div className="card">
+      <h2>
+        Privy status:&nbsp;
+        <span className={`status ${statusPrivy.cls}`}>{statusPrivy.text}</span>
+      </h2>
+      {ready && !authenticated && (
+        <p>
+          <small>
+            If this is opened outside of the Telegram WebApp, enable Telegram
+            login in the Privy Dashboard and use a sign-in button on a separate
+            page.
+          </small>
+        </p>
+      )}
+      {authenticated && (
+        <>
+          <h3>Privy user data</h3>
+          <pre>
+            {JSON.stringify(
+              {
+                privy_user_id: user?.id,
+                telegram: user?.telegram,
+              },
+              null,
+              2
+            )}
+          </pre>
+          <button onClick={logout}>Log out</button>
+        </>
+      )}
+    </div>
+
+    <div className="card">
+      <h2>Telegram WebApp environment</h2>
+      <p>Telegram detected: {tgDetected ? "✅ Yes" : "❌ No"}</p>
+      <details>
+        <summary>initData (raw)</summary>
+        <pre>{initData || "—"}</pre>
+      </details>
+      <details>
+        <summary>initDataUnsafe (parsed on the client)</summary>
+        <pre>{JSON.stringify(initDataUnsafe, null, 2) || "—"}</pre>
+      </details>
+
+      <h3>Server-side initData verification</h3>
+      <p>
+        Verification result:{" "}
+        <span
+          className={`status ${
+            verifyResult?.ok ? "ok" : verifyResult ? "fail" : "wait"
+          }`}
+        >
+          {verifyResult ? (verifyResult.ok ? "OK" : "Error") : "Waiting…"}
+        </span>
+      </p>
+      {verifyResult && <pre>{JSON.stringify(verifyResult, null, 2)}</pre>}
+      <p>
+        <small>
+          Verification is performed on the server via HMAC (SHA256) using the
+          bot token. The default validity window is 10 minutes.
+        </small>
+      </p>
+    </div>
+  </div>
   );
 }
