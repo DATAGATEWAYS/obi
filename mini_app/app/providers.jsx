@@ -1,4 +1,3 @@
-// 'use client' must be at top for client components
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
@@ -8,7 +7,6 @@ export default function Providers({ children }) {
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
       config={{
-        // You can restrict login methods if needed.
         loginMethods: ["telegram"],
         appearance: {
           theme: "dark",

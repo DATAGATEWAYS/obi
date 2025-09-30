@@ -1,16 +1,10 @@
-// Client component: reads Privy auth state and Telegram initData
 "use client";
 
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 
 export default function Page() {
     const {ready, authenticated, user, logout} = usePrivy();
-
-    const [tgDetected, setTgDetected] = useState(false);
-    const [initData, setInitData] = useState("");
-    const [initDataUnsafe, setInitDataUnsafe] = useState(null);
-    const [verifyResult, setVerifyResult] = useState(null);
 
     useEffect(() => {
         let tries = 0;
@@ -95,46 +89,6 @@ export default function Page() {
                     </>
                 )}
             </div>
-
-            <div className="card">
-                <h2>Telegram WebApp environment</h2>
-                <p>Telegram detected: {tgDetected ? "✅ Yes" : "❌ No"}</p>
-                <details>
-                    <summary>initData (raw)</summary>
-                    <pre>{initData || "—"}</pre>
-                </details>
-                <details>
-                    <summary>initDataUnsafe (parsed on the client)</summary>
-                    <pre>{JSON.stringify(initDataUnsafe, null, 2) || "—"}</pre>
-                </details>
-
-                <h3>Server-side initData verification</h3>
-                <h3>Server-side initData verification</h3>
-                {initData ? (
-                    <>
-                        <p>
-                            Verification result:{" "}
-                            <span className={`status ${verifyResult?.ok ? "ok" : (verifyResult ? "fail" : "wait")}`}>
-        {verifyResult ? (verifyResult.ok ? "OK" : "Error") : "Waiting…"}
-      </span>
-                        </p>
-                        {verifyResult && <pre>{JSON.stringify(verifyResult, null, 2)}</pre>}
-                    </>
-                ) : (
-                    <p><small>No initData in this session (Desktop Telegram may delay exposing it). Privy login is
-                        already verified.</small></p>
-                )}
-
-                {verifyResult && <pre>{JSON.stringify(verifyResult, null, 2)}</pre>}
-                <p>
-                    <small>
-                        Verification is performed on the server via HMAC (SHA256) using the
-                        bot token. The default validity window is 10 minutes.
-                    </small>
-                </p>
-            </div>
-            <p><small>UA: {typeof navigator !== "undefined" ? navigator.userAgent : "n/a"}</small></p>
-            <p><small>URL: {typeof location !== "undefined" ? location.href : "n/a"}</small></p>
         </div>
     );
 }
