@@ -1,53 +1,49 @@
 import crypto from "crypto";
 
-// Verify Telegram WebApp initData using HMAC(secret="WebAppData"→bot token)
 function verifyTelegramInitData(initData, botToken, maxAgeSec = 600) {
   if (!initData) return { ok: false, reason: "empty_init_data" };
   if (!botToken) return { ok: false, reason: "missing_bot_token" };
 
   const token = botToken.trim();
 
-  // raw pairs: "k=v&k2=v2&..."; find hash, build data_check_string
   const pairs = initData.split("&").filter(Boolean);
 
   const hashIdx = pairs.findIndex((s) => s.startsWith("hash="));
   if (hashIdx === -1) return { ok: false, reason: "missing_hash" };
-  const hash = pairs[hashIdx].slice("hash=".length);
-  pairs.splice(hashIdx, 1); // remove hash
+  const receivedHashHex = pairs[hashIdx].slice("hash=".length);
+  pairs.splice(hashIdx, 1);
 
-  // sort lexicographically and join with '\n' -> data_check_string
   pairs.sort((a, b) => a.localeCompare(b));
   const dataCheckString = pairs.join("\n");
 
-  // secret_key = HMAC_SHA256(bot_token, key="WebAppData")
-  const secret = crypto.createHmac("sha256", "WebAppData").update(token).digest();
+  const secretKey = crypto.createHmac("sha256", "WebAppData").update(token).digest();
 
-  // computed = HMAC_SHA256(data_check_string, key=secret)
-  const computed = crypto.createHmac("sha256", secret).update(dataCheckString).digest("hex");
+  const computedHashHex = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
-  if (computed !== hash) {
-    return { ok: false, reason: "hash_mismatch" };
+  try {
+    const a = Buffer.from(receivedHashHex, "hex");
+    const b = Buffer.from(computedHashHex, "hex");
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      return { ok: false, reason: "hash_mismatch" };
+    }
+  } catch {
+    return { ok: false, reason: "invalid_hash" };
   }
 
-  // Optional: freshness check (auth_date)
   const authPair = pairs.find((s) => s.startsWith("auth_date="));
   if (authPair) {
     const authDate = Number(authPair.slice("auth_date=".length));
     if (!Number.isFinite(authDate)) return { ok: false, reason: "invalid_auth_date" };
-    const now = Math.floor(Date.now() / 1000);
-    if (now - authDate > maxAgeSec) {
-      return { ok: false, reason: "expired", age: now - authDate };
-    }
+    const age = Math.floor(Date.now() / 1000) - authDate;
+    if (age > maxAgeSec) return { ok: false, reason: "expired", age };
   }
 
-  // Optional: parse user for convenience
   const userPair = pairs.find((s) => s.startsWith("user="));
   let user = null;
   if (userPair) {
-    const encoded = userPair.slice("user=".length);
     try {
-      user = JSON.parse(decodeURIComponent(encoded));
-    } catch {}
+      user = JSON.parse(decodeURIComponent(userPair.slice("user=".length)));
+    } catch { /* ignore */ }
   }
 
   return { ok: true, user };
