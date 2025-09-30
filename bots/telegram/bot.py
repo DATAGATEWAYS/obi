@@ -124,11 +124,6 @@ WEBAPP_URL = os.getenv("WEBAPP_URL")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-
-# @dp.message(CommandStart())
-# async def command_start(message: types.Message):
-#     await message.reply("Hello! Ask me any question, and I’ll get the answer from AI.")
-
 @dp.message(CommandStart())
 async def on_start(message: types.Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[[
