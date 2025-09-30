@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My profile</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    body { margin: 0; padding: 16px; }
+    .card {
+      border-radius: 16px; padding: 16px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.12);
+      background: var(--bg, #fff);
+    }
+    .row { display: grid; grid-template-columns: 160px 1fr; gap: 8px; margin: 6px 0; }
+    .key { opacity: .7; }
+    .val { font-weight: 600; }
+    .muted { opacity: .6; font-size: 12px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h2>User data</h2>
+  <div class="card" id="card">
+    <div class="row"><div class="key">ID</div><div class="val" id="uid">—</div></div>
+    <div class="row"><div class="key">Username</div><div class="val" id="un">—</div></div>
+    <div class="row"><div class="key">Name</div><div class="val" id="fn">—</div></div>
+    <div class="row"><div class="key">Surname</div><div class="val" id="ln">—</div></div>
+    <div class="row"><div class="key">Lang</div><div class="val" id="lang">—</div></div>
+    <div class="row"><div class="key">Premium</div><div class="val" id="prem">—</div></div>
+    <div class="row"><div class="key">Chat type</div><div class="val" id="ctype">—</div></div>
+    <div class="row"><div class="key">Chat instance</div><div class="val" id="cinst">—</div></div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const theme = tg.themeParams || {};
+    const bg = theme.bg_color || "#ffffff";
+    document.getElementById("card").style.setProperty("--bg", bg);
+
+    const u = tg.initDataUnsafe?.user;
+    const init = tg.initDataUnsafe || {};
+
+    const byId = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? "—"; };
+
+    byId("uid", u?.id);
+    byId("un", u?.username ? "@" + u.username : "—");
+    byId("fn", u?.first_name);
+    byId("ln", u?.last_name);
+    byId("lang", u?.language_code);
+    byId("prem", u?.is_premium ? "Да" : "Нет");
+    byId("ctype", init?.chat_type || "—");
+    byId("cinst", init?.chat_instance || "—");
+
+    tg.MainButton.setText("Close");
+    tg.MainButton.onClick(() => tg.close());
+    tg.MainButton.show();
+  </script>
+</body>
+</html>

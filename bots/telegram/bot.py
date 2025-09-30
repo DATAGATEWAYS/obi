@@ -1,5 +1,6 @@
 import os
 from aiogram import Bot, Dispatcher, types
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import CommandStart
 import httpx
 import asyncio
@@ -119,13 +120,35 @@ async def typing_indicator(chat):
 
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+WEBAPP_URL = os.getenv("WEBAPP_URL")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 
+# @dp.message(CommandStart())
+# async def command_start(message: types.Message):
+#     await message.reply("Hello! Ask me any question, and I’ll get the answer from AI.")
+
 @dp.message(CommandStart())
-async def command_start(message: types.Message):
-    await message.reply("Hello! Ask me any question, and I’ll get the answer from AI.")
+async def on_start(message: types.Message):
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(
+            text="Open app",
+            web_app=WebAppInfo(url=WEBAPP_URL)
+        )
+    ]])
+    await message.answer(
+        "Press the button to open the app 👇",
+        reply_markup=kb
+    )
+
+async def on_startup():
+    await bot.set_chat_menu_button(
+        menu_button=types.MenuButtonWebApp(
+            text="Profile",
+            web_app=types.WebAppInfo(url=WEBAPP_URL)
+        )
+    )
 
 
 @dp.message()
