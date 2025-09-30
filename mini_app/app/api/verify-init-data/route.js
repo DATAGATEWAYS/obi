@@ -1,73 +1,70 @@
 import crypto from "crypto";
 
+// Verify Telegram WebApp initData using HMAC(secret="WebAppData"→bot token)
 function verifyTelegramInitData(initData, botToken, maxAgeSec = 600) {
   if (!initData) return { ok: false, reason: "empty_init_data" };
   if (!botToken) return { ok: false, reason: "missing_bot_token" };
 
-  const params = new URLSearchParams(initData);
-  const hash = params.get("hash");
-  if (!hash) return { ok: false, reason: "missing_hash" };
+  const token = botToken.trim();
 
-  // Build data-check string (all params except 'hash', sorted by key)
-  const entries = [];
-  for (const [k, v] of params.entries()) {
-    if (k === "hash") continue;
-    entries.push(`${k}=${v}`);
-  }
-  entries.sort();
-  const dataCheckString = entries.join("\n");
+  // raw pairs: "k=v&k2=v2&..."; find hash, build data_check_string
+  const pairs = initData.split("&").filter(Boolean);
 
-  // Secret key = SHA256(bot_token), HMAC over dataCheckString
-  const secret = crypto.createHash("sha256").update(botToken).digest();
-  const hmac = crypto.createHmac("sha256", secret).update(dataCheckString).digest("hex");
+  const hashIdx = pairs.findIndex((s) => s.startsWith("hash="));
+  if (hashIdx === -1) return { ok: false, reason: "missing_hash" };
+  const hash = pairs[hashIdx].slice("hash=".length);
+  pairs.splice(hashIdx, 1); // remove hash
 
-  if (hmac !== hash) {
+  // sort lexicographically and join with '\n' -> data_check_string
+  pairs.sort((a, b) => a.localeCompare(b));
+  const dataCheckString = pairs.join("\n");
+
+  // secret_key = HMAC_SHA256(bot_token, key="WebAppData")
+  const secret = crypto.createHmac("sha256", "WebAppData").update(token).digest();
+
+  // computed = HMAC_SHA256(data_check_string, key=secret)
+  const computed = crypto.createHmac("sha256", secret).update(dataCheckString).digest("hex");
+
+  if (computed !== hash) {
     return { ok: false, reason: "hash_mismatch" };
   }
 
-  // Optional: freshness check
-  const authDate = Number(params.get("auth_date") || 0);
-  if (!Number.isFinite(authDate) || authDate <= 0) {
-    return { ok: false, reason: "invalid_auth_date" };
-  }
-  const now = Math.floor(Date.now() / 1000);
-  if (now - authDate > maxAgeSec) {
-    return { ok: false, reason: "expired", age: now - authDate };
-  }
-
-  // Parse 'user' JSON if present
-  let userObj = null;
-  const userStr = params.get("user");
-  if (userStr) {
-    try {
-      userObj = JSON.parse(userStr);
-    } catch {
-      userObj = null;
+  // Optional: freshness check (auth_date)
+  const authPair = pairs.find((s) => s.startsWith("auth_date="));
+  if (authPair) {
+    const authDate = Number(authPair.slice("auth_date=".length));
+    if (!Number.isFinite(authDate)) return { ok: false, reason: "invalid_auth_date" };
+    const now = Math.floor(Date.now() / 1000);
+    if (now - authDate > maxAgeSec) {
+      return { ok: false, reason: "expired", age: now - authDate };
     }
   }
 
-  return {
-    ok: true,
-    query_id: params.get("query_id") || null,
-    auth_date: authDate,
-    user: userObj
-  };
+  // Optional: parse user for convenience
+  const userPair = pairs.find((s) => s.startsWith("user="));
+  let user = null;
+  if (userPair) {
+    const encoded = userPair.slice("user=".length);
+    try {
+      user = JSON.parse(decodeURIComponent(encoded));
+    } catch {}
+  }
+
+  return { ok: true, user };
 }
 
 export async function POST(req) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const initData = body?.initData || "";
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const res = verifyTelegramInitData(initData, token, 600);
+    const { initData = "" } = await req.json().catch(() => ({}));
+    const res = verifyTelegramInitData(initData, process.env.TELEGRAM_BOT_TOKEN, 600);
     return new Response(JSON.stringify(res), {
       status: res.ok ? 200 : 400,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, reason: "server_error", error: String(e) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(
+      JSON.stringify({ ok: false, reason: "server_error", error: String(e) }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }
