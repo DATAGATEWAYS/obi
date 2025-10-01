@@ -6,7 +6,7 @@ const Providers = dynamic(() => import("./providers"), { ssr: false });
 
 export const metadata = { title: "Obi" };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>

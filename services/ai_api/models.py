@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import BigInteger, Text, TIMESTAMP, func, ForeignKey, Boolean
+from sqlalchemy import BigInteger, Text, TIMESTAMP, func, ForeignKey, Boolean, UniqueConstraint, Computed
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -44,3 +44,37 @@ class OnboardingPayload(BaseModel):
     privy_id: str
     username: str
     topics: dict
+
+class UserWallet(Base):
+    __tablename__ = "user_wallets"
+    __table_args__ = (
+        UniqueConstraint("privy_wallet_id", name="uq_user_wallets_privy_wallet_id"),
+        UniqueConstraint("user_id", "chain_type", "address_lower", name="uq_user_wallets_user_chain_addr"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    privy_wallet_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    chain_type: Mapped[str] = mapped_column(Text, nullable=False)
+    address: Mapped[str] = mapped_column(Text, nullable=False)
+    address_lower: Mapped[str] = mapped_column(Text, Computed("lower(address)", persisted=True), nullable=False)
+    is_embedded: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
+    is_primary:  Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    created_at:  Mapped[str] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
+
+class WalletUpsertPayload(BaseModel):
+    privy_id: str
+    wallet_id: str | None = None
+    chain_type: str
+    address: str
+    is_embedded: bool = True
+    is_primary: bool | None = None
+
+class WalletDTO(BaseModel):
+    id: int
+    chain_type: str
+    address: str
+    privy_wallet_id: str | None
+    is_embedded: bool
+    is_primary: bool
+    created_at: str

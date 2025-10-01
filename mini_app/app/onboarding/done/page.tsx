@@ -1,77 +1,129 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useCreateWallet, useWallets } from "@privy-io/react-auth";
 
-function sanitizeName(s?: string | null) {
-  return (s ?? "");
-}
+function sanitize(s?: string | null) { return (s ?? "").replace(/^@/, "").trim(); }
 
 export default function Done() {
   const { user, authenticated, ready } = usePrivy();
+  const { wallets, ready: walletsReady } = useWallets();
 
-  const [displayName, setDisplayName] = useState<string>("");
-  const postedRef = useRef(false);
+  const [displayName, setDisplayName] = useState("");
+  const [address, setAddress] = useState("");
+  const creatingRef = useRef(false);
+  const postedOnboardingRef = useRef(false);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
 
-    const fromStorage = sanitizeName(
-      localStorage.getItem("onb_username") ||
-      sessionStorage.getItem("onb_username")
+    const fromStorage = sanitize(
+      localStorage.getItem("onb_username") || sessionStorage.getItem("onb_username")
     );
     if (fromStorage) {
       setDisplayName(fromStorage);
       return;
     }
-
     const privyId = user?.id;
     if (!privyId) return;
 
     (async () => {
-      try {
-        const r = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, { cache: "no-store" });
-        const j = r.ok ? await r.json() : null;
-        const name = sanitizeName(j?.username);
-        if (name) {
-          setDisplayName(name);
-          sessionStorage.setItem("onb_username", name);
-          localStorage.setItem("onb_username", name);
-        }
-      } catch {
+      const r = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, { cache: "no-store" });
+      if (!r.ok) return;
+      const j = await r.json();
+      const name = sanitize(j?.username);
+      if (name) {
+        setDisplayName(name);
+        sessionStorage.setItem("onb_username", name);
+        localStorage.setItem("onb_username", name);
       }
     })();
   }, [ready, authenticated, user]);
 
   useEffect(() => {
-    if (!ready || !authenticated || postedRef.current) return;
+    if (!ready || !authenticated || postedOnboardingRef.current) return;
 
     const privy_id = user?.id;
     const topicsRaw = sessionStorage.getItem("onb_topics");
-    const name = sanitizeName(
-      sessionStorage.getItem("onb_username") || localStorage.getItem("onb_username")
-    );
+    const name = sanitize(sessionStorage.getItem("onb_username") || localStorage.getItem("onb_username"));
 
     if (!privy_id || !name || !topicsRaw) return;
 
     (async () => {
-      postedRef.current = true;
+      postedOnboardingRef.current = true;
       const topics = JSON.parse(topicsRaw || "{}");
-
-      const r = await fetch("/api/users/onboarding-complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await fetch("/api/users/onboarding-complete", {
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ privy_id, username: name, topics }),
       });
-
       sessionStorage.removeItem("onb_topics");
     })();
   }, [ready, authenticated, user]);
 
+  const [creating, setCreating] = useState(false);
+  const { createWallet } = useCreateWallet({
+    onSuccess: async ({ wallet }) => {
+      setCreating(false);
+      setAddress(wallet.address);
+      await fetch("/api/wallets/insert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          privy_id: user?.id,
+          wallet_id: wallet.id,               // может быть null у внешних коннекторов
+          chain_type: "ethereum",
+          address: wallet.address,
+          is_embedded: wallet.walletClientType === "privy",
+          is_primary: true                    // первый — делаем основным
+        }),
+      });
+    },
+    onError: (e) => { setCreating(false); console.error("createWallet failed:", e); },
+  });
+
+  useEffect(() => {
+    if (!ready || !authenticated || !walletsReady) return;
+
+    const existing =
+      wallets.find((w) => w.walletClientType === "privy") ?? wallets[0];
+
+    if (existing) {
+      setAddress(existing.address);
+      fetch("/api/wallets/insert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          privy_id: user?.id,
+          wallet_id: (existing as any).id ?? null,
+          chain_type: "ethereum",
+          address: existing.address,
+          is_embedded: existing.walletClientType === "privy",
+          is_primary: true
+        }),
+      }).catch(() => {});
+      return;
+    }
+
+    if (!creatingRef.current) {
+      creatingRef.current = true;
+      setCreating(true);
+      createWallet();
+    }
+  }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
+
   return (
     <main style={{ padding: 16, textAlign: "center" }}>
-      <h2>You’re all set, {displayName}</h2>
+      <h2>You’re all set{displayName ? `, ${displayName}` : ""}</h2>
+
+      <p style={{ marginTop: 8 }}>
+        Your wallet address:&nbsp;
+        <strong>{address || (creating ? "Creating…" : "—")}</strong>
+      </p>
+
       <p>You’re ready to explore! Obi can answer your questions anytime.</p>
+
       <img src="/turtle.png" alt="" style={{ width: 160, margin: "24px auto" }} />
+
       <div style={{ display: "grid", gap: 12 }}>
         <a href="/chat" style={{ padding: 14, borderRadius: 10, background: "#2f6b33", color: "#fff" }}>
           Ask Obi your first question
