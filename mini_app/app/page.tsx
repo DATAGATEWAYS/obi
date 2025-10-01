@@ -11,7 +11,7 @@ export default function Page() {
   useEffect(() => {
     if (!ready || !authenticated || postedRef.current) return;
 
-    const tgId = user?.telegram?.telegram_user_id ?? user?.telegram?.telegramUserId;
+    const tgId = user?.telegram?.telegramUserId;
     const tgUsername = user?.telegram?.username || null;
     const privyId = user?.id ?? null;
     if (!tgId || !privyId) return;
