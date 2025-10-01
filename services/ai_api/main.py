@@ -1,13 +1,9 @@
-import os
-
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
 
-import users
-import ai
+from services.ai_api.ai import router as ai_router
+from services.ai_api.users import router as users_router
 
 load_dotenv()
 
@@ -20,9 +16,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_async_engine(DATABASE_URL)
-async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-app.include_router(users.router)
-app.include_router(ai.router)
+app.include_router(users_router)
+app.include_router(ai_router)

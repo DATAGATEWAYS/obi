@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from main import async_session
-from models import *
+from services.ai_api.db import async_session
+from services.ai_api.models import *
 
 router = APIRouter()
 

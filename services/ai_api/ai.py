@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from fastapi import APIRouter
 
-from main import async_session
-from models import *
+from services.ai_api.db import async_session
+from services.ai_api.models import *
 from services.ai_api.deepseek_client import get_deepseek_answer
+from services.database.models import QA
 
 router = APIRouter()
 
