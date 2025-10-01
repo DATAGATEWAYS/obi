@@ -48,7 +48,7 @@ async def onboarding_complete(payload: OnboardingPayload):
         if not uid:
             raise HTTPException(status_code=404, detail="User not found by privy_id")
 
-        stmt_u = (
+        stmt_usernames = (
             pg_insert(Username)
             .values(user_id=uid, username=payload.username)
             .on_conflict_do_update(
@@ -57,21 +57,20 @@ async def onboarding_complete(payload: OnboardingPayload):
             )
         )
 
-        keys = ["crypto_basics","crypto_wallets","nfts","crypto_games",
-                "money_transactions","scam_awareness","exploring","other"]
-        tvals = {k: bool(payload.topics.get(k, False)) for k in keys} | {"user_id": uid}
+        keys = ["crypto_basics", "crypto_wallets", "nfts", "crypto_games",
+                "money_transactions", "scam_awareness", "exploring", "other"]
 
-        stmt_t = (
-            pg_insert(UserTopics)
-            .values(**tvals)
-            .on_conflict_do_update(
-                index_elements=[UserTopics.user_id],
-                set_={k: pg_insert(UserTopics).excluded.__getattribute__(k) for k in keys}
-            )
+        topics_values = {k: bool(payload.topics.get(k, False)) for k in keys} | {"user_id": uid}
+
+        insert_topics_stmt = pg_insert(UserTopics).values(**topics_values)
+
+        stmt_topics = insert_topics_stmt.on_conflict_do_update(
+            index_elements=[UserTopics.user_id],
+            set_={k: getattr(insert_topics_stmt.excluded, k) for k in keys}
         )
 
-        await session.execute(stmt_u)
-        await session.execute(stmt_t)
+        await session.execute(stmt_usernames)
+        await session.execute(stmt_topics)
         await session.commit()
 
     return {"ok": True}
