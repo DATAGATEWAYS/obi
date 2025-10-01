@@ -8,6 +8,7 @@ class QuestionPayload(BaseModel):
     question: str
 
 class UserInsertPayload(BaseModel):
+    telegram_username: str | None = None
     telegram_id: int
     privy_id: str | None = None
 
@@ -17,6 +18,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    telegram_username: Mapped[str | None] = mapped_column(Text, nullable=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
-    privy_id: Mapped[str | None] = mapped_column(Text, nullable=True, unique=False)
+    privy_id: Mapped[str | None] = mapped_column(Text, nullable=True, index=True)
     reg_date: Mapped[str] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)

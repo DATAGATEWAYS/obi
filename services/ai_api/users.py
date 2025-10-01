@@ -11,7 +11,7 @@ async def users_insert(payload: UserInsertPayload):
     async with async_session() as session:
         stmt = (
             pg_insert(User)
-            .values(telegram_id=payload.telegram_id, privy_id=payload.privy_id)
+            .values(telegram_username=payload.telegram_username, telegram_id=payload.telegram_id, privy_id=payload.privy_id)
             .on_conflict_do_update(
                 index_elements=[User.telegram_id],
                 set_={

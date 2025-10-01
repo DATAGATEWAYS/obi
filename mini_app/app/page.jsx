@@ -10,12 +10,9 @@ export default function Page() {
   if (!ready || !authenticated || postedRef.current) return;
 
   const tgId = user?.telegram?.telegram_user_id ?? user?.telegram?.telegramUserId;
+  const tgUsername = user?.telegram?.username;
   const privyId = user?.id;
   const API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
-
-  console.log("[UPsert] ready/auth:", ready, authenticated);
-  console.log("[UPsert] API_URL:", API_URL);
-  console.log("[UPsert] tgId:", tgId, "privyId:", privyId);
 
   if (!API_URL) return;
 
@@ -25,15 +22,13 @@ export default function Page() {
     fetch(`${API_URL}/users/insert`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: tgId, privy_id: privyId }),
+      body: JSON.stringify({ telegram_username: tgUsername, telegram_id: tgId, privy_id: privyId }),
     })
       .then(async (r) => {
         const txt = await r.text().catch(() => "");
-        console.log("[UPsert] status:", r.status, r.statusText, txt);
         if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt}`);
       })
       .catch((e) => {
-        console.warn("[UPsert] failed:", e);
         postedRef.current = false;
       });
   }
