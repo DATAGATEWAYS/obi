@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const api = process.env.AI_API_URL!;
+  const api = process.env.API_URL;
   const url = new URL(req.url);
   const privy_id = url.searchParams.get("privy_id");
   if (!privy_id) return new Response("missing privy_id", { status: 400 });
