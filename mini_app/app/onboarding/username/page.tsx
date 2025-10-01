@@ -2,8 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Nickname() {
-  const [name, setName] = useState("");
+export default function Username() {
+  const [name, setName] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return sessionStorage.getItem("onb_username") || "";
+  });
   const router = useRouter();
 
   const next = () => {

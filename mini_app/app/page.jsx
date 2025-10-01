@@ -30,6 +30,10 @@ export default function Page() {
       const r2 = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, { cache: "no-store" });
       const j2 = r2.ok ? await r2.json() : { has: false };
       if (!j2.has) {
+        const prefillName = (tgUsername ?? "");
+        if (prefillName) {
+        sessionStorage.setItem("onb_username", prefillName);
+        }
         router.replace("/onboarding/username");
       } else {
         // all good - go to dashboard
