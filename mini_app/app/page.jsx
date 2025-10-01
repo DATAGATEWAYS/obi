@@ -9,7 +9,7 @@ export default function Page() {
   useEffect(() => {
     if (!ready || !authenticated || postedRef.current) return;
 
-    const tgId = user?.telegram?.telegram_user_id;
+    const tgId = user?.telegram?.telegramUserId;
     const privyId = user?.id;
 
     if (tgId && privyId) {

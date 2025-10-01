@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.post("/users/insert")
 async def users_insert(payload: UserInsertPayload):
+    print(payload)
     async with async_session() as session:
         stmt = (
             pg_insert(User)
