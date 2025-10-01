@@ -41,6 +41,6 @@ class UserTopics(Base):
     other:              Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
 
 class OnboardingPayload(BaseModel):
-    telegram_id: int
+    privy_id: str
     username: str
     topics: dict

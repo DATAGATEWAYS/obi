@@ -27,7 +27,7 @@ export default function Page() {
       if (!r1.ok) { postedRef.current = false; return; }
 
       // 2) check username
-      const r2 = await fetch(`/api/users/has-username?telegram_id=${encodeURIComponent(tgId)}`, { cache: "no-store" });
+      const r2 = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, { cache: "no-store" });
       const j2 = r2.ok ? await r2.json() : { has: false };
       if (!j2.has) {
         router.replace("/onboarding/username");

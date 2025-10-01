@@ -29,9 +29,9 @@ async def users_insert(payload: UserInsertPayload):
     return {"ok": True, "user": dict(row) if row else None}
 
 @router.get("/users/has-username")
-async def has_username(telegram_id: int):
+async def has_username(privy_id: str):
     async with async_session() as session:
-        uid = await session.scalar(select(User.id).where(User.telegram_id == telegram_id))
+        uid = await session.scalar(select(User.id).where(User.privy_id == privy_id))
         if not uid:
             return {"ok": True, "has": False, "username": None}
 
@@ -44,7 +44,7 @@ async def has_username(telegram_id: int):
 @router.post("/users/onboarding/complete")
 async def onboarding_complete(payload: OnboardingPayload):
     async with async_session() as session:
-        uid = await session.scalar(select(User.id).where(User.telegram_id == payload.telegram_id))
+        uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
         if not uid:
             raise HTTPException(status_code=404, detail="User not found by privy_id")
 
