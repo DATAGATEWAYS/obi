@@ -1,71 +1,48 @@
 "use client";
-import {useEffect, useMemo, useRef} from "react";
-import {usePrivy} from "@privy-io/react-auth";
+import { useEffect, useMemo, useRef } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-    const {ready, authenticated, user, logout} = usePrivy();
-    const postedRef = useRef(false);
+  const { ready, authenticated, user } = usePrivy();
+  const postedRef = useRef(false);
+  const router = useRouter();
 
-    useEffect(() => {
-        if (!ready || !authenticated || postedRef.current) return;
+  useEffect(() => {
+    if (!ready || !authenticated || postedRef.current) return;
 
-        const tgId = user?.telegram?.telegram_user_id ?? user?.telegram?.telegramUserId;
-        const tgUsername = user?.telegram?.username;
-        const privyId = user?.id;
+    const tgId = user?.telegram?.telegram_user_id ?? user?.telegram?.telegramUserId;
+    const tgUsername = user?.telegram?.username || null;
+    const privyId = user?.id ?? null;
+    if (!tgId || !privyId) return;
 
-        if (tgId && privyId) {
-            postedRef.current = true;
-            fetch(`/api/users/insert`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({telegram_username: tgUsername, telegram_id: tgId, privy_id: privyId}),
-            })
-                .then(async (r) => {
-                    const txt = await r.text().catch(() => "");
-                    if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt}`);
-                })
-                .catch((e) => {
-                    postedRef.current = false;
-                });
-        }
-    }, [ready, authenticated, user]);
+    (async () => {
+      postedRef.current = true;
+      // 1) insert user
+      const r1 = await fetch(`/api/users/insert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegram_username: tgUsername, telegram_id: tgId, privy_id: privyId }),
+      });
+      if (!r1.ok) { postedRef.current = false; return; }
 
-    const statusPrivy = useMemo(() => {
-        if (!ready) return {cls: "wait", text: "Loading…"};
-        if (authenticated) return {cls: "ok", text: "Success"};
-        return {cls: "fail", text: "Not authenticated"};
-    }, [ready, authenticated]);
+      // 2) check username
+      const r2 = await fetch(`/api/users/has-username?telegram_id=${encodeURIComponent(tgId)}`, { cache: "no-store" });
+      const j2 = r2.ok ? await r2.json() : { has: false };
+      if (!j2.has) {
+        router.replace("/onboarding/username");
+      } else {
+        // all good - go to dashboard
+        router.replace("/onboarding/done");
+      }
+    })();
+  }, [ready, authenticated, user, router]);
 
-    return (
-        <div className="container">
-            <div className="card">
-                <h1>Privy × Telegram Mini App</h1>
-                <p>
-                    Next.js + React + PrivyProvider template. Open from your bot as{" "}
-                    <code>web_app</code> — login will happen automatically (seamless).
-                </p>
-            </div>
+  const statusPrivy = useMemo(() => {
+    if (!ready) return { cls: "wait", text: "Loading…" };
+    if (authenticated) return { cls: "ok", text: "Success" };
+    return { cls: "fail", text: "Not authenticated" };
+  }, [ready, authenticated]);
 
-            <div className="card">
-                <h2>
-                    Privy status:&nbsp;
-                    <span className={`status ${statusPrivy.cls}`}>{statusPrivy.text}</span>
-                </h2>
-
-                {authenticated && (
-                    <>
-                        <h3>Privy user data</h3>
-                        <pre>
-              {JSON.stringify(
-                  {privy_user_id: user?.id, telegram: user?.telegram},
-                  null,
-                  2
-              )}
-            </pre>
-                        <button onClick={logout}>Log out</button>
-                    </>
-                )}
-            </div>
-        </div>
-    );
+  return <div>Privy status: {statusPrivy.text}</div>;
 }
