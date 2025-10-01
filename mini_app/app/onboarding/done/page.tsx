@@ -10,7 +10,6 @@ export default function Done() {
   const { user, authenticated, ready } = usePrivy();
 
   const [displayName, setDisplayName] = useState<string>("");
-  const [submitted, setSubmitted] = useState(false);
   const postedRef = useRef(false);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export default function Done() {
         body: JSON.stringify({ privy_id, username: name, topics }),
       });
 
-      setSubmitted(r.ok);
       sessionStorage.removeItem("onb_topics");
     })();
   }, [ready, authenticated, user]);
@@ -82,7 +80,6 @@ export default function Done() {
           Explore dashboard
         </a>
       </div>
-      {!submitted && <p style={{ marginTop: 12, opacity: .7 }}>Saving your preferences…</p>}
     </main>
   );
 }
