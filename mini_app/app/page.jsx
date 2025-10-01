@@ -9,13 +9,13 @@ export default function Page() {
   useEffect(() => {
     if (!ready || !authenticated || postedRef.current) return;
 
-    const tgId = user?.telegram?.telegramUserId;
+    const tgId = user?.telegram?.telegram_user_id;
     const privyId = user?.id;
 
     if (tgId && privyId) {
       postedRef.current = true;
 
-      fetch(`${process.env.API_URL}/users/insert`, {
+      fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/users/insert`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ telegram_id: tgId, privy_id: privyId }),
