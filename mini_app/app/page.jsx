@@ -1,10 +1,30 @@
 "use client";
-
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 
 export default function Page() {
   const { ready, authenticated, user, logout } = usePrivy();
+  const postedRef = useRef(false);
+
+  useEffect(() => {
+    if (!ready || !authenticated || postedRef.current) return;
+
+    const tgId = user?.telegram?.telegram_user_id;
+    const privyId = user?.id;
+
+    if (tgId && privyId) {
+      postedRef.current = true;
+
+      fetch(`${process.env.API_URL}/users/insert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegram_id: tgId, privy_id: privyId }),
+      }).catch((e) => {
+        console.warn("users/insert failed:", e);
+        postedRef.current = false;
+      });
+    }
+  }, [ready, authenticated, user]);
 
   const statusPrivy = useMemo(() => {
     if (!ready) return { cls: "wait", text: "Loading…" };

@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 const Providers = dynamic(() => import("./providers"), { ssr: false });
 
-export const metadata = { title: "Privy × Telegram Mini App" };
+export const metadata = { title: "Obi" };
 
 export default function RootLayout({ children }) {
   return (
