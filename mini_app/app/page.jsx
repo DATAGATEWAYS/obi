@@ -7,24 +7,37 @@ export default function Page() {
   const postedRef = useRef(false);
 
   useEffect(() => {
-    if (!ready || !authenticated || postedRef.current) return;
+  if (!ready || !authenticated || postedRef.current) return;
 
-    const tgId = user?.telegram?.telegram_user_id;
-    const privyId = user?.id;
+  const tgId = user?.telegram?.telegram_user_id ?? user?.telegram?.telegramUserId;
+  const privyId = user?.id;
+  const API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
-    if (tgId && privyId) {
-      postedRef.current = true;
+  console.log("[UPsert] ready/auth:", ready, authenticated);
+  console.log("[UPsert] API_URL:", API_URL);
+  console.log("[UPsert] tgId:", tgId, "privyId:", privyId);
 
-      fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/users/insert`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegram_id: tgId, privy_id: privyId }),
-      }).catch((e) => {
-        console.warn("users/insert failed:", e);
+  if (!API_URL) return;
+
+  if (tgId && privyId) {
+    postedRef.current = true;
+
+    fetch(`${API_URL}/users/insert`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegram_id: tgId, privy_id: privyId }),
+    })
+      .then(async (r) => {
+        const txt = await r.text().catch(() => "");
+        console.log("[UPsert] status:", r.status, r.statusText, txt);
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt}`);
+      })
+      .catch((e) => {
+        console.warn("[UPsert] failed:", e);
         postedRef.current = false;
       });
-    }
-  }, [ready, authenticated, user]);
+  }
+}, [ready, authenticated, user]);
 
   const statusPrivy = useMemo(() => {
     if (!ready) return { cls: "wait", text: "Loading…" };
