@@ -71,7 +71,7 @@ export default function Done() {
 
   return (
     <main style={{ padding: 16, textAlign: "center" }}>
-      <h2>You’re all set, {displayName || "friend"}</h2>
+      <h2>You’re all set, {displayName}</h2>
       <p>You’re ready to explore! Obi can answer your questions anytime.</p>
       <img src="/turtle.png" alt="" style={{ width: 160, margin: "24px auto" }} />
       <div style={{ display: "grid", gap: 12 }}>
