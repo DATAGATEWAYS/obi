@@ -27,7 +27,6 @@ export default function Done() {
                 body: JSON.stringify(payload),
             });
         } catch (e) {
-            // если нужно попробовать ещё раз при ошибке:
             postedWalletRef.current = false;
             console.error(e);
         }

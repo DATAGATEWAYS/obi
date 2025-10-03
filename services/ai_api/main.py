@@ -1,12 +1,25 @@
+from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from services.ai_api.ai import router as ai_router
+from services.ai_api.db import engine
 from services.ai_api.users import router as users_router
 from services.ai_api.wallets import router as wallets_router
 
 load_dotenv()
+
+@asynccontextmanager
+async def lifespan():
+    # --- startup ---
+    async with engine.begin() as conn:
+        await conn.execute(text("SELECT 1"))
+    yield
+    # --- shutdown ---
+    await engine.dispose()
 
 app = FastAPI()
 
