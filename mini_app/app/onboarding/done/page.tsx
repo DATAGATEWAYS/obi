@@ -37,7 +37,7 @@ export default function Done() {
         if (!ready || !authenticated) return;
 
         const fromStorage = sanitize(
-            localStorage.getItem("onb_username") || sessionStorage.getItem("onb_username")
+            sessionStorage.getItem("onb_username") || localStorage.getItem("onb_username")
         );
         if (fromStorage) {
             setDisplayName(fromStorage);
@@ -76,6 +76,7 @@ export default function Done() {
                 body: JSON.stringify({privy_id, username: name, topics}),
             });
             sessionStorage.removeItem("onb_topics");
+            sessionStorage.removeItem("onb_username");
         })();
     }, [ready, authenticated, user]);
 
