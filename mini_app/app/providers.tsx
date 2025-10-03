@@ -1,6 +1,7 @@
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
+import { polygon } from "viem/chains";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       config={{
         appearance: { theme: "dark", accentColor: "#2f6b33" },
         loginMethods: ["telegram"],
+        defaultChain: polygon,
+        supportedChains: [polygon],
         embeddedWallets: {
           ethereum: { createOnLogin: "users-without-wallets" },
         },
