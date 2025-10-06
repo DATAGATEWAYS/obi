@@ -34,6 +34,18 @@ services:
 
   database:
     image: postgres:15.14
+    command: >
+      postgres
+      -c shared_buffers=128MB
+      -c effective_cache_size=512MB
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+      -c max_connections=20
+      -c temp_file_limit=512MB
+      -c jit=off
+      -c log_min_duration_statement=500ms
+      -c log_connections=on
+      -c log_disconnections=on
     env_file:
       - .env
     volumes:
