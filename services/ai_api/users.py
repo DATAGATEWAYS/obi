@@ -7,12 +7,14 @@ from services.ai_api.models import *
 
 router = APIRouter()
 
+
 @router.post("/users/insert")
 async def users_insert(payload: UserInsertPayload):
     async with async_session() as session:
         stmt = (
             pg_insert(User)
-            .values(telegram_username=payload.telegram_username, telegram_id=payload.telegram_id, privy_id=payload.privy_id)
+            .values(telegram_username=payload.telegram_username, telegram_id=payload.telegram_id,
+                    privy_id=payload.privy_id)
             .on_conflict_do_update(
                 index_elements=[User.telegram_id],
                 set_={
@@ -28,6 +30,27 @@ async def users_insert(payload: UserInsertPayload):
 
     return {"ok": True, "user": dict(row) if row else None}
 
+
+@router.post("/users/username/update")
+async def update_username(payload: UsernameUpdatePayload):
+    async with async_session() as session:
+        uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
+        if not uid:
+            raise HTTPException(status_code=404, detail="User not found by privy_id")
+
+        stmt = (
+            pg_insert(Username)
+            .values(user_id=uid, username=payload.username)
+            .on_conflict_do_update(
+                index_elements=[Username.user_id],
+                set_={"username": pg_insert(Username).excluded.username},
+            )
+        )
+        await session.execute(stmt)
+        await session.commit()
+    return {"ok": True}
+
+
 @router.get("/users/has-username")
 async def has_username(privy_id: str):
     async with async_session() as session:
@@ -40,6 +63,7 @@ async def has_username(privy_id: str):
         if has:
             un = await session.scalar(select(Username.username).where(Username.user_id == uid))
         return {"ok": True, "has": bool(has), "username": un}
+
 
 @router.post("/users/onboarding/complete")
 async def onboarding_complete(payload: OnboardingPayload):

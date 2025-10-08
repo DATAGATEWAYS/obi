@@ -126,7 +126,7 @@ export default function DashboardClient() {
             {/* Quiz card */}
             <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
                 <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
-                <p style={{margin: "8px 0 12px"}}>What is a crypto wallet used for?</p>
+                <p style={{margin: "8px 0 12px", color: "#4e5939"}}>What is a crypto wallet used for?</p>
                 <ul style={{listStyle: "none", padding: 0, margin: 0, color: "#5b584f"}}>
                     <li>○ To store and manage your crypto assets</li>
                     <li>○ To print out paper cash</li>
