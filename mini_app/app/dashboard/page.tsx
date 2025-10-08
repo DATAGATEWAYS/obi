@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 import {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
