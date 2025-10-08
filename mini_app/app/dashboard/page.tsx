@@ -47,16 +47,27 @@ export default function Dashboard() {
     })();
   }, [ready, authenticated, user]);
 
-  const greet = `${titleByHour(new Date().getHours())}, ${username || "friend"}!`;
+  const greetTitle = titleByHour(new Date().getHours());
 
   return (
     <main style={{ padding: 16, maxWidth: 420, margin: "0 auto" }}>
-      <h2 style={{ color: "#6d7d4f", fontWeight: 700 }}>{greet}</h2>
+      <h2 style={{color: "#6d7d4f", fontWeight: 700}}>
+        {greetTitle},{" "}
+        <a
+            href="/profile"
+            style={{color: "#6d7d4f", textDecoration: "underline", cursor: "pointer"}}
+            title="Open profile"
+        >
+          {username || "friend"}
+        </a>
+        !
+      </h2>
 
-      {/* календарик-заглушка */}
-      <div style={{ display: "flex", gap: 8, margin: "12px 0 16px" }}>
+      {/* calendar dummie */}
+      <div style={{display: "flex", gap: 8, margin: "12px 0 16px"}}>
         {["Mon 18", "Tue 19", "Wed 20", "Fri 22", "Sat 23", "Sun 24"].map((d) => (
-          <div key={d} style={{ padding: "6px 10px", borderRadius: 12, background: "#f3eed6", color: "#7a6a56", fontSize: 12 }}>{d}</div>
+            <div key={d}
+                 style={{padding: "6px 10px", borderRadius: 12, background: "#f3eed6", color: "#7a6a56", fontSize: 12 }}>{d}</div>
         ))}
       </div>
 
