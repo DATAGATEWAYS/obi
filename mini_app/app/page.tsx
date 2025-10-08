@@ -37,7 +37,7 @@ export default function Page() {
         router.replace("/onboarding/username");
       } else {
         // all good - go to dashboard
-        router.replace("/onboarding/done");
+        router.replace("/dashboard");
       }
     })();
   }, [ready, authenticated, user, router]);
