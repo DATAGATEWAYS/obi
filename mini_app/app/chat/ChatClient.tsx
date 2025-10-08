@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
-type Msg = { role: "user" | "assistant" | "system"; text: string; typing?: boolean; };
+type Msg = { role: "user" | "assistant" | "system"; text: string; typing?: boolean; html?: boolean;};
 
 const SUGGESTIONS = [
     "What's a wallet?",
@@ -79,7 +79,8 @@ export default function ChatClient() {
                     const i = n.findIndex((mm) => mm.typing);
                     if (i >= 0) n[i] = {
                         role: "system",
-                        text: "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram."
+                        text: "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
+                        html: true
                     };
                     else n.push({role: "system", text: "I couldn’t detect your Telegram ID."});
                     return n;
@@ -156,6 +157,8 @@ export default function ChatClient() {
                         }}>
                             {m.typing ? (
                                 <span>typing{'.'.repeat(typingStep)}</span>
+                            ) : m.html ? (
+                                <div dangerouslySetInnerHTML={{__html: m.text}}/>
                             ) : (
                                 m.text
                             )}
