@@ -3,8 +3,6 @@ import {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
-const router = useRouter();
-
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
     if (h < 18) return "Good afternoon";
@@ -16,6 +14,7 @@ function sanitize(s?: string | null) {
 }
 
 export default function DashboardClient() {
+    const router = useRouter();
     const {user, authenticated, ready} = usePrivy();
     const [username, setUsername] = useState<string>(() => {
         if (typeof window === "undefined") return "";
