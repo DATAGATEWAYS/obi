@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
-type Msg = { role: "user" | "assistant" | "system"; text: string };
+type Msg = { role: "user" | "assistant" | "system"; text: string; typing?: boolean; };
 
 const SUGGESTIONS = [
   "What's a wallet?",
@@ -54,23 +54,23 @@ export default function ChatClient() {
     const q = (text ?? input).trim();
     if (!q || sending) return;
 
-    // покажем сообщение пользователя сразу
     setMsgs((m) => [...m, { role: "user", text: q }]);
     setInput("");
+    setSending(true);
+
+    setMsgs((m) => [...m, { role: "assistant", text: "typing", typing: true }]);
     setSending(true);
 
     try {
       const tgId = getTgId();
       if (!tgId) {
-        // если нет id — вернём пользователя назад / попросим открыть через Telegram
-        setMsgs((m) => [
-          ...m,
-          {
-            role: "system",
-            text:
-              "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
-          },
-        ]);
+        setMsgs((m) => {
+          const n = [...m];
+          const i = n.findIndex((mm) => mm.typing);
+          if (i >= 0) n[i] = { role: "system", text: "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram." };
+          else n.push({ role: "system", text: "I couldn’t detect your Telegram ID." });
+          return n;
+        });
         return;
       }
 
@@ -82,12 +82,22 @@ export default function ChatClient() {
       if (!r.ok) throw new Error(await r.text());
       const j = await r.json();
       const answer = j?.answer ?? "Sorry, I couldn't generate a response.";
-      setMsgs((m) => [...m, { role: "assistant", text: answer }]);
+      setMsgs((m) => {
+        const n = [...m];
+        const i = n.findIndex((mm) => mm.typing);
+        if (i >= 0) n[i] = { role: "assistant", text: answer };
+        else n.push({ role: "assistant", text: answer });
+        return n;
+      });
     } catch (e: any) {
-      setMsgs((m) => [
-        ...m,
-        { role: "system", text: `Request failed: ${String(e?.message || e)}` },
-      ]);
+      setMsgs((m) => {
+        const n = [...m];
+        const i = n.findIndex((mm) => mm.typing);
+        const err = `Request failed: ${String(e?.message || e)}`;
+        if (i >= 0) n[i] = { role: "system", text: err };
+        else n.push({ role: "system", text: err });
+        return n;
+      });
     } finally {
       setSending(false);
     }
