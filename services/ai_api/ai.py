@@ -24,7 +24,7 @@ async def ask_endpoint(payload: QuestionPayload):
         session.add(record)
         await session.commit()
 
-    return answer
+    return {"answer": answer}
 
 def from_ai_to_human_readable(raw: str) -> str:
     return markdown_to_telegram_html(raw)

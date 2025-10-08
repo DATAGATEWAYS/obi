@@ -64,9 +64,10 @@ async def handle_question(message: types.Message):
         payload = {"user_id": user_id, "question": question}
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post("http://ai_api:8000/ask")
+                response = await client.post("http://ai_api:8000/ask", json=payload)
                 response.raise_for_status()
-                await send_message(message, str(response))
+                answer = response.json().get("answer")
+                await send_message(message, answer)
         except Exception as e:
             await message.answer(
                 f"Sorry, I couldn’t process the request.\nError: {e}",
