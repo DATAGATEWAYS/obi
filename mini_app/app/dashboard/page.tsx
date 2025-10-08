@@ -1,6 +1,9 @@
 "use client";
 import {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
+import {useRouter} from "next/navigation";
+
+const router = useRouter();
 
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
@@ -27,7 +30,7 @@ export default function Dashboard() {
         const cached =
             sessionStorage.getItem("onb_username") ||
             localStorage.getItem("onb_username");
-        return !!cached; // если уже было в кэше — считаем загруженным
+        return !!cached;
     });
 
     useEffect(() => {
@@ -83,21 +86,29 @@ export default function Dashboard() {
         }
       `}</style>
 
-            <h2 style={{color: "#6d7d4f", fontWeight: 700}}>
-                {greetTitle},{" "}
-                {nameLoaded ? (
-                    <a
-                        href="/profile"
-                        style={{color: "#6d7d4f", textDecoration: "underline", cursor: "pointer"}}
-                        title="Open profile"
-                    >
-                        {username || "friend"}
-                    </a>
-                ) : (
-                    Skeleton
-                )}
-                !
-            </h2>
+            <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+                <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>
+                    {greetTitle},{" "}
+                    {nameLoaded ? (username || "friend") : Skeleton}!
+                </h2>
+
+                <button
+                    onClick={() => router.push("/profile")}
+                    aria-label="Open profile"
+                    title="Open profile"
+                    style={{
+                        fontSize: 28,
+                        lineHeight: 1,
+                        background: "none",
+                        border: 0,
+                        cursor: "pointer",
+                        padding: 4,
+                        borderRadius: 8,
+                    }}
+                >
+                    🕶️
+                </button>
+            </div>
 
             {/* calendar dummie */}
             <div style={{display: "flex", gap: 8, margin: "12px 0 16px"}}>

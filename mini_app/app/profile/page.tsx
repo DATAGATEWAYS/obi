@@ -15,49 +15,86 @@ function titleByHour(h: number) {
 
 export default function Profile() {
     const {user, authenticated, ready, logout} = usePrivy() as any;
-    const [username, setUsername] = useState("");
+    const [username, setUsername] = useState<string>(() => {
+        if (typeof window === "undefined") return "";
+        return (
+            sanitize(sessionStorage.getItem("onb_username")) ||
+            sanitize(localStorage.getItem("onb_username")) ||
+            ""
+        );
+    });
+    const [nameLoaded, setNameLoaded] = useState<boolean>(() => {
+        if (typeof window === "undefined") return false;
+        const cached =
+            sessionStorage.getItem("onb_username") ||
+            localStorage.getItem("onb_username");
+        return !!cached;
+    });
     const router = useRouter();
 
     useEffect(() => {
-        if (!ready || !authenticated) return;
-
-        const fromStorage =
-            sanitize(sessionStorage.getItem("onb_username")) ||
-            sanitize(localStorage.getItem("onb_username"));
-        if (fromStorage) {
-            setUsername(fromStorage);
-            return;
-        }
+        if (!ready || !authenticated || nameLoaded) return;
         const privyId = user?.id;
         if (!privyId) return;
 
         (async () => {
             try {
-                const r = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, {cache: "no-store"});
-                if (!r.ok) return;
-                const j = await r.json();
-                const name = sanitize(j?.username);
-                if (name) {
-                    setUsername(name);
-                    localStorage.setItem("onb_username", name);
-                } else {
-                    router.replace("/onboarding/username");
+                const r = await fetch(
+                    `/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`,
+                    {cache: "no-store"}
+                );
+                if (r.ok) {
+                    const j = await r.json();
+                    const name = sanitize(j?.username);
+                    if (name) {
+                        setUsername(name);
+                        localStorage.setItem("onb_username", name);
+                    } else {
+                        router.replace("/onboarding/username");
+                        return;
+                    }
                 }
-            } catch {
+            } finally {
+                setNameLoaded(true);
             }
         })();
-    }, [ready, authenticated, user, router]);
+    }, [ready, authenticated, user, nameLoaded, router]);
 
-    const greet = `${titleByHour(new Date().getHours())}, ${username || "friend"}!`;
+    const greetTitle = titleByHour(new Date().getHours());
+    const Skeleton = (
+        <span
+            aria-hidden
+            style={{
+                display: "inline-block",
+                width: 90,
+                height: "1em",
+                borderRadius: 6,
+                background:
+                    "linear-gradient(90deg, #eee 25%, #f6f6f6 37%, #eee 63%)",
+                backgroundSize: "400% 100%",
+                animation: "skeleton 1.2s ease-in-out infinite",
+            }}
+        />
+    );
 
     return (
         <main style={{padding: 16, maxWidth: 420, margin: "0 auto"}}>
+            <style>{`
+        @keyframes skeleton {
+          0% { background-position: 100% 0; }
+          100% { background-position: 0 0; }
+        }
+      `}</style>
+
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>{greet}</h2>
+                <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>
+                    {greetTitle},{" "}
+                    {nameLoaded ? (username || "friend") : Skeleton}!
+                </h2>
                 <div aria-hidden style={{fontSize: 28}}>🕶️</div>
             </div>
 
-            {/* turtle back */}
+            {/* turtle back*/}
             <div
                 style={{
                     marginTop: 16,
