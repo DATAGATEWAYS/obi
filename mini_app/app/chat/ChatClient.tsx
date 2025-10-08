@@ -61,61 +61,73 @@ export default function ChatClient() {
     }
 
     async function send(text?: string) {
-        const q = (text ?? input).trim();
-        if (!q || sending) return;
+  const q = (text ?? input).trim();
+  if (!q || sending) return;
 
-        setMsgs((m) => [...m, {role: "user", text: q}]);
-        setInput("");
-        setSending(true);
+  setMsgs(m => [...m, { role: "user", text: q }]);
+  setInput("");
+  setSending(true);
 
-        setMsgs((m) => [...m, {role: "assistant", text: "typing", typing: true}]);
-        setSending(true);
+  setMsgs(m => [...m, { role: "assistant", text: "typing", typing: true }]);
 
-        try {
-            const tgId = getTgId();
-            if (!tgId) {
-                setMsgs((m) => {
-                    const n = [...m];
-                    const i = n.findIndex((mm) => mm.typing);
-                    if (i >= 0) n[i] = {
-                        role: "system",
-                        text: "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
-                        html: true
-                    };
-                    else n.push({role: "system", text: "I couldn’t detect your Telegram ID."});
-                    return n;
-                });
-                return;
-            }
-
-            const r = await fetch("/api/chat/ask", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({user_id: tgId, question: q}),
-            });
-            if (!r.ok) throw new Error(await r.text());
-            const j = await r.json();
-            const answer = j?.answer ?? "Sorry, I couldn't generate a response.";
-            setMsgs((m) => {
-                const n = [...m];
-                const i = n.findIndex((mm) => mm.typing);
-                if (i >= 0) n[i] = {role: "assistant", text: answer};
-                else n.push({role: "assistant", text: answer});
-                return n;
-            });
-        } catch (e: any) {
-            setMsgs((m) => {
-                const n = [...m];
-                const i = n.findIndex((mm) => mm.typing);
-                const err = `Request failed: ${String(e?.message || e)}`;
-                if (i >= 0) n[i] = {role: "system", text: err};
-                else n.push({role: "system", text: err});
-                return n;
-            });
-        } finally {
-            setSending(false);
-        }
+  try {
+    const tgId = getTgId();
+    if (!tgId) {
+      setMsgs(m => {
+        const n = [...m];
+        const i = n.findIndex(mm => mm.typing);
+        const msg = {
+          role: "system",
+          text:
+            "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
+        } as Msg;
+        if (i >= 0) n[i] = msg; else n.push(msg);
+        return n;
+      });
+      return;
     }
+
+    const r = await fetch("/api/chat/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: tgId, question: q }),
+    });
+
+    let data: any;
+    const ct = r.headers.get("content-type") || "";
+    data = ct.includes("application/json") ? await r.json() : await r.text();
+
+    let raw =
+      typeof data === "string"
+        ? data
+        : data?.answer ?? data?.text ?? data?.message ?? "";
+
+    if (!raw) raw = "Sorry, I couldn't generate a response.";
+
+    const html = raw.replace(/\n/g, "<br/>");
+
+    setMsgs(m => {
+      const n = [...m];
+      const i = n.findIndex(mm => mm.typing);
+      const msg: Msg = { role: "assistant", text: html, html: true };
+      if (i >= 0) n[i] = msg; else n.push(msg);
+      return n;
+    });
+  } catch (e: any) {
+    setMsgs(m => {
+      const n = [...m];
+      const i = n.findIndex(mm => mm.typing);
+      const msg: Msg = {
+        role: "system",
+        text: `Request failed: ${String(e?.message || e)}`,
+      };
+      if (i >= 0) n[i] = msg; else n.push(msg);
+      return n;
+    });
+  } finally {
+    setSending(false);
+  }
+}
 
     return (
         <main style={{display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", background: "#EEE8C9"}}>
