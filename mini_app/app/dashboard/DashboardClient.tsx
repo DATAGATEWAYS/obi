@@ -3,6 +3,20 @@ import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
+/* ---------- palette for good contrast (works in dark TG too) ---------- */
+const COLORS = {
+  cardBg: "#ffffff",
+  quizBorder: "#b58752",
+  optionBg: "#F0F5E6",
+  optionBorder: "#D6E3C7",
+  optionText: "#2B2B2B",
+  optionBgSelected: "#E6F0D9",
+  optionBorderSelected: "#6B8749",
+  radioAccent: "#2F6B33",
+  ctaBg: "#2f6b33",
+  ctaText: "#ffffff",
+};
+
 /* ---------- utils ---------- */
 function titleByHour(h: number) {
   if (h < 12) return "Good morning";
@@ -28,7 +42,7 @@ export default function DashboardClient() {
   const router = useRouter();
   const {user, authenticated, ready} = usePrivy();
 
-  /* name anti-flicker (as before) */
+  /* name anti-flicker */
   const [username, setUsername] = useState<string>(() => {
     if (typeof window === "undefined") return "";
     return (
@@ -117,7 +131,7 @@ export default function DashboardClient() {
         </button>
       </div>
 
-      {/* tiny calendar dummie */}
+      {/* tiny calendar dummy */}
       <div style={{display: "flex", gap: 8, margin: "12px 0 16px"}}>
         {["Mon 18", "Tue 19", "Wed 20", "Fri 22", "Sat 23", "Sun 24"].map((d) => (
           <div
@@ -147,8 +161,8 @@ export default function DashboardClient() {
           marginTop: 16,
           padding: 14,
           borderRadius: 12,
-          background: "#2f6b33",
-          color: "#fff",
+          background: COLORS.ctaBg,
+          color: COLORS.ctaText,
           textDecoration: "none",
         }}
       >
@@ -163,7 +177,7 @@ export default function DashboardClient() {
           style={{
             padding: 24,
             borderRadius: 16,
-            background: "#fff",
+            background: COLORS.cardBg,
             textAlign: "center",
             color: "#6d7d4f",
             textDecoration: "none",
@@ -177,7 +191,7 @@ export default function DashboardClient() {
           style={{
             padding: 24,
             borderRadius: 16,
-            background: "#fff",
+            background: COLORS.cardBg,
             textAlign: "center",
             color: "#6d7d4f",
             textDecoration: "none",
@@ -219,7 +233,7 @@ function QuizCard({ privyId, ready }: { privyId: string; ready: boolean }) {
 
   if (!ready || !privyId) {
     return (
-      <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
+      <div style={{background: COLORS.cardBg, borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
         <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
         <p style={{margin: "8px 0 12px"}}>Loading…</p>
       </div>
@@ -228,7 +242,7 @@ function QuizCard({ privyId, ready }: { privyId: string; ready: boolean }) {
 
   if (loading || !state) {
     return (
-      <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
+      <div style={{background: COLORS.cardBg, borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
         <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
         <p style={{margin: "8px 0 12px"}}>Loading…</p>
       </div>
@@ -237,7 +251,13 @@ function QuizCard({ privyId, ready }: { privyId: string; ready: boolean }) {
 
   if (state.finished) {
     return (
-      <div style={{background: "#fff", borderRadius: 18, padding: 16, border: "4px solid #b58752", boxShadow: "0 2px 0 rgba(0,0,0,.08)"}}>
+      <div style={{
+        background: COLORS.cardBg,
+        borderRadius: 18,
+        padding: 16,
+        border: `4px solid ${COLORS.quizBorder}`,
+        boxShadow: "0 2px 0 rgba(0,0,0,.08)"
+      }}>
         <div style={{ fontWeight: 700, color: "#6b5235", marginBottom: 8 }}>Quiz of the day:</div>
         <div style={{ padding: 12, borderRadius: 12, background: "#eef7e8", color: "#2f6b33", fontWeight: 700, textAlign: "center" }}>
           Hooray! You’ve answered all questions 🎉
@@ -269,38 +289,41 @@ function QuizCard({ privyId, ready }: { privyId: string; ready: boolean }) {
   }
 
   return (
-    <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
+    <div style={{background: COLORS.cardBg, borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
       <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
-      <p style={{margin: "8px 0 12px", color: "#4e5939"}}>
-        {state.question}
-      </p>
+      <p style={{margin: "8px 0 12px", color: "#4e5939"}}>{state.question}</p>
 
       <div style={{ display: "grid", gap: 10 }}>
-        {(state.options || []).map((opt, i) => (
-          <label
-            key={i}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
-              borderRadius: 10,
-              background: "#f7f7f7",
-              cursor: disabled ? "default" : "pointer",
-              opacity: disabled && selected !== i ? 0.95 : 1
-            }}
-          >
-            <input
-              type="radio"
-              name={`q-${state.index}`}
-              checked={selected === i}
-              disabled={disabled}
-              onChange={() => choose(i)}
-              style={{ accentColor: "#2f6b33", width: 16, height: 16 }}
-            />
-            <span>{opt}</span>
-          </label>
-        ))}
+        {(state.options || []).map((opt, i) => {
+          const isSelected = selected === i;
+          return (
+            <label
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 14px",
+                borderRadius: 12,
+                background: isSelected ? COLORS.optionBgSelected : COLORS.optionBg,
+                border: `1.5px solid ${isSelected ? COLORS.optionBorderSelected : COLORS.optionBorder}`,
+                cursor: disabled ? "default" : "pointer",
+                color: COLORS.optionText,
+                fontWeight: 500,
+              }}
+            >
+              <input
+                type="radio"
+                name={`q-${state.index}`}
+                checked={isSelected}
+                disabled={disabled}
+                onChange={() => choose(i)}
+                style={{ accentColor: COLORS.radioAccent, width: 18, height: 18 }}
+              />
+              <span>{opt}</span>
+            </label>
+          );
+        })}
       </div>
 
       {/* banners */}
