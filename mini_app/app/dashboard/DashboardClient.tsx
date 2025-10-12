@@ -365,14 +365,23 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 </div>
             )}
             {banner === "wrong" && (
-                <div style={{
-                    marginTop: 10, padding: "10px 12px", borderRadius: 10,
-                    background: "#7e2b2b", color: "#fff", textAlign: "center", fontWeight: 700
-                }}
-                onClick={handleTryAgain}
+                <button
+                    type="button"
+                    onClick={handleTryAgain}
+                    style={{
+                        width: "100%",
+                        marginTop: 10,
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        background: "#7e2b2b",
+                        color: "#fff",
+                        fontWeight: 700,
+                        border: "none",
+                        cursor: "pointer",
+                    }}
                 >
                     Wrong answer, try again
-                </div>
+                </button>
             )}
             {banner === "locked" && (
                 <div style={{
