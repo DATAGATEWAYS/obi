@@ -215,6 +215,7 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
     const [state, setState] = useState<QuizState | null>(null);
     const [selected, setSelected] = useState<number | null>(null);
     const [banner, setBanner] = useState<"correct" | "wrong" | "locked" | "finished" | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         if (!ready || !privyId) return;
@@ -357,12 +358,23 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
 
             {/* banners */}
             {banner === "correct" && (
-                <div style={{
-                    marginTop: 10, padding: "10px 12px", borderRadius: 10,
-                    background: "#dff3d9", color: "#2f6b33", textAlign: "center", fontWeight: 700
-                }}>
+                <button
+                    type="button"
+                    onClick={() => router.push("/profile")}
+                    style={{
+                        width: "100%",
+                        marginTop: 10,
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        background: "#dff3d9",
+                        color: "#2f6b33",
+                        fontWeight: 700,
+                        border: "1px solid #bfe9b2",
+                        cursor: "pointer",
+                    }}
+                >
                     You were right! Claim reward here
-                </div>
+                </button>
             )}
             {banner === "wrong" && (
                 <button
