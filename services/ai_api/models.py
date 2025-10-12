@@ -114,3 +114,9 @@ class QuizStateResponse(BaseModel):
 class QuizAnswerPayload(BaseModel):
     privy_id: str
     option_index: int
+
+class QuizAnswer(Base):
+    __tablename__ = "quiz_answers"
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    answered_on: Mapped[str] = mapped_column(Date, primary_key=True)
+    quiz_index: Mapped[int]

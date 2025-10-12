@@ -1,14 +1,14 @@
 from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, and_
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from services.ai_api.db import async_session
-from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload
+from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer
 
 router = APIRouter()
 
-# Вопросы (можешь вынести в json и читать при старте)
 QUESTIONS = [
     {
         "title": "Day 1 — What Is Web3?",
@@ -170,6 +170,11 @@ async def quiz_answer(payload: QuizAnswerPayload):
         if is_correct:
             row.completed_index = idx
             row.last_correct_date = today
+            await session.execute(
+                pg_insert(QuizAnswer)
+                .values(user_id=uid, answered_on=today, quiz_index=idx)
+                .on_conflict_do_nothing()
+            )
             await session.commit()
 
         return {
@@ -179,3 +184,17 @@ async def quiz_answer(payload: QuizAnswerPayload):
             "index": idx,
             "total": TOTAL,
         }
+
+@router.get("/quiz/week")
+async def quiz_week(privy_id: str, date_from: date, date_to: date):
+    async with async_session() as session:
+        uid = await _get_uid_by_privy(session, privy_id)
+        rows = await session.execute(
+            select(QuizAnswer.answered_on).where(
+                and_(QuizAnswer.user_id == uid,
+                     QuizAnswer.answered_on >= date_from,
+                     QuizAnswer.answered_on <= date_to)
+            )
+        )
+        days = [d.isoformat() for d in rows.scalars().all()]
+        return {"days": days}

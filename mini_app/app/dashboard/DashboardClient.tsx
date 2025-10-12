@@ -40,9 +40,31 @@ type QuizState = {
     selected_index?: number | null;
 };
 
+/* ---------- helpers for week ---------- */
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const toYMD = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const startOfWeekMon = (d: Date) => {
+    const tmp = new Date(d);
+    tmp.setHours(0, 0, 0, 0);
+    const wd = tmp.getDay();             // 0..6 (Sun=0)
+    const diff = (wd + 6) % 7;               // Mon=0
+    tmp.setDate(tmp.getDate() - diff);
+    return tmp;
+};
+const addDays = (d: Date, n: number) => {
+    const x = new Date(d);
+    x.setDate(d.getDate() + n);
+    return x;
+};
+
+
 export default function DashboardClient() {
     const router = useRouter();
     const {user, authenticated, ready} = usePrivy();
+
+    {/* CALENDAR (real week) */}
+    <CalendarWeek privyId={user?.id || ""} ready={ready && authenticated}/>
 
     /* name anti-flicker */
     const [username, setUsername] = useState<string>(() => {
@@ -405,4 +427,72 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
             )}
         </div>
     );
+}
+
+/* ===========================
+   Calendar Week
+   =========================== */
+function CalendarWeek({ privyId, ready }: { privyId: string; ready: boolean }) {
+  const [answered, setAnswered] = useState<Set<string>>(new Set());
+
+  const today = new Date();
+  const weekStart = startOfWeekMon(today);
+  const days: Date[] = Array.from({length:7}, (_,i)=> addDays(weekStart, i));
+  const from = toYMD(days[0]);
+  const to   = toYMD(days[6]);
+  const todayYMD = toYMD(today);
+
+  useEffect(() => {
+    if (!ready || !privyId) return;
+    (async () => {
+      const r = await fetch(`/api/quiz/week?privy_id=${encodeURIComponent(privyId)}&from=${from}&to=${to}`, { cache: "no-store" });
+      if (!r.ok) return;
+      const j = await r.json();
+      setAnswered(new Set<string>(j?.days ?? []));
+    })();
+  }, [ready, privyId, from, to]);
+
+  return (
+    <div style={{ display:"flex", gap:8, margin:"12px 0 16px" }}>
+      {days.map((d, idx) => {
+        const ymd = toYMD(d);
+        const isToday = ymd === todayYMD;
+        const wasCorrect = answered.has(ymd);
+
+        let bg = "transparent";
+        let border = "1.5px solid #9BB37C";
+        let color = "#7a6a56";
+
+        if (wasCorrect && !isToday) {
+          bg = "#E6F0D9";
+          border = "1.5px solid #6B8749";
+          color = "#2f6b33";
+        }
+        if (isToday && wasCorrect) {
+          bg = "#2f6b33";
+          border = "1.5px solid #2f6b33";
+          color = "#ffffff";
+        } else if (isToday && !wasCorrect) {
+          bg = "#6D8F52";
+          border = "1.5px solid #6D8F52";
+          color = "#ffffff";
+        }
+
+        return (
+          <div
+            key={idx}
+            title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
+            style={{
+              minWidth: 54, padding: "6px 10px",
+              borderRadius: 12, background: bg, border, color,
+              fontSize: 12, textAlign: "center", lineHeight: 1.05
+            }}
+          >
+            <div>{dayNames[d.getDay()]}</div>
+            <div style={{opacity: .9}}>{String(d.getDate()).padStart(2,"0")}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
