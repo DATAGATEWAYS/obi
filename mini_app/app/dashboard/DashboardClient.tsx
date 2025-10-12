@@ -63,9 +63,6 @@ export default function DashboardClient() {
     const router = useRouter();
     const {user, authenticated, ready} = usePrivy();
 
-    {/* CALENDAR (real week) */}
-    <CalendarWeek privyId={user?.id || ""} ready={ready && authenticated}/>
-
     /* name anti-flicker */
     const [username, setUsername] = useState<string>(() => {
         if (typeof window === "undefined") return "";
@@ -155,23 +152,8 @@ export default function DashboardClient() {
                 </button>
             </div>
 
-            {/* tiny calendar dummy */}
-            <div style={{display: "flex", gap: 8, margin: "12px 0 16px"}}>
-                {["Mon 18", "Tue 19", "Wed 20", "Fri 22", "Sat 23", "Sun 24"].map((d) => (
-                    <div
-                        key={d}
-                        style={{
-                            padding: "6px 10px",
-                            borderRadius: 12,
-                            background: "#f3eed6",
-                            color: "#7a6a56",
-                            fontSize: 12,
-                        }}
-                    >
-                        {d}
-                    </div>
-                ))}
-            </div>
+            {/* CALENDAR (real week) */}
+            <CalendarWeek privyId={user?.id ?? ""} ready={ready && authenticated} />
 
             {/* QUIZ (server-driven) */}
             <QuizCard privyId={user?.id || ""} ready={ready && authenticated}/>
