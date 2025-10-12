@@ -156,17 +156,34 @@ export default function Profile() {
                 Username
             </button>
             <button
-                onClick={() => alert("Language picker TBD")}
+                disabled
                 style={{
                     width: "100%",
                     textAlign: "left",
                     padding: 16,
                     borderRadius: 16,
                     background: "#f4efdf",
-                    border: 0
+                    border: 0,
+                    position: "relative",
+                    opacity: 0.6,
+                    cursor: "not-allowed",
                 }}
+                aria-disabled="true"
             >
                 Language
+                <img
+                    src="/assets/badges/soon.svg"
+                    alt="Soon"
+                    style={{
+                        position: "absolute",
+                        right: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        height: 20,
+                        pointerEvents: "none",
+                        userSelect: "none",
+                    }}
+                />
             </button>
 
             {/* Other */}
