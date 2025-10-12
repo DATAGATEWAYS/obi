@@ -415,19 +415,35 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
    Calendar Week
    =========================== */
 function CalendarWeek({ privyId, ready }: { privyId: string; ready: boolean }) {
-  const [answered, setAnswered] = useState<Set<string>>(new Set());
+  const [answered, setAnswered] = React.useState<Set<string>>(new Set());
+
+  // helpers
+  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const toYMD = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const startOfWeekMon = (d: Date) => {
+    const t = new Date(d); t.setHours(0,0,0,0);
+    const wd = t.getDay();            // 0..6 (Sun=0)
+    const diff = (wd + 6) % 7;        // Mon=0
+    t.setDate(t.getDate() - diff);
+    return t;
+  };
+  const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(d.getDate()+n); return x; };
 
   const today = new Date();
   const weekStart = startOfWeekMon(today);
-  const days: Date[] = Array.from({length:7}, (_,i)=> addDays(weekStart, i));
+  const days: Date[] = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const from = toYMD(days[0]);
   const to   = toYMD(days[6]);
   const todayYMD = toYMD(today);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!ready || !privyId) return;
     (async () => {
-      const r = await fetch(`/api/quiz/week?privy_id=${encodeURIComponent(privyId)}&from=${from}&to=${to}`, { cache: "no-store" });
+      const r = await fetch(
+        `/api/quiz/week?privy_id=${encodeURIComponent(privyId)}&from=${from}&to=${to}`,
+        { cache: "no-store" }
+      );
       if (!r.ok) return;
       const j = await r.json();
       setAnswered(new Set<string>(j?.days ?? []));
@@ -435,46 +451,73 @@ function CalendarWeek({ privyId, ready }: { privyId: string; ready: boolean }) {
   }, [ready, privyId, from, to]);
 
   return (
-    <div style={{ display:"flex", gap:8, margin:"12px 0 16px" }}>
-      {days.map((d, idx) => {
-        const ymd = toYMD(d);
-        const isToday = ymd === todayYMD;
-        const wasCorrect = answered.has(ymd);
-
-        let bg = "transparent";
-        let border = "1.5px solid #9BB37C";
-        let color = "#7a6a56";
-
-        if (wasCorrect && !isToday) {
-          bg = "#E6F0D9";
-          border = "1.5px solid #6B8749";
-          color = "#2f6b33";
+    <>
+      <style>{`
+        .cal { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; margin:12px 0 16px; }
+        .cal-day {
+          padding: 6px 4px;
+          border-radius: 10px;
+          text-align: center;
+          line-height: 1.05;
+          font-size: 12px;
+          border: 1.5px solid #9BB37C;
+          color: #7a6a56;
+          background: transparent;
         }
-        if (isToday && wasCorrect) {
-          bg = "#2f6b33";
-          border = "1.5px solid #2f6b33";
-          color = "#ffffff";
-        } else if (isToday && !wasCorrect) {
-          bg = "#6D8F52";
-          border = "1.5px solid #6D8F52";
-          color = "#ffffff";
+        .cal-day .d { opacity: .9; font-size: 11px; }
+
+        .cal-day.correct {
+          background: #E6F0D9;
+          border-color: #6B8749;
+          color: #2f6b33;
+        }
+        /* сегодня */
+        .cal-day.today.correct {
+          background: #2f6b33;
+          border-color: #2f6b33;
+          color: #ffffff;
+        }
+        .cal-day.today:not(.correct) {
+          background: #6D8F52;
+          border-color: #6D8F52;
+          color: #ffffff;
         }
 
-        return (
-          <div
-            key={idx}
-            title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
-            style={{
-              minWidth: 54, padding: "6px 10px",
-              borderRadius: 12, background: bg, border, color,
-              fontSize: 12, textAlign: "center", lineHeight: 1.05
-            }}
-          >
-            <div>{dayNames[d.getDay()]}</div>
-            <div style={{opacity: .9}}>{String(d.getDate()).padStart(2,"0")}</div>
-          </div>
-        );
-      })}
-    </div>
+        @media (max-width: 380px) {
+          .cal { gap:4px; }
+          .cal-day { padding: 5px 2px; border-radius: 8px; font-size: 10.5px; }
+          .cal-day .d { font-size: 10px; }
+        }
+        @media (max-width: 340px) {
+          .cal-day { font-size: 9.5px; }
+          .cal-day .d { font-size: 9px; }
+        }
+      `}</style>
+
+      <div className="cal">
+        {days.map((d, i) => {
+          const ymd = toYMD(d);
+          const isToday = ymd === todayYMD;
+          const wasCorrect = answered.has(ymd);
+
+          const cls = [
+            "cal-day",
+            isToday ? "today" : "",
+            wasCorrect ? "correct" : "",
+          ].join(" ");
+
+          return (
+            <div
+              key={i}
+              className={cls}
+              title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
+            >
+              <div>{dayNames[d.getDay()]}</div>
+              <div className="d">{String(d.getDate()).padStart(2,"0")}</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
