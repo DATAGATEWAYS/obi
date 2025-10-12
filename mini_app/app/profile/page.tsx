@@ -166,7 +166,6 @@ export default function Profile() {
                     border: 0,
                     position: "relative",
                     opacity: 0.6,
-                    cursor: "not-allowed",
                 }}
                 aria-disabled="true"
             >
