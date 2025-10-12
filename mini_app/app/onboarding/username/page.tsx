@@ -47,7 +47,7 @@ export default function Username() {
   const action = isEdit ? save : next;
 
   return (
-    <main className="tg-safe" style={{ padding: 16 }}>
+    <main className="tg-safe page-inner">
       <h2>What would you like Obi to call you?</h2>
       <p>This is your nickname inside the app — you can change it anytime.</p>
 

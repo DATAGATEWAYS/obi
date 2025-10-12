@@ -130,7 +130,7 @@ export default function ChatClient() {
 }
 
     return (
-        <main className="tg-safe" style={{display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", background: "#EEE8C9"}}>
+        <main className="tg-safe page-inner">
             {/* header */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px"}}>
                 <button
