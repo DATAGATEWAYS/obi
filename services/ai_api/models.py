@@ -109,6 +109,7 @@ class QuizStateResponse(BaseModel):
     title: str | None = None
     question: str | None = None
     options: list[str] | None = None
+    selected_index: int | None = None
 
 class QuizAnswerPayload(BaseModel):
     privy_id: str

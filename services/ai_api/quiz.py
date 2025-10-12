@@ -1,7 +1,7 @@
+from datetime import date
+
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-from datetime import date
 
 from services.ai_api.db import async_session
 from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload
@@ -19,7 +19,8 @@ QUESTIONS = [
     {
         "title": "Day 2 — Web1 vs Web2",
         "question": "What best describes Web2?",
-        "options": ["A) Read-only websites", "B) Interactive platforms controlled by companies", "C) Fully decentralised social media"],
+        "options": ["A) Read-only websites", "B) Interactive platforms controlled by companies",
+                    "C) Fully decentralised social media"],
         "correct": 1,
     },
     {
@@ -37,7 +38,8 @@ QUESTIONS = [
     {
         "title": "Day 5 — Blockchain Basics",
         "question": "What is a blockchain?",
-        "options": ["A) A central company database", "B) A shared record book that everyone can verify", "C) A government registry"],
+        "options": ["A) A central company database", "B) A shared record book that everyone can verify",
+                    "C) A government registry"],
         "correct": 1,
     },
     {
@@ -49,7 +51,8 @@ QUESTIONS = [
     {
         "title": "Day 7 — Crypto 101",
         "question": "What makes cryptocurrency different from regular money?",
-        "options": ["A) It’s printed by banks", "B) It’s decentralised and not controlled by one authority", "C) It only exists as coins"],
+        "options": ["A) It’s printed by banks", "B) It’s decentralised and not controlled by one authority",
+                    "C) It only exists as coins"],
         "correct": 1,
     },
     {
@@ -61,7 +64,8 @@ QUESTIONS = [
     {
         "title": "Day 9 — Stablecoins",
         "question": "What’s unique about stablecoins like USDC?",
-        "options": ["A) They change price daily", "B) They’re tied to traditional currencies", "C) They’re only for games"],
+        "options": ["A) They change price daily", "B) They’re tied to traditional currencies",
+                    "C) They’re only for games"],
         "correct": 1,
     },
     {
@@ -79,7 +83,8 @@ QUESTIONS = [
     {
         "title": "Day 12 — Sending Crypto",
         "question": "When you send crypto, what happens?",
-        "options": ["A) A bank approves it", "B) The blockchain network validates and records it", "C) It disappears temporarily"],
+        "options": ["A) A bank approves it", "B) The blockchain network validates and records it",
+                    "C) It disappears temporarily"],
         "correct": 1,
     },
     {
@@ -112,7 +117,6 @@ async def quiz_state(privy_id: str = Query(...)):
     async with async_session() as session:
         uid = await _get_uid_by_privy(session, privy_id)
 
-        # ensure row exists
         row = await session.get(QuizProgress, uid)
         if not row:
             row = QuizProgress(user_id=uid, completed_index=-1, last_correct_date=None)
@@ -120,20 +124,23 @@ async def quiz_state(privy_id: str = Query(...)):
             await session.commit()
             await session.refresh(row)
 
-        next_index = row.completed_index + 1
-        if next_index >= TOTAL:
+        locked_today = (row.last_correct_date == today)
+
+        idx = row.completed_index if locked_today else row.completed_index + 1
+
+        if idx >= TOTAL:
             return QuizStateResponse(finished=True, locked=True, index=None, total=TOTAL)
 
-        locked = (row.last_correct_date == today)
-        q = QUESTIONS[next_index]
+        q = QUESTIONS[idx]
         return QuizStateResponse(
             finished=False,
-            locked=locked,
-            index=next_index,
+            locked=locked_today,
+            index=idx,
             total=TOTAL,
             title=q["title"],
             question=q["question"],
             options=q["options"],
+            selected_index=(q["correct"] if locked_today else None),
         )
 
 
