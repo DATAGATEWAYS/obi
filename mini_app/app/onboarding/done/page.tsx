@@ -126,7 +126,7 @@ export default function Done() {
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
     return (
-        <main style={{padding: 16, textAlign: "center"}}>
+        <main className="tg-safe" style={{padding: 16, textAlign: "center"}}>
             <h2>You’re all set{displayName ? `, ${displayName}` : ""}</h2>
 
             <p style={{marginTop: 8}}>

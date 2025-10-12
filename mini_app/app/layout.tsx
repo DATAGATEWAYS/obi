@@ -8,14 +8,18 @@ export const metadata = { title: "Obi" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+      <html lang="en">
+      <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+          <title>Obi</title>
+      </head>
       <body>
-        <Script
+      <Script
           src="https://telegram.org/js/telegram-web-app.js"
           strategy="beforeInteractive"
-        />
-        <Providers>{children}</Providers>
+      />
+      <Providers>{children}</Providers>
       </body>
-    </html>
+      </html>
   );
 }

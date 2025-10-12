@@ -120,7 +120,7 @@ export default function DashboardClient() {
     );
 
     return (
-        <main style={{padding: 16, maxWidth: 420, margin: "0 auto"}}>
+        <main className="tg-safe" style={{padding: 16, maxWidth: 420, margin: "0 auto"}}>
             <style>{`
         @keyframes skeleton {
           0% { background-position: 100% 0; }
