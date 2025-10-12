@@ -1,174 +1,333 @@
 "use client";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
+/* ---------- utils ---------- */
 function titleByHour(h: number) {
-    if (h < 12) return "Good morning";
-    if (h < 18) return "Good afternoon";
-    return "Good evening";
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+function sanitize(s?: string | null) {
+  return (s ?? "").replace(/^@/, "").trim();
 }
 
-function sanitize(s?: string | null) {
-    return (s ?? "").replace(/^@/, "").trim();
-}
+/* ---------- types for quiz api ---------- */
+type QuizState = {
+  finished: boolean;
+  locked: boolean;
+  index: number | null;
+  total: number;
+  title?: string | null;
+  question?: string | null;
+  options?: string[] | null;
+};
 
 export default function DashboardClient() {
-    const router = useRouter();
-    const {user, authenticated, ready} = usePrivy();
-    const [username, setUsername] = useState<string>(() => {
-        if (typeof window === "undefined") return "";
-        return (
-            sanitize(sessionStorage.getItem("onb_username")) ||
-            sanitize(localStorage.getItem("onb_username")) ||
-            ""
-        );
-    });
-    const [nameLoaded, setNameLoaded] = useState<boolean>(() => {
-        if (typeof window === "undefined") return false;
-        const cached =
-            sessionStorage.getItem("onb_username") ||
-            localStorage.getItem("onb_username");
-        return !!cached;
-    });
+  const router = useRouter();
+  const {user, authenticated, ready} = usePrivy();
 
-    useEffect(() => {
-        if (!ready || !authenticated || nameLoaded) return;
-
-        const privyId = user?.id;
-        if (!privyId) return;
-
-        (async () => {
-            try {
-                const r = await fetch(
-                    `/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`,
-                    {cache: "no-store"}
-                );
-                if (r.ok) {
-                    const j = await r.json();
-                    const name = sanitize(j?.username);
-                    if (name) {
-                        setUsername(name);
-                        localStorage.setItem("onb_username", name);
-                    }
-                }
-            } finally {
-                setNameLoaded(true);
-            }
-        })();
-    }, [ready, authenticated, user, nameLoaded]);
-
-    const greetTitle = titleByHour(new Date().getHours());
-
-    const Skeleton = (
-        <span
-            aria-hidden
-            style={{
-                display: "inline-block",
-                width: 90,
-                height: "1em",
-                borderRadius: 6,
-                background:
-                    "linear-gradient(90deg, #eee 25%, #f6f6f6 37%, #eee 63%)",
-                backgroundSize: "400% 100%",
-                animation: "skeleton 1.2s ease-in-out infinite",
-            }}
-        />
-    );
-
+  /* name anti-flicker (as before) */
+  const [username, setUsername] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
     return (
-        <main style={{padding: 16, maxWidth: 420, margin: "0 auto"}}>
-            <style>{`
+      sanitize(sessionStorage.getItem("onb_username")) ||
+      sanitize(localStorage.getItem("onb_username")) ||
+      ""
+    );
+  });
+  const [nameLoaded, setNameLoaded] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const cached =
+      sessionStorage.getItem("onb_username") ||
+      localStorage.getItem("onb_username");
+    return !!cached;
+  });
+  useEffect(() => {
+    if (!ready || !authenticated || nameLoaded) return;
+    const privyId = user?.id;
+    if (!privyId) return;
+    (async () => {
+      try {
+        const r = await fetch(
+          `/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`,
+          {cache: "no-store"}
+        );
+        if (r.ok) {
+          const j = await r.json();
+          const name = sanitize(j?.username);
+          if (name) {
+            setUsername(name);
+            localStorage.setItem("onb_username", name);
+          }
+        }
+      } finally {
+        setNameLoaded(true);
+      }
+    })();
+  }, [ready, authenticated, user, nameLoaded]);
+
+  const greetTitle = titleByHour(new Date().getHours());
+  const Skeleton = (
+    <span
+      aria-hidden
+      style={{
+        display: "inline-block",
+        width: 90,
+        height: "1em",
+        borderRadius: 6,
+        background: "linear-gradient(90deg, #eee 25%, #f6f6f6 37%, #eee 63%)",
+        backgroundSize: "400% 100%",
+        animation: "skeleton 1.2s ease-in-out infinite",
+      }}
+    />
+  );
+
+  return (
+    <main style={{padding: 16, maxWidth: 420, margin: "0 auto"}}>
+      <style>{`
         @keyframes skeleton {
           0% { background-position: 100% 0; }
           100% { background-position: 0 0; }
         }
       `}</style>
 
-            <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>
-                    {greetTitle},{" "}
-                    {nameLoaded ? (username || "friend") : Skeleton}!
-                </h2>
+      {/* greeting + profile */}
+      <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+        <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>
+          {greetTitle},{" "}
+          {nameLoaded ? (username || "friend") : Skeleton}!
+        </h2>
+        <button
+          onClick={() => router.push("/profile")}
+          aria-label="Open profile"
+          title="Open profile"
+          style={{
+            fontSize: 28,
+            lineHeight: 1,
+            background: "none",
+            border: 0,
+            cursor: "pointer",
+            padding: 4,
+            borderRadius: 8,
+          }}
+        >
+          🕶️
+        </button>
+      </div>
 
-                <button
-                    onClick={() => router.push("/profile")}
-                    aria-label="Open profile"
-                    title="Open profile"
-                    style={{
-                        fontSize: 28,
-                        lineHeight: 1,
-                        background: "none",
-                        border: 0,
-                        cursor: "pointer",
-                        padding: 4,
-                        borderRadius: 8,
-                    }}
-                >
-                    🕶️
-                </button>
-            </div>
+      {/* tiny calendar dummie */}
+      <div style={{display: "flex", gap: 8, margin: "12px 0 16px"}}>
+        {["Mon 18", "Tue 19", "Wed 20", "Fri 22", "Sat 23", "Sun 24"].map((d) => (
+          <div
+            key={d}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 12,
+              background: "#f3eed6",
+              color: "#7a6a56",
+              fontSize: 12,
+            }}
+          >
+            {d}
+          </div>
+        ))}
+      </div>
 
-            {/* calendar dummie */}
-            <div style={{display: "flex", gap: 8, margin: "12px 0 16px"}}>
-                {["Mon 18", "Tue 19", "Wed 20", "Fri 22", "Sat 23", "Sun 24"].map((d) => (
-                    <div key={d}
-                         style={{
-                             padding: "6px 10px",
-                             borderRadius: 12,
-                             background: "#f3eed6",
-                             color: "#7a6a56",
-                             fontSize: 12
-                         }}>{d}</div>
-                ))}
-            </div>
+      {/* QUIZ (server-driven) */}
+      <QuizCard privyId={user?.id || ""} ready={ready && authenticated} />
 
-            {/* Quiz card */}
-            <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
-                <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
-                <p style={{margin: "8px 0 12px", color: "#4e5939"}}>What is a crypto wallet used for?</p>
-                <ul style={{listStyle: "none", padding: 0, margin: 0, color: "#5b584f"}}>
-                    <li>○ To store and manage your crypto assets</li>
-                    <li>○ To print out paper cash</li>
-                    <li>○ To connect your phone to Wi-Fi</li>
-                </ul>
-            </div>
+      {/* CTA */}
+      <a
+        href="/chat"
+        style={{
+          display: "block",
+          textAlign: "center",
+          marginTop: 16,
+          padding: 14,
+          borderRadius: 12,
+          background: "#2f6b33",
+          color: "#fff",
+          textDecoration: "none",
+        }}
+      >
+        Ask a question
+      </a>
 
-            <a href="/chat"
-               style={{
-                   display: "block",
-                   textAlign: "center",
-                   marginTop: 16,
-                   padding: 14,
-                   borderRadius: 12,
-                   background: "#2f6b33",
-                   color: "#fff",
-                   textDecoration: "none"
-               }}>
-                Ask a question
-            </a>
+      {/* Explore */}
+      <h4 style={{marginTop: 24, color: "#7a6a56"}}>Explore Polygon Community</h4>
+      <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
+        <a
+          href="#"
+          style={{
+            padding: 24,
+            borderRadius: 16,
+            background: "#fff",
+            textAlign: "center",
+            color: "#6d7d4f",
+            textDecoration: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+          }}
+        >
+          Grants
+        </a>
+        <a
+          href="#"
+          style={{
+            padding: 24,
+            borderRadius: 16,
+            background: "#fff",
+            textAlign: "center",
+            color: "#6d7d4f",
+            textDecoration: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+          }}
+        >
+          dApps
+        </a>
+      </div>
+    </main>
+  );
+}
 
-            <h4 style={{marginTop: 24, color: "#7a6a56"}}>Explore Polygon Community</h4>
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
-                <a href="#" style={{
-                    padding: 24,
-                    borderRadius: 16,
-                    background: "#fff",
-                    textAlign: "center",
-                    color: "#6d7d4f",
-                    textDecoration: "none",
-                    boxShadow: "0 2px 8px rgba(0,0,0,.06)"
-                }}>Grants</a>
-                <a href="#" style={{
-                    padding: 24,
-                    borderRadius: 16,
-                    background: "#fff",
-                    textAlign: "center",
-                    color: "#6d7d4f",
-                    textDecoration: "none",
-                    boxShadow: "0 2px 8px rgba(0,0,0,.06)"
-                }}>dApps</a>
-            </div>
-        </main>
+/* ===========================
+   Quiz Card (DB-backed)
+   =========================== */
+function QuizCard({ privyId, ready }: { privyId: string; ready: boolean }) {
+  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<QuizState | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [banner, setBanner] = useState<"correct" | "wrong" | "locked" | "finished" | null>(null);
+
+  useEffect(() => {
+    if (!ready || !privyId) return;
+    (async () => {
+      setLoading(true);
+      try {
+        const r = await fetch(`/api/quiz/state?privy_id=${encodeURIComponent(privyId)}`, { cache: "no-store" });
+        const s: QuizState = await r.json();
+        setState(s);
+        if (s.finished) setBanner("finished");
+        else if (s.locked) setBanner("locked");
+        else setBanner(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [ready, privyId]);
+
+  if (!ready || !privyId) {
+    return (
+      <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
+        <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
+        <p style={{margin: "8px 0 12px"}}>Loading…</p>
+      </div>
     );
+  }
+
+  if (loading || !state) {
+    return (
+      <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
+        <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
+        <p style={{margin: "8px 0 12px"}}>Loading…</p>
+      </div>
+    );
+  }
+
+  if (state.finished) {
+    return (
+      <div style={{background: "#fff", borderRadius: 18, padding: 16, border: "4px solid #b58752", boxShadow: "0 2px 0 rgba(0,0,0,.08)"}}>
+        <div style={{ fontWeight: 700, color: "#6b5235", marginBottom: 8 }}>Quiz of the day:</div>
+        <div style={{ padding: 12, borderRadius: 12, background: "#eef7e8", color: "#2f6b33", fontWeight: 700, textAlign: "center" }}>
+          Hooray! You’ve answered all questions 🎉
+        </div>
+      </div>
+    );
+  }
+
+  const disabled = state.locked || banner === "correct";
+
+  async function choose(i: number) {
+    if (disabled) return;
+    setSelected(i);
+    const r = await fetch("/api/quiz/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ privy_id: privyId, option_index: i }),
+    });
+    const j = await r.json();
+    if (j?.correct) {
+      setBanner("correct");
+      setState(s => s ? { ...s, locked: true } : s);
+    } else if (j?.locked) {
+      setBanner("locked");
+      setState(s => s ? { ...s, locked: true } : s);
+    } else {
+      setBanner("wrong");
+    }
+  }
+
+  return (
+    <div style={{background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
+      <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
+      <p style={{margin: "8px 0 12px", color: "#4e5939"}}>
+        {state.question}
+      </p>
+
+      <div style={{ display: "grid", gap: 10 }}>
+        {(state.options || []).map((opt, i) => (
+          <label
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "#f7f7f7",
+              cursor: disabled ? "default" : "pointer",
+              opacity: disabled && selected !== i ? 0.95 : 1
+            }}
+          >
+            <input
+              type="radio"
+              name={`q-${state.index}`}
+              checked={selected === i}
+              disabled={disabled}
+              onChange={() => choose(i)}
+              style={{ accentColor: "#2f6b33", width: 16, height: 16 }}
+            />
+            <span>{opt}</span>
+          </label>
+        ))}
+      </div>
+
+      {/* banners */}
+      {banner === "correct" && (
+        <div style={{
+          marginTop: 10, padding: "10px 12px", borderRadius: 10,
+          background: "#dff3d9", color: "#2f6b33", textAlign: "center", fontWeight: 700
+        }}>
+          You were right! Claim reward here
+        </div>
+      )}
+      {banner === "wrong" && (
+        <div style={{
+          marginTop: 10, padding: "10px 12px", borderRadius: 10,
+          background: "#7e2b2b", color: "#fff", textAlign: "center", fontWeight: 700
+        }}>
+          Wrong answer, try again
+        </div>
+      )}
+      {banner === "locked" && (
+        <div style={{
+          marginTop: 10, padding: "10px 12px", borderRadius: 10,
+          background: "#eef7e8", color: "#2f6b33", textAlign: "center", fontWeight: 700
+        }}>
+          You’ve already answered today
+        </div>
+      )}
+    </div>
+  );
 }
