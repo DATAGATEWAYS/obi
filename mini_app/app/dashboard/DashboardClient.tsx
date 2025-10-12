@@ -290,7 +290,12 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
         );
     }
 
-    const disabled = state.locked || banner === "correct";
+    function handleTryAgain() {
+        setSelected(null);
+        setBanner(null);
+    }
+
+    const disabled = state.locked || banner === "correct" || banner === "wrong";
 
     async function choose(i: number) {
         if (disabled) return;
@@ -363,7 +368,9 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 <div style={{
                     marginTop: 10, padding: "10px 12px", borderRadius: 10,
                     background: "#7e2b2b", color: "#fff", textAlign: "center", fontWeight: 700
-                }}>
+                }}
+                onClick={handleTryAgain}
+                >
                     Wrong answer, try again
                 </div>
             )}
