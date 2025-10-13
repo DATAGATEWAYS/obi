@@ -238,8 +238,7 @@ export default function Profile() {
                     padding: 16,
                     borderRadius: 16,
                     background: "#f4efdf",
-                    border: 0,
-                    marginBottom: 12,
+                    border: 0
                 }}
             >
                 Go to profileTest
