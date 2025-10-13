@@ -166,6 +166,7 @@ export default function Profile() {
                     border: 0,
                     position: "relative",
                     opacity: 0.6,
+                    cursor: "default",
                 }}
                 aria-disabled="true"
             >
@@ -227,6 +228,21 @@ export default function Profile() {
                 }}
             >
                 Log out
+            </button>
+
+            <button
+                onClick={() => router.push("/profileTest")}
+                style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: 16,
+                    borderRadius: 16,
+                    background: "#f4efdf",
+                    border: 0,
+                    marginBottom: 12,
+                }}
+            >
+                Go to profileTest
             </button>
         </main>
     );
