@@ -124,9 +124,6 @@ small {
 .img-button img{ display:block; }
 
 .img-button.curious{
-  position:absolute;
-  top:0;
-  right:16px;
   width:46px;
   height:36px;
 }
