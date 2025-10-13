@@ -135,15 +135,17 @@ export default function DashboardClient() {
                     {greetTitle},{" "}
                     {nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
-                <button
-                    type="button"
-                    onClick={() => router.push("/profile")}
-                    aria-label="Open profile"
-                    title="Open profile"
-                    className="img-button"
-                >
-                    <img src="/profile/curious.png" alt="Open profile"/>
-                </button>
+                <div className="header-wrap">
+                    <button
+                        type="button"
+                        onClick={() => router.push("/profile")}
+                        aria-label="Open profile"
+                        title="Open profile"
+                        className="img-button curious"
+                    >
+                        <img src="/profile/curious.png" alt="Open profile"/>
+                    </button>
+                </div>
             </div>
 
             {/* CALENDAR (real week) */}
@@ -409,45 +411,50 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
 /* ===========================
    Calendar Week
    =========================== */
-function CalendarWeek({ privyId, ready }: { privyId: string; ready: boolean }) {
-  const [answered, setAnswered] = React.useState<Set<string>>(new Set());
+function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
+    const [answered, setAnswered] = React.useState<Set<string>>(new Set());
 
-  // helpers
-  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  const toYMD = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-  const startOfWeekMon = (d: Date) => {
-    const t = new Date(d); t.setHours(0,0,0,0);
-    const wd = t.getDay();            // 0..6 (Sun=0)
-    const diff = (wd + 6) % 7;        // Mon=0
-    t.setDate(t.getDate() - diff);
-    return t;
-  };
-  const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(d.getDate()+n); return x; };
+    // helpers
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const toYMD = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const startOfWeekMon = (d: Date) => {
+        const t = new Date(d);
+        t.setHours(0, 0, 0, 0);
+        const wd = t.getDay();            // 0..6 (Sun=0)
+        const diff = (wd + 6) % 7;        // Mon=0
+        t.setDate(t.getDate() - diff);
+        return t;
+    };
+    const addDays = (d: Date, n: number) => {
+        const x = new Date(d);
+        x.setDate(d.getDate() + n);
+        return x;
+    };
 
-  const today = new Date();
-  const weekStart = startOfWeekMon(today);
-  const days: Date[] = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const from = toYMD(days[0]);
-  const to   = toYMD(days[6]);
-  const todayYMD = toYMD(today);
+    const today = new Date();
+    const weekStart = startOfWeekMon(today);
+    const days: Date[] = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
+    const from = toYMD(days[0]);
+    const to = toYMD(days[6]);
+    const todayYMD = toYMD(today);
 
-  React.useEffect(() => {
-    if (!ready || !privyId) return;
-    (async () => {
-      const r = await fetch(
-        `/api/quiz/week?privy_id=${encodeURIComponent(privyId)}&from=${from}&to=${to}`,
-        { cache: "no-store" }
-      );
-      if (!r.ok) return;
-      const j = await r.json();
-      setAnswered(new Set<string>(j?.days ?? []));
-    })();
-  }, [ready, privyId, from, to]);
+    React.useEffect(() => {
+        if (!ready || !privyId) return;
+        (async () => {
+            const r = await fetch(
+                `/api/quiz/week?privy_id=${encodeURIComponent(privyId)}&from=${from}&to=${to}`,
+                {cache: "no-store"}
+            );
+            if (!r.ok) return;
+            const j = await r.json();
+            setAnswered(new Set<string>(j?.days ?? []));
+        })();
+    }, [ready, privyId, from, to]);
 
-  return (
-    <>
-      <style>{`
+    return (
+        <>
+            <style>{`
         .cal { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; margin:12px 0 16px; }
         .cal-day {
           padding: 6px 4px;
@@ -489,30 +496,30 @@ function CalendarWeek({ privyId, ready }: { privyId: string; ready: boolean }) {
         }
       `}</style>
 
-      <div className="cal">
-        {days.map((d, i) => {
-          const ymd = toYMD(d);
-          const isToday = ymd === todayYMD;
-          const wasCorrect = answered.has(ymd);
+            <div className="cal">
+                {days.map((d, i) => {
+                    const ymd = toYMD(d);
+                    const isToday = ymd === todayYMD;
+                    const wasCorrect = answered.has(ymd);
 
-          const cls = [
-            "cal-day",
-            isToday ? "today" : "",
-            wasCorrect ? "correct" : "",
-          ].join(" ");
+                    const cls = [
+                        "cal-day",
+                        isToday ? "today" : "",
+                        wasCorrect ? "correct" : "",
+                    ].join(" ");
 
-          return (
-            <div
-              key={i}
-              className={cls}
-              title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
-            >
-              <div>{dayNames[d.getDay()]}</div>
-              <div className="d">{String(d.getDate()).padStart(2,"0")}</div>
+                    return (
+                        <div
+                            key={i}
+                            className={cls}
+                            title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
+                        >
+                            <div>{dayNames[d.getDay()]}</div>
+                            <div className="d">{String(d.getDate()).padStart(2, "0")}</div>
+                        </div>
+                    );
+                })}
             </div>
-          );
-        })}
-      </div>
-    </>
-  );
+        </>
+    );
 }
