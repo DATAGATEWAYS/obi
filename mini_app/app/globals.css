@@ -108,6 +108,8 @@ small {
 
 .page-inner { max-width: 420px; margin: 0 auto; padding: 0 16px 16px; }
 
+/*========== dashboard ==========*/
+
 .header-wrap { position: relative; }
 
 .img-button{
@@ -133,10 +135,52 @@ small {
   object-fit:contain;
 }
 
+/*========== profile ==========*/
+
 .curious-icon{
   width:46px;
   height:36px;
   flex:0 0 auto;
   object-fit:contain;
   cursor:pointer;
+}
+
+.shell-sticker {
+  height: 225px;
+  margin-left: 47.0px;
+  margin-top: 30.1px;
+  position: relative;
+  width: 225px;
+}
+
+.vector {
+  height: 237px;
+  left: -5px;
+  position: absolute;
+  top: -4px;
+  width: 237px;
+}
+
+.img {
+  height: 199px;
+  left: 12px;
+  position: absolute;
+  top: 13px;
+  width: 199px;
+}
+
+.group-2 {
+  height: 65px;
+  left: 57px;
+  position: absolute;
+  top: 6px;
+  width: 68px;
+}
+
+.group-3 {
+  height: 65px;
+  left: 128px;
+  position: absolute;
+  top: 81px;
+  width: 68px;
 }

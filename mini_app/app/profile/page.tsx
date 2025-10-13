@@ -101,48 +101,11 @@ export default function Profile() {
             </div>
 
             {/* turtle back*/}
-            <div
-                style={{
-                    marginTop: 16,
-                    background: "#9fbc78",
-                    height: 220,
-                    borderRadius: 24,
-                    clipPath:
-                        "polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%)",
-                    position: "relative",
-                    boxShadow: "inset 0 0 0 6px rgba(0,0,0,0.05)",
-                }}
-            >
-                <div
-                    style={{
-                        position: "absolute",
-                        top: 26,
-                        left: 26,
-                        background: "#d9c1ef",
-                        color: "#5a3f75",
-                        borderRadius: 16,
-                        padding: "10px 12px",
-                        fontSize: 12,
-                        fontWeight: 600,
-                    }}
-                >
-                    question asked
-                </div>
-                <div
-                    style={{
-                        position: "absolute",
-                        right: 32,
-                        top: 84,
-                        background: "#c7d3ff",
-                        color: "#3851a3",
-                        borderRadius: 16,
-                        padding: "10px 12px",
-                        fontSize: 12,
-                        fontWeight: 600,
-                    }}
-                >
-                    quiz
-                </div>
+            <div className="shell-sticker">
+                <img className="vector" alt="Vector" src="/profile/Vector%201.png"/>
+                <img className="img" alt="Group" src="/profile/Group%203.png"/>
+                <img className="group-2" alt="Group 28" src="/profile/Group%2028.svg"/>
+                <img className="group-3" alt="Group 29" src="/profile/Group%2029.svg"/>
             </div>
 
             {/* Account Settings */}
