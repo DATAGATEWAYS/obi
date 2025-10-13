@@ -120,7 +120,7 @@ export default function DashboardClient() {
     );
 
     return (
-        <main className="tg-safe page-inner">
+        <main className="page-inner">
             <style>{`
         @keyframes skeleton {
           0% { background-position: 100% 0; }

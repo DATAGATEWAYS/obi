@@ -25,7 +25,7 @@ export default function Topics() {
   const toggle = (k: string) => setTopics((p) => ({ ...p, [k]: !p[k] }));
 
   return (
-    <main className="tg-safe page-inner">
+    <main className="page-inner">
       <button onClick={() => router.back()} aria-label="Back" style={{ marginBottom: 12 }}>← Back</button>
       <h2>What brings you here?</h2>
       <p>Choose what you want to chat with Obi about.</p>

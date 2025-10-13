@@ -11,7 +11,7 @@ const vector1 = "/profile/Vector%201.png";
 
 export default function ProfileTest() {
     return (
-        <main className="tg-safe page-inner">
+        <main className="page-inner">
             <div className={s.profile}>
                 <img className={s.IMG} alt="Img" src={IMG3274}/>
 

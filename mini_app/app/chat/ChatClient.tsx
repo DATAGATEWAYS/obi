@@ -130,7 +130,7 @@ export default function ChatClient() {
 }
 
     return (
-        <main className="tg-safe page-inner">
+        <main className="page-inner">
             {/* header */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px"}}>
                 <button
