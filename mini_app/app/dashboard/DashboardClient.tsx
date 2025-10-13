@@ -142,6 +142,7 @@ export default function DashboardClient() {
                     className="curious"
                     style={{
                         cursor: "pointer",
+                        background: "none",
                     }}
                 >
                     <img className="curious" alt="Curious" src="/profile/curious.png"/>
