@@ -126,7 +126,7 @@ export default function Done() {
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
     return (
-        <main className="page-inner">
+        <main className="page-inner" style={{textAlign: "center"}}>
             <h2>You’re all set{displayName ? `, ${displayName}` : ""}</h2>
 
             <p style={{marginTop: 8}}>

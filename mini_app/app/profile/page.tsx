@@ -188,61 +188,63 @@ export default function Profile() {
 
             {/* Other */}
             <h4 style={{marginTop: 24, color: "#7a6a56"}}>Other</h4>
-            <button
-                onClick={() => router.push("/dashboard")}
-                style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0,
-                    marginBottom: 12
-                }}
-            >
-                To dashboard
-            </button>
-            <button
-                onClick={() => alert("What is Obi? TBD")}
-                style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0,
-                    marginBottom: 12
-                }}
-            >
-                What is Obi?
-            </button>
-            <button
-                onClick={() => logout?.()}
-                style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0
-                }}
-            >
-                Log out
-            </button>
+            <div style={{display: "grid", gap: 12}}>
+                <button
+                    onClick={() => router.push("/dashboard")}
+                    style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: 16,
+                        borderRadius: 16,
+                        background: "#f4efdf",
+                        border: 0
+                    }}
+                >
+                    To dashboard
+                </button>
 
-            <button
-                onClick={() => router.push("/profileTest")}
-                style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0
-                }}
-            >
-                Go to profileTest
-            </button>
+                <button
+                    onClick={() => alert("What is Obi? TBD")}
+                    style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: 16,
+                        borderRadius: 16,
+                        background: "#f4efdf",
+                        border: 0
+                    }}
+                >
+                    What is Obi?
+                </button>
+
+                <button
+                    onClick={() => logout?.()}
+                    style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: 16,
+                        borderRadius: 16,
+                        background: "#f4efdf",
+                        border: 0
+                    }}
+                >
+                    Log out
+                </button>
+
+                <button
+                    onClick={() => router.push("/profileTest")}
+                    style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: 16,
+                        borderRadius: 16,
+                        background: "#f4efdf",
+                        border: 0
+                    }}
+                >
+                    Go to profileTest
+                </button>
+            </div>
         </main>
     );
 }
