@@ -132,3 +132,11 @@ small {
   height:100%;
   object-fit:contain;
 }
+
+.curious-icon{
+  width:46px;
+  height:36px;
+  flex:0 0 auto;
+  object-fit:contain;
+  cursor:pointer;
+}

@@ -92,10 +92,11 @@ export default function Profile() {
                     {greetTitle},{" "}
                     {nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
-                <img className="curious" alt="Curious" src="/profile/curious.png"
-                     style={{
-                        cursor: "pointer",
-                    }}
+                <img
+                    className="curious-icon"
+                    src="/profile/curious.png"
+                    alt="Open profile"
+                    onClick={() => router.push("/dashboard")}
                 />
             </div>
 
@@ -155,7 +156,8 @@ export default function Profile() {
                     borderRadius: 16,
                     background: "#f4efdf",
                     border: 0,
-                    marginBottom: 12
+                    marginBottom: 12,
+                    color: "#6C584C"
                 }}
             >
                 Username
@@ -172,6 +174,7 @@ export default function Profile() {
                     position: "relative",
                     opacity: 0.6,
                     cursor: "default",
+                    color: "#6C584C"
                 }}
                 aria-disabled="true"
             >
@@ -202,7 +205,8 @@ export default function Profile() {
                         padding: 16,
                         borderRadius: 16,
                         background: "#f4efdf",
-                        border: 0
+                        border: 0,
+                        color: "#6C584C"
                     }}
                 >
                     To dashboard
@@ -216,7 +220,8 @@ export default function Profile() {
                         padding: 16,
                         borderRadius: 16,
                         background: "#f4efdf",
-                        border: 0
+                        border: 0,
+                        color: "#6C584C"
                     }}
                 >
                     What is Obi?
@@ -230,7 +235,8 @@ export default function Profile() {
                         padding: 16,
                         borderRadius: 16,
                         background: "#f4efdf",
-                        border: 0
+                        border: 0,
+                        color: "#6C584C"
                     }}
                 >
                     Log out
@@ -244,7 +250,8 @@ export default function Profile() {
                         padding: 16,
                         borderRadius: 16,
                         background: "#f4efdf",
-                        border: 0
+                        border: 0,
+                        color: "#6C584C"
                     }}
                 >
                     Go to profileTest
