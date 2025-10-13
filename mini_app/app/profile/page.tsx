@@ -109,7 +109,7 @@ export default function Profile() {
             </div>
 
             {/* Account Settings */}
-            <h4 style={{marginTop: 24, color: "#95654D"}}>Account Settings</h4>
+            <h4 style={{marginTop: 50, color: "#95654D"}}>Account Settings</h4>
             <button
                 onClick={() => router.push("/onboarding/username?edit=1")}
                 style={{
