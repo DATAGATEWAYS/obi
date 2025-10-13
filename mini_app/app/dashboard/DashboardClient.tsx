@@ -10,7 +10,7 @@ const COLORS = {
     quizBorder: "#b58752",
     optionBg: "#F0F5E6",
     optionBorder: "#D6E3C7",
-    optionText: "#2B2B2B",
+    optionText: "#6C584C",
     optionBgSelected: "#E6F0D9",
     optionBorderSelected: "#6B8749",
     radioAccent: "#2F6B33",
