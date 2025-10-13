@@ -1,7 +1,8 @@
 "use client";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
+import s from "../profileTest/page.module.css";
 
 function sanitize(s?: string | null) {
     return (s ?? "").replace(/^@/, "").trim();
@@ -87,11 +88,15 @@ export default function Profile() {
       `}</style>
 
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>
+                <h2 style={{color: "#859E4F", fontWeight: 700, margin: 0}}>
                     {greetTitle},{" "}
                     {nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
-                <div aria-hidden style={{fontSize: 28}}>🕶️</div>
+                <img className="curious" alt="Curious" src="/profile/curious.png"
+                     style={{
+                        cursor: "pointer",
+                    }}
+                />
             </div>
 
             {/* turtle back*/}
@@ -140,7 +145,7 @@ export default function Profile() {
             </div>
 
             {/* Account Settings */}
-            <h4 style={{marginTop: 24, color: "#7a6a56"}}>Account Settings</h4>
+            <h4 style={{marginTop: 24, color: "#95654D"}}>Account Settings</h4>
             <button
                 onClick={() => router.push("/onboarding/username?edit=1")}
                 style={{
@@ -187,8 +192,8 @@ export default function Profile() {
             </button>
 
             {/* Other */}
-            <h4 style={{marginTop: 24, color: "#7a6a56"}}>Other</h4>
-            <div style={{display: "grid", gap: 12}}>
+            <h4 style={{marginTop: 24, color: "#95654D"}}>Other</h4>
+            <div style={{display: "grid", gap: 12, color: "#6c584c"}}>
                 <button
                     onClick={() => router.push("/dashboard")}
                     style={{

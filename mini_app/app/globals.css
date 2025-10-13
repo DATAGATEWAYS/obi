@@ -107,3 +107,12 @@ small {
 }
 
 .page-inner { max-width: 420px; margin: 0 auto; padding: 0 16px 16px; }
+
+.curious {
+  aspect-ratio: 1.28;
+  height: 36px;
+  left: 223px;
+  position: absolute;
+  top: 0;
+  width: 46px;
+}

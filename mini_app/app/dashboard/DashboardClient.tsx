@@ -2,6 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
+import s from "../profileTest/page.module.css";
 
 /* ---------- palette for good contrast (works in dark TG too) ---------- */
 const COLORS = {
@@ -130,7 +131,7 @@ export default function DashboardClient() {
 
             {/* greeting + profile */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <h2 style={{color: "#6d7d4f", fontWeight: 700, margin: 0}}>
+                <h2 style={{color: "#859E4F", fontWeight: 700, margin: 0}}>
                     {greetTitle},{" "}
                     {nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
@@ -138,17 +139,12 @@ export default function DashboardClient() {
                     onClick={() => router.push("/profile")}
                     aria-label="Open profile"
                     title="Open profile"
+                    className="curious"
                     style={{
-                        fontSize: 28,
-                        lineHeight: 1,
-                        background: "none",
-                        border: 0,
                         cursor: "pointer",
-                        padding: 4,
-                        borderRadius: 8,
                     }}
                 >
-                    🕶️
+                    <img className="curious" alt="Curious" src="/profile/curious.png"/>
                 </button>
             </div>
 
@@ -249,7 +245,8 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 background: COLORS.cardBg,
                 borderRadius: 16,
                 padding: 16,
-                boxShadow: "0 2px 8px rgba(0,0,0,.06)"
+                boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+                color: "#6c584c"
             }}>
                 <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
                 <p style={{margin: "8px 0 12px"}}>Loading…</p>
@@ -324,10 +321,10 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
 
     return (
         <div style={{background: COLORS.cardBg, borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
-            <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
-            <p style={{margin: "8px 0 12px", color: "#4e5939"}}>{state.question}</p>
+            <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
+            <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
 
-            <div style={{display: "grid", gap: 10}}>
+            <div style={{display: "grid", gap: 10, color: "#6C584C"}}>
                 {(state.options || []).map((opt, i) => {
                     const isSelected = selected === i;
                     return (
