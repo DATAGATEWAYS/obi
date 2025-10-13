@@ -136,21 +136,18 @@ export default function DashboardClient() {
                     {nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
                 <button
+                    type="button"
                     onClick={() => router.push("/profile")}
                     aria-label="Open profile"
                     title="Open profile"
-                    className="curious"
-                    style={{
-                        cursor: "pointer",
-                        background: "none",
-                    }}
+                    className="img-button"
                 >
-                    <img className="curious" alt="Curious" src="/profile/curious.png"/>
+                    <img src="/profile/curious.png" alt="Open profile"/>
                 </button>
             </div>
 
             {/* CALENDAR (real week) */}
-            <CalendarWeek privyId={user?.id ?? ""} ready={ready && authenticated} />
+            <CalendarWeek privyId={user?.id ?? ""} ready={ready && authenticated}/>
 
             {/* QUIZ (server-driven) */}
             <QuizCard privyId={user?.id || ""} ready={ready && authenticated}/>

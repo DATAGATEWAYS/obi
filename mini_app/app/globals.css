@@ -111,8 +111,21 @@ small {
 .curious {
   aspect-ratio: 1.28;
   height: 36px;
-  left: 357px;
+  left: 340px;
   position: absolute;
   top: 0;
   width: 46px;
 }
+
+.img-button{
+  display:inline-flex;
+  padding:0;
+  border:0;
+  background:transparent;
+  line-height:0;
+  -webkit-appearance:none;
+  appearance:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.img-button:focus{ outline:none; }
+.img-button img{ display:block; }
