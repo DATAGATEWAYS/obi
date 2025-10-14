@@ -3,6 +3,12 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/onchain/artifacts" />
+      <excludeFolder url="file://$MODULE_DIR$/onchain/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/onchain/deployments" />
+      <excludeFolder url="file://$MODULE_DIR$/onchain/ignition" />
+      <excludeFolder url="file://$MODULE_DIR$/onchain/test" />
+      <excludeFolder url="file://$MODULE_DIR$/onchain/typechain-types" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 (obi)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

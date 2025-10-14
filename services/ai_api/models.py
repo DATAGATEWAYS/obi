@@ -120,3 +120,20 @@ class QuizAnswer(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     answered_on: Mapped[str] = mapped_column(Date, primary_key=True)
     quiz_index: Mapped[int]
+
+class NFTMint(Base):
+    __tablename__ = "nft_mints"
+
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    )
+    quiz_index: Mapped[int] = mapped_column(primary_key=True)
+    tx_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    minted_at: Mapped[str] = mapped_column(
+        TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
