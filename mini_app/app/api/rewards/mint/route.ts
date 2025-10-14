@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const r = await fetch(`${process.env.AI_API}/rewards/mint`, {
+  const api = process.env.API_URL!;
+  const r = await fetch(`${api}/rewards/mint`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
