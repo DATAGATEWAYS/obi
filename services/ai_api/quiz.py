@@ -227,7 +227,7 @@ async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depen
         raise HTTPException(status_code=404, detail="user_not_found")
 
     # 2) today answer not claimed
-    today = date.today()
+    today = today_utc()
     qa: QuizAnswer | None = await session.scalar(
         select(QuizAnswer)
         .where(QuizAnswer.user_id == uid, QuizAnswer.answered_on == today)
@@ -260,7 +260,7 @@ async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depen
     # 5) set status claimed
     qa.claimed = True
     qa.token_id = token_id
-    qa.claimed_at = datetime.utcnow()
+    qa.claimed_at = datetime.now(timezone.utc)
     await session.commit()
 
     return {"token_id": token_id, "tx_hash": tx_hash, "already": False}

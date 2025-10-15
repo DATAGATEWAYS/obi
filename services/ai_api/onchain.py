@@ -17,13 +17,22 @@ _CHAIN_ID = int(os.getenv("CHAIN_ID_TEST", "80002"))
 _PRIVKEY = (os.getenv("MINTER_PRIVATE_KEY") or "").strip()
 
 _abi_path = os.getenv("OBI_BADGES_ABI_PATH")
-with open(_abi_path, "r", encoding="utf-8") as f:
-    _abi_str = f.read()
+_abi = None
+if _abi_path:
+    with open(_abi_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if isinstance(data, dict) and "abi" in data:
+        _abi = data["abi"]
+    elif isinstance(data, list):
+        _abi = data
+    else:
+        raise RuntimeError("ABI file must be a Hardhat artifact {abi:[...]} or a plain ABI array")
 
 _w3 = Web3(Web3.HTTPProvider(_RPC_URL)) if _RPC_URL else None
-_contract = (_w3.eth.contract(address=Web3.to_checksum_address(_CONTRACT_ADDR),
-                              abi=json.loads(_abi_str))
-             if (_w3 and _CONTRACT_ADDR and _abi_str) else None)
+_contract = (
+    _w3.eth.contract(address=Web3.to_checksum_address(_CONTRACT_ADDR), abi=_abi)
+    if (_w3 and _CONTRACT_ADDR and _abi) else None
+)
 _minter = (_w3.eth.account.from_key(_PRIVKEY) if (_w3 and _PRIVKEY) else None)
 
 
