@@ -1,18 +1,20 @@
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query, Depends
-from pip._vendor.cachecontrol._cmd import get_session
 from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.ai_api.db import async_session
 from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer, NFTMint, \
     ClaimPayload, UserWallet
 from services.ai_api.rewards import mint_badge
+from .db import get_session
+
 
 def today_utc() -> date:
     return datetime.now(timezone.utc).date()
+
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
 
@@ -216,6 +218,7 @@ async def quiz_week(privy_id: str, date_from: date, date_to: date):
         )
         days = [d.isoformat() for d in rows.scalars().all()]
         return {"days": days}
+
 
 @router.post("/claim")
 async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depends(get_session)):

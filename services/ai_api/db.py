@@ -21,3 +21,7 @@ async_session = async_sessionmaker(
 async def ping():
     async with engine.connect() as conn:
         await conn.execute("SELECT 1")
+
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
+        yield session
