@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pip._vendor.cachecontrol._cmd import get_session
@@ -10,6 +10,9 @@ from services.ai_api.db import async_session
 from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer, NFTMint, \
     ClaimPayload, UserWallet
 from services.ai_api.rewards import mint_badge
+
+def today_utc() -> date:
+    return datetime.now(timezone.utc).date()
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
 
@@ -116,7 +119,7 @@ async def _get_uid_by_privy(session, privy_id: str) -> int:
 
 @router.get("/state", response_model=QuizStateResponse)
 async def quiz_state(privy_id: str = Query(...)):
-    today = date.today()
+    today = today_utc()
 
     async with async_session() as session:
         uid = await _get_uid_by_privy(session, privy_id)
@@ -160,7 +163,7 @@ async def quiz_state(privy_id: str = Query(...)):
 
 @router.post("/answer")
 async def quiz_answer(payload: QuizAnswerPayload):
-    today = date.today()
+    today = today_utc()
     async with async_session() as session:
         uid = await _get_uid_by_privy(session, payload.privy_id)
         row = await session.get(QuizProgress, uid)
@@ -220,7 +223,7 @@ async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depen
     if not uid:
         raise HTTPException(status_code=404, detail="user_not_found")
 
-    today = date.today()
+    today = today_utc()
     qa = await session.scalar(
         select(QuizAnswer).where(
             (QuizAnswer.user_id == uid) & (QuizAnswer.answered_on == today)

@@ -44,19 +44,20 @@ type QuizState = {
 
 /* ---------- helpers for week ---------- */
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const toYMD = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-const startOfWeekMon = (d: Date) => {
-    const tmp = new Date(d);
-    tmp.setHours(0, 0, 0, 0);
-    const wd = tmp.getDay();             // 0..6 (Sun=0)
-    const diff = (wd + 6) % 7;               // Mon=0
-    tmp.setDate(tmp.getDate() - diff);
-    return tmp;
+
+const toYMDUTC = (d: Date) => d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+
+const startOfWeekMonUTC = (d: Date) => {
+    const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    const wd = t.getUTCDay();          // Sun=0..Sat=6
+    const diff = (wd + 6) % 7;         // Mon=0
+    t.setUTCDate(t.getUTCDate() - diff);
+    return t;
 };
-const addDays = (d: Date, n: number) => {
-    const x = new Date(d);
-    x.setDate(d.getDate() + n);
+
+const addUTC = (d: Date, n: number) => {
+    const x = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    x.setUTCDate(x.getUTCDate() + n);
     return x;
 };
 
@@ -482,30 +483,13 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
 function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     const [answered, setAnswered] = React.useState<Set<string>>(new Set());
 
-    // helpers
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const toYMD = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const startOfWeekMon = (d: Date) => {
-        const t = new Date(d);
-        t.setHours(0, 0, 0, 0);
-        const wd = t.getDay();            // 0..6 (Sun=0)
-        const diff = (wd + 6) % 7;        // Mon=0
-        t.setDate(t.getDate() - diff);
-        return t;
-    };
-    const addDays = (d: Date, n: number) => {
-        const x = new Date(d);
-        x.setDate(d.getDate() + n);
-        return x;
-    };
-
+    // сегодня и неделя в UTC
     const today = new Date();
-    const weekStart = startOfWeekMon(today);
-    const days: Date[] = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
-    const from = toYMD(days[0]);
-    const to = toYMD(days[6]);
-    const todayYMD = toYMD(today);
+    const weekStart = startOfWeekMonUTC(today);
+    const days: Date[] = Array.from({length: 7}, (_, i) => addUTC(weekStart, i));
+    const from = toYMDUTC(days[0]);
+    const to = toYMDUTC(days[6]);
+    const todayYMD = toYMDUTC(today);
 
     React.useEffect(() => {
         if (!ready || !privyId) return;
@@ -524,49 +508,20 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
         <>
             <style>{`
         .cal { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; margin:12px 0 16px; }
-        .cal-day {
-          padding: 6px 4px;
-          border-radius: 10px;
-          text-align: center;
-          line-height: 1.05;
-          font-size: 12px;
-          border: 1.5px solid #9BB37C;
-          color: #7a6a56;
-          background: transparent;
-        }
+        .cal-day { padding: 6px 4px; border-radius: 10px; text-align: center; line-height: 1.05;
+                   font-size: 12px; border: 1.5px solid #9BB37C; color: #7a6a56; background: transparent; }
         .cal-day .d { opacity: .9; font-size: 11px; }
-
-        .cal-day.correct {
-          background: #E6F0D9;
-          border-color: #6B8749;
-          color: #2f6b33;
-        }
-        /* сегодня */
-        .cal-day.today.correct {
-          background: #2f6b33;
-          border-color: #2f6b33;
-          color: #ffffff;
-        }
-        .cal-day.today:not(.correct) {
-          background: #6D8F52;
-          border-color: #6D8F52;
-          color: #ffffff;
-        }
-
-        @media (max-width: 380px) {
-          .cal { gap:4px; }
-          .cal-day { padding: 5px 2px; border-radius: 8px; font-size: 10.5px; }
-          .cal-day .d { font-size: 10px; }
-        }
-        @media (max-width: 340px) {
-          .cal-day { font-size: 9.5px; }
-          .cal-day .d { font-size: 9px; }
-        }
+        .cal-day.correct { background: #E6F0D9; border-color: #6B8749; color: #2f6b33; }
+        .cal-day.today.correct { background: #2f6b33; border-color: #2f6b33; color: #ffffff; }
+        .cal-day.today:not(.correct) { background: #6D8F52; border-color: #6D8F52; color: #ffffff; }
+        @media (max-width: 380px) { .cal { gap:4px; } .cal-day { padding: 5px 2px; border-radius: 8px; font-size: 10.5px; }
+                                    .cal-day .d { font-size: 10px; } }
+        @media (max-width: 340px) { .cal-day { font-size: 9.5px; } .cal-day .d { font-size: 9px; } }
       `}</style>
 
             <div className="cal">
                 {days.map((d, i) => {
-                    const ymd = toYMD(d);
+                    const ymd = toYMDUTC(d);
                     const isToday = ymd === todayYMD;
                     const wasCorrect = answered.has(ymd);
 
@@ -582,8 +537,8 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
                             className={cls}
                             title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
                         >
-                            <div>{dayNames[d.getDay()]}</div>
-                            <div className="d">{String(d.getDate()).padStart(2, "0")}</div>
+                            <div>{dayNames[d.getUTCDay()]}</div>
+                            <div className="d">{String(d.getUTCDate()).padStart(2, "0")}</div>
                         </div>
                     );
                 })}
