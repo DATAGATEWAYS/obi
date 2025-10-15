@@ -2,13 +2,12 @@ import asyncio
 import json
 import os
 
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from web3 import Web3
 from web3.exceptions import ContractLogicError
 
-from services.ai_api.db import async_session, get_session
 from services.ai_api.models import UserWallet
 
 _RPC_URL = os.getenv("AMOY_RPC_URL") or os.getenv("RPC_URL")
@@ -36,7 +35,7 @@ _contract = (
 _minter = (_w3.eth.account.from_key(_PRIVKEY) if (_w3 and _PRIVKEY) else None)
 
 
-async def _mint_sync(to_addr: str, token_id: int) -> str:
+def _mint_sync(to_addr: str, token_id: int) -> str:
     if not (_w3 and _contract and _minter):
         raise RuntimeError("Web3/contract/minter is not configured")
 
@@ -44,19 +43,15 @@ async def _mint_sync(to_addr: str, token_id: int) -> str:
     nonce = _w3.eth.get_transaction_count(_minter.address)
     gas_price = _w3.eth.gas_price
 
-    tx_func = None
     try:
-        # mint(address,uint256,uint256,bytes)
         tx_func = _contract.functions.mint(to, int(token_id), 1, b"")
         _ = tx_func.estimate_gas({"from": _minter.address})
     except Exception:
         try:
-            # mint(address,uint256)
             tx_func = _contract.functions.mint(to, int(token_id))
             _ = tx_func.estimate_gas({"from": _minter.address})
         except Exception:
             try:
-                # mintTo(address,uint256)
                 tx_func = _contract.functions.mintTo(to, int(token_id))
                 _ = tx_func.estimate_gas({"from": _minter.address})
             except Exception as e:
@@ -68,7 +63,6 @@ async def _mint_sync(to_addr: str, token_id: int) -> str:
         "chainId": _CHAIN_ID,
         "gasPrice": gas_price,
     })
-
     if "gas" not in tx:
         try:
             tx["gas"] = _w3.eth.estimate_gas(tx)
@@ -77,29 +71,27 @@ async def _mint_sync(to_addr: str, token_id: int) -> str:
 
     signed = _w3.eth.account.sign_transaction(tx, private_key=_PRIVKEY)
     tx_hash = _w3.eth.send_raw_transaction(signed.rawTransaction)
-    # waiting for approval:
     _w3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
     return tx_hash.hex()
 
 
-async def mint_badge_to_wallet(user_id: int, token_id: int, session: AsyncSession = Depends(get_session)) -> str:
+async def mint_badge_to_wallet(session: AsyncSession, user_id: int, token_id: int) -> str:
     addr = await session.scalar(
         select(UserWallet.address)
         .where(UserWallet.user_id == user_id)
         .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
     )
-
     if not addr:
         raise HTTPException(status_code=400, detail="user_has_no_wallet")
 
     loop = asyncio.get_running_loop()
     try:
-        tx_hash = await loop.run_in_executor(None, _mint_sync, addr, token_id)
+        tx_hash = await loop.run_in_executor(None, _mint_sync, addr, int(token_id))
         return tx_hash
     except ContractLogicError as e:
-        raise HTTPException(status_code=400, detail=f"mint_failed:{str(e)}")
+        raise HTTPException(status_code=400, detail=f"mint_failed:{e}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"mint_error:{str(e)}")
+        raise HTTPException(status_code=500, detail=f"mint_error:{e}")
 
 
 async def mint_badge(to_addr: str, token_id: int) -> str:

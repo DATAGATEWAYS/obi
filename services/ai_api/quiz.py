@@ -261,6 +261,11 @@ async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depen
     qa.claimed = True
     qa.token_id = token_id
     qa.claimed_at = datetime.now(timezone.utc)
+    await session.execute(
+        pg_insert(NFTMint)
+        .values(user_id=uid, quiz_index=qa.quiz_index, tx_hash=tx_hash)
+        .on_conflict_do_nothing()
+    )
     await session.commit()
 
     return {"token_id": token_id, "tx_hash": tx_hash, "already": False}
