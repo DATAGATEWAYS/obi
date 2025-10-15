@@ -144,11 +144,10 @@ export default function Profile() {
           transition: transform .25s ease;
         }
         .sticker img { width:100%; height:100%; object-fit:contain; }
-        /* три позиции на панцире (подгонял процентами, чтобы красиво садились) */
         .pos-0 { left: 8%;  top: 18%; }
         .pos-1 { right: 8%; top: 22%; }
         .pos-2 { left: 32%; bottom: 10%; }
-        /* подсветка нового бейджа */
+        /* highlight new badge */
         @keyframes pop {
           0% { transform: scale(.7); filter: drop-shadow(0 0 0 rgba(47,107,51,0)); }
           60% { transform: scale(1.06); filter: drop-shadow(0 6px 14px rgba(47,107,51,.45)); }
@@ -179,8 +178,8 @@ export default function Profile() {
       <div className="shell">
         <img className="bg" src="/profile/Vector%201.png" alt="" />
         <img className="bg" src="/profile/Group%203.png" alt="" />
-        <img className="bg" src="/profile/Group%2028.svg" alt="" />
-        <img className="bg" src="/profile/Group%2029.svg" alt="" />
+        {/*<img className="bg" src="/profile/Group%2028.svg" alt="" />*/}
+        {/*<img className="bg" src="/profile/Group%2029.svg" alt="" />*/}
 
         {visible.map((id, i) => {
           const src = `/assets/nfts/${id}.png`;

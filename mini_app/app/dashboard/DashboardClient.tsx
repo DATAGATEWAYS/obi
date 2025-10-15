@@ -39,6 +39,7 @@ type QuizState = {
     question?: string | null;
     options?: string[] | null;
     selected_index?: number | null;
+    has_unclaimed?: boolean;
 };
 
 /* ---------- helpers for week ---------- */
@@ -313,12 +314,32 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
         const j = await r.json();
         if (j?.correct) {
             setBanner("correct");
-            setState(s => s ? {...s, locked: true} : s);
+            setState(s => s ? {...s, locked: true, has_unclaimed: true} : s);
         } else if (j?.locked) {
             setBanner("locked");
             setState(s => s ? {...s, locked: true} : s);
         } else {
             setBanner("wrong");
+        }
+    }
+
+    async function claim() {
+        try {
+            setMinting(true);
+            const r = await fetch("/api/quiz/claim", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({privy_id: privyId}),
+            });
+            const j = await r.json();
+            setMinting(false);
+            if (!r.ok || !j?.token_id) throw new Error(j?.error || "Claim failed");
+
+            // убираем «claimable», показываем попап
+            setState(s => s ? {...s, has_unclaimed: false} : s);
+            setMintModal({open: true, tokenId: j.token_id});
+        } catch (e: any) {
+            alert(e?.message || "Claim failed");
         }
     }
 
@@ -378,7 +399,6 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                             setMinting(false);
                             if (!r.ok) throw new Error(j?.error || "Mint failed");
 
-                            // локальный кэш — пригодится профилю, если API /owned недоступен
                             try {
                                 const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
                                 if (!local.includes(currentTokenId)) {
@@ -444,7 +464,8 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 banner === "locked" && (
                     <div style={{
                         marginTop: 10, padding: "10px 12px", borderRadius: 10,
-                        background: "#eef7e8", color: "#2f6b33", textAlign: "center", fontWeight: 700
+                        background: "#dff3d9", color: "#2f6b33", textAlign: "center", fontWeight: 700,
+                        width: "100%", border: "1px solid #bfe9b2",
                     }}>
                         You’ve already answered today
                     </div>
@@ -572,18 +593,18 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
 }
 
 function MintPopup({
-  tokenId,
-  onClose,
-  onView,
-}: {
-  tokenId: number;
-  onClose: () => void;
-  onView: () => void;
+                       tokenId,
+                       onClose,
+                       onView,
+                   }: {
+    tokenId: number;
+    onClose: () => void;
+    onView: () => void;
 }) {
-  const img = `/assets/nfts/${tokenId}.png`;
-  return (
-    <>
-      <style>{`
+    const img = `/assets/nfts/${tokenId}.png`;
+    return (
+        <>
+            <style>{`
         .mint-backdrop{
           position: fixed; inset:0; background: rgba(0,0,0,.45);
           display:flex; align-items:center; justify-content:center; z-index:1000;
@@ -601,16 +622,16 @@ function MintPopup({
           font-weight:700;
         }
       `}</style>
-      <div className="mint-backdrop" onClick={onClose}>
-        <div className="mint-card" onClick={e => e.stopPropagation()}>
-          <h3 style={{marginTop:0}}>You’ve got a new badge!</h3>
-          <img src={img} alt={`Badge #${tokenId}`} />
-          <div className="mint-actions">
-            <button style={{background:"#f0f0f0"}} onClick={onClose}>Close</button>
-            <button style={{background:"#2f6b33", color:"#fff"}} onClick={onView}>View</button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+            <div className="mint-backdrop" onClick={onClose}>
+                <div className="mint-card" onClick={e => e.stopPropagation()}>
+                    <h3 style={{marginTop: 0}}>You’ve got a new badge!</h3>
+                    <img src={img} alt={`Badge #${tokenId}`}/>
+                    <div className="mint-actions">
+                        <button style={{background: "#f0f0f0"}} onClick={onClose}>Close</button>
+                        <button style={{background: "#2f6b33", color: "#fff"}} onClick={onView}>View</button>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
 }

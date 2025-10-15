@@ -1,13 +1,17 @@
-from datetime import date
+from datetime import date, datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
+from pip._vendor.cachecontrol._cmd import get_session
 from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from services.ai_api.db import async_session
-from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer
+from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer, NFTMint, \
+    ClaimPayload, UserWallet
+from services.ai_api.rewards import mint_badge
 
-router = APIRouter()
+router = APIRouter(prefix="/quiz", tags=["quiz"])
 
 QUESTIONS = [
     {
@@ -110,7 +114,7 @@ async def _get_uid_by_privy(session, privy_id: str) -> int:
     return uid
 
 
-@router.get("/quiz/state", response_model=QuizStateResponse)
+@router.get("/state", response_model=QuizStateResponse)
 async def quiz_state(privy_id: str = Query(...)):
     today = date.today()
 
@@ -131,6 +135,15 @@ async def quiz_state(privy_id: str = Query(...)):
         if idx >= TOTAL:
             return QuizStateResponse(finished=True, locked=True, index=None, total=TOTAL)
 
+        has_unclaimed = False
+        if locked_today and idx >= 0:
+            minted = await session.scalar(
+                select(NFTMint.user_id).where(
+                    and_(NFTMint.user_id == uid, NFTMint.quiz_index == idx)
+                )
+            )
+            has_unclaimed = (minted is None)
+
         q = QUESTIONS[idx]
         return QuizStateResponse(
             finished=False,
@@ -141,10 +154,11 @@ async def quiz_state(privy_id: str = Query(...)):
             question=q["question"],
             options=q["options"],
             selected_index=(q["correct"] if locked_today else None),
+            has_unclaimed=has_unclaimed,
         )
 
 
-@router.post("/quiz/answer")
+@router.post("/answer")
 async def quiz_answer(payload: QuizAnswerPayload):
     today = date.today()
     async with async_session() as session:
@@ -156,7 +170,6 @@ async def quiz_answer(payload: QuizAnswerPayload):
             await session.commit()
             await session.refresh(row)
 
-        # уже отвечал сегодня — запрещаем
         if row.last_correct_date == today:
             return {"ok": False, "locked": True, "reason": "already_answered_today"}
 
@@ -181,11 +194,13 @@ async def quiz_answer(payload: QuizAnswerPayload):
             "ok": True,
             "correct": is_correct,
             "locked": True if is_correct else False,
+            "has_unclaimed": True if is_correct else False,
             "index": idx,
             "total": TOTAL,
         }
 
-@router.get("/quiz/week")
+
+@router.get("/week")
 async def quiz_week(privy_id: str, date_from: date, date_to: date):
     async with async_session() as session:
         uid = await _get_uid_by_privy(session, privy_id)
@@ -198,3 +213,51 @@ async def quiz_week(privy_id: str, date_from: date, date_to: date):
         )
         days = [d.isoformat() for d in rows.scalars().all()]
         return {"days": days}
+
+@router.post("/claim")
+async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depends(get_session)):
+    uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
+    if not uid:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
+    today = date.today()
+    qa = await session.scalar(
+        select(QuizAnswer).where(
+            (QuizAnswer.user_id == uid) & (QuizAnswer.answered_on == today)
+        )
+    )
+    if not qa:
+        raise HTTPException(status_code=400, detail="no_answer_for_today")
+
+    if qa.claimed:
+        return {"token_id": qa.token_id, "already": True}
+
+    token_id = (qa.quiz_index or 0) + 1
+
+    # wallet address
+    to_addr = await session.scalar(
+        select(UserWallet.address)
+        .where(UserWallet.user_id == uid)
+        .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
+    )
+    if not to_addr:
+        raise HTTPException(status_code=400, detail="user_has_no_wallet")
+
+    # mint
+    try:
+        tx_hash = await mint_badge(to_addr, token_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"mint_failed:{e}")
+
+    await session.execute(
+        pg_insert(NFTMint)
+        .values(user_id=uid, quiz_index=qa.quiz_index, tx_hash=tx_hash)
+        .on_conflict_do_nothing()
+    )
+
+    qa.claimed = True
+    qa.token_id = token_id
+    qa.claimed_at = datetime.utcnow()
+    await session.commit()
+
+    return {"token_id": token_id, "tx_hash": tx_hash}
