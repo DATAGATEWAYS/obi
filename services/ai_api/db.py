@@ -9,19 +9,24 @@ engine = create_async_engine(
     DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
-    pool_recycle=600,
+    pool_recycle=300,
     pool_size=5,
-    max_overflow=10,
+    max_overflow=0,
     future=True,
 )
 async_session = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession
 )
 
+
 async def ping():
     async with engine.connect() as conn:
         await conn.execute("SELECT 1")
 
+
 async def get_session() -> AsyncSession:
     async with async_session() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()

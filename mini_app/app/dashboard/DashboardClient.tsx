@@ -61,40 +61,42 @@ const addUTC = (d: Date, n: number) => {
     return x;
 };
 
+function useHasMounted() {
+    const [m, setM] = useState(false);
+    useEffect(() => setM(true), []);
+    return m;
+}
 
 export default function DashboardClient() {
     const router = useRouter();
     const {user, authenticated, ready} = usePrivy();
+    const hasMounted = useHasMounted();
 
     /* name anti-flicker */
-    const [username, setUsername] = useState<string>(() => {
-        if (typeof window === "undefined") return "";
-        return (
-            sanitize(sessionStorage.getItem("onb_username")) ||
-            sanitize(localStorage.getItem("onb_username")) ||
-            ""
-        );
-    });
-    const [nameLoaded, setNameLoaded] = useState<boolean>(() => {
-        if (typeof window === "undefined") return false;
+    const [username, setUsername] = useState("");
+    const [nameLoaded, setNameLoaded] = useState(false);
+
+    useEffect(() => {
+        if (!hasMounted) return;
         const cached =
             sessionStorage.getItem("onb_username") ||
             localStorage.getItem("onb_username");
-        return !!cached;
-    });
+        if (cached) {
+            setUsername(cached.replace(/^@/, "").trim());
+            setNameLoaded(true);
+        }
+    }, [hasMounted]);
+
     useEffect(() => {
-        if (!ready || !authenticated || nameLoaded) return;
+        if (!ready || !authenticated || !hasMounted) return;
         const privyId = user?.id;
         if (!privyId) return;
         (async () => {
             try {
-                const r = await fetch(
-                    `/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`,
-                    {cache: "no-store"}
-                );
+                const r = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, {cache: "no-store"});
                 if (r.ok) {
                     const j = await r.json();
-                    const name = sanitize(j?.username);
+                    const name = String(j?.username || "").replace(/^@/, "").trim();
                     if (name) {
                         setUsername(name);
                         localStorage.setItem("onb_username", name);
@@ -104,7 +106,7 @@ export default function DashboardClient() {
                 setNameLoaded(true);
             }
         })();
-    }, [ready, authenticated, user, nameLoaded]);
+    }, [ready, authenticated, user, hasMounted]);
 
     const greetTitle = titleByHour(new Date().getHours());
     const Skeleton = (
