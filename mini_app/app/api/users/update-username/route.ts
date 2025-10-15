@@ -2,10 +2,10 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const api = process.env.AI_API_URL;
+    const api = process.env.API_URL;
     if (!api) {
       return new Response(
-        JSON.stringify({ ok: false, reason: "missing_AI_API_URL" }),
+        JSON.stringify({ ok: false, reason: "missing_API_URL" }),
         { status: 500 }
       );
     }
