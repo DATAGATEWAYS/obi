@@ -2,12 +2,13 @@ import asyncio
 import json
 import os
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from web3 import Web3
 from web3.exceptions import ContractLogicError
 
-from services.ai_api.db import async_session
+from services.ai_api.db import async_session, get_session
 from services.ai_api.models import UserWallet
 
 _RPC_URL = os.getenv("AMOY_RPC_URL") or os.getenv("RPC_URL")
@@ -72,13 +73,13 @@ async def _mint_sync(to_addr: str, token_id: int) -> str:
     return tx_hash.hex()
 
 
-async def mint_badge_to_wallet(user_id: int, token_id: int) -> str:
-    async with async_session() as s:
-        addr = await s.scalar(
-            select(UserWallet.address)
-            .where(UserWallet.user_id == user_id)
-            .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
-        )
+async def mint_badge_to_wallet(user_id: int, token_id: int, session: AsyncSession = Depends(get_session)) -> str:
+    addr = await session.scalar(
+        select(UserWallet.address)
+        .where(UserWallet.user_id == user_id)
+        .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
+    )
+
     if not addr:
         raise HTTPException(status_code=400, detail="user_has_no_wallet")
 
@@ -90,3 +91,14 @@ async def mint_badge_to_wallet(user_id: int, token_id: int) -> str:
         raise HTTPException(status_code=400, detail=f"mint_failed:{str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"mint_error:{str(e)}")
+
+
+async def mint_badge(to_addr: str, token_id: int) -> str:
+    loop = asyncio.get_running_loop()
+    try:
+        tx_hash = await loop.run_in_executor(None, _mint_sync, to_addr, int(token_id))
+        return tx_hash
+    except ContractLogicError as e:
+        raise HTTPException(status_code=400, detail=f"mint_failed:{e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"mint_error:{e}")

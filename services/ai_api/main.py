@@ -10,7 +10,6 @@ from services.ai_api.db import engine
 from services.ai_api.users import router as users_router
 from services.ai_api.wallets import router as wallets_router
 from services.ai_api.quiz import router as quiz_router
-from .rewards import router as rewards_router
 
 
 load_dotenv()
@@ -37,4 +36,3 @@ app.include_router(users_router)
 app.include_router(ai_router)
 app.include_router(wallets_router)
 app.include_router(quiz_router)
-app.include_router(rewards_router)

@@ -74,7 +74,7 @@ export default function Profile() {
     (async () => {
       try {
         const r = await fetch(
-          `/api/rewards/owned?privy_id=${encodeURIComponent(privyId)}`,
+          `/api/rewards/owned?privy_id=${encodeURIComponent(privyId)}`, // TODO fix route
           { cache: "no-store" }
         );
         if (r.ok) {

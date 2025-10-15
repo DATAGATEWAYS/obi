@@ -5,10 +5,9 @@ from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from services.ai_api.db import async_session
 from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer, NFTMint, \
     ClaimPayload, UserWallet
-from services.ai_api.rewards import mint_badge
+from services.ai_api.onchain import mint_badge
 from .db import get_session
 
 
@@ -120,108 +119,108 @@ async def _get_uid_by_privy(session, privy_id: str) -> int:
 
 
 @router.get("/state", response_model=QuizStateResponse)
-async def quiz_state(privy_id: str = Query(...)):
+async def quiz_state(privy_id: str = Query(...), session: AsyncSession = Depends(get_session)):
     today = today_utc()
+    uid = await _get_uid_by_privy(session, privy_id)
 
-    async with async_session() as session:
-        uid = await _get_uid_by_privy(session, privy_id)
+    row = await session.get(QuizProgress, uid)
+    if not row:
+        row = QuizProgress(user_id=uid, completed_index=-1, last_correct_date=None)
+        session.add(row)
+        await session.commit()
+        await session.refresh(row)
 
-        row = await session.get(QuizProgress, uid)
-        if not row:
-            row = QuizProgress(user_id=uid, completed_index=-1, last_correct_date=None)
-            session.add(row)
-            await session.commit()
-            await session.refresh(row)
+    locked_today = (row.last_correct_date == today)
 
-        locked_today = (row.last_correct_date == today)
+    idx = row.completed_index if locked_today else row.completed_index + 1
 
-        idx = row.completed_index if locked_today else row.completed_index + 1
+    if idx >= TOTAL:
+        return QuizStateResponse(finished=True, locked=True, index=None, total=TOTAL)
 
-        if idx >= TOTAL:
-            return QuizStateResponse(finished=True, locked=True, index=None, total=TOTAL)
-
-        has_unclaimed = False
-        if locked_today and idx >= 0:
-            minted = await session.scalar(
-                select(NFTMint.user_id).where(
-                    and_(NFTMint.user_id == uid, NFTMint.quiz_index == idx)
-                )
+    has_unclaimed = False
+    if locked_today and idx >= 0:
+        minted = await session.scalar(
+            select(NFTMint.user_id).where(
+                and_(NFTMint.user_id == uid, NFTMint.quiz_index == idx)
             )
-            has_unclaimed = (minted is None)
-
-        q = QUESTIONS[idx]
-        return QuizStateResponse(
-            finished=False,
-            locked=locked_today,
-            index=idx,
-            total=TOTAL,
-            title=q["title"],
-            question=q["question"],
-            options=q["options"],
-            selected_index=(q["correct"] if locked_today else None),
-            has_unclaimed=has_unclaimed,
         )
+        has_unclaimed = (minted is None)
+
+    q = QUESTIONS[idx]
+    return QuizStateResponse(
+        finished=False,
+        locked=locked_today,
+        index=idx,
+        total=TOTAL,
+        title=q["title"],
+        question=q["question"],
+        options=q["options"],
+        selected_index=(q["correct"] if locked_today else None),
+        has_unclaimed=has_unclaimed,
+    )
 
 
 @router.post("/answer")
-async def quiz_answer(payload: QuizAnswerPayload):
+async def quiz_answer(payload: QuizAnswerPayload, session: AsyncSession = Depends(get_session)):
     today = today_utc()
-    async with async_session() as session:
-        uid = await _get_uid_by_privy(session, payload.privy_id)
-        row = await session.get(QuizProgress, uid)
-        if not row:
-            row = QuizProgress(user_id=uid, completed_index=-1, last_correct_date=None)
-            session.add(row)
-            await session.commit()
-            await session.refresh(row)
+    uid = await _get_uid_by_privy(session, payload.privy_id)
+    row = await session.get(QuizProgress, uid)
+    if not row:
+        row = QuizProgress(user_id=uid, completed_index=-1, last_correct_date=None)
+        session.add(row)
+        await session.commit()
+        await session.refresh(row)
 
-        if row.last_correct_date == today:
-            return {"ok": False, "locked": True, "reason": "already_answered_today"}
+    if row.last_correct_date == today:
+        return {"ok": False, "locked": True, "reason": "already_answered_today"}
 
-        idx = row.completed_index + 1
-        if idx >= TOTAL:
-            return {"ok": False, "finished": True}
+    idx = row.completed_index + 1
+    if idx >= TOTAL:
+        return {"ok": False, "finished": True}
 
-        correct_idx = QUESTIONS[idx]["correct"]
-        is_correct = (payload.option_index == correct_idx)
+    correct_idx = QUESTIONS[idx]["correct"]
+    is_correct = (payload.option_index == correct_idx)
 
-        if is_correct:
-            row.completed_index = idx
-            row.last_correct_date = today
-            await session.execute(
-                pg_insert(QuizAnswer)
-                .values(user_id=uid, answered_on=today, quiz_index=idx)
-                .on_conflict_do_nothing()
-            )
-            await session.commit()
+    if is_correct:
+        row.completed_index = idx
+        row.last_correct_date = today
+        await session.execute(
+            pg_insert(QuizAnswer)
+            .values(user_id=uid, answered_on=today, quiz_index=idx)
+            .on_conflict_do_nothing()
+        )
+        await session.commit()
 
-        return {
-            "ok": True,
-            "correct": is_correct,
-            "locked": True if is_correct else False,
-            "has_unclaimed": True if is_correct else False,
-            "index": idx,
-            "total": TOTAL,
-        }
+    return {
+        "ok": True,
+        "correct": is_correct,
+        "locked": True if is_correct else False,
+        "has_unclaimed": True if is_correct else False,
+        "index": idx,
+        "total": TOTAL,
+    }
 
 
 @router.get("/week")
-async def quiz_week(privy_id: str, date_from: date, date_to: date):
-    async with async_session() as session:
-        uid = await _get_uid_by_privy(session, privy_id)
-        rows = await session.execute(
-            select(QuizAnswer.answered_on).where(
-                and_(QuizAnswer.user_id == uid,
-                     QuizAnswer.answered_on >= date_from,
-                     QuizAnswer.answered_on <= date_to)
-            )
+async def quiz_week(privy_id: str, date_from: date, date_to: date, session: AsyncSession = Depends(get_session)):
+    uid = await _get_uid_by_privy(session, privy_id)
+    rows = await session.execute(
+        select(QuizAnswer.answered_on).where(
+            and_(QuizAnswer.user_id == uid,
+                 QuizAnswer.answered_on >= date_from,
+                 QuizAnswer.answered_on <= date_to)
         )
-        days = [d.isoformat() for d in rows.scalars().all()]
-        return {"days": days}
+    )
+    days = [d.isoformat() for d in rows.scalars().all()]
+    return {"days": days}
 
 
 @router.post("/claim")
 async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depends(get_session)):
+    uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
+    if not uid:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
     # 1) user
     uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
     if not uid:

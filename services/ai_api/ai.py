@@ -1,33 +1,34 @@
 import re
-from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import Depends, APIRouter
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from services.ai_api.db import async_session
 from services.ai_api.deepseek_client import get_deepseek_answer
 from services.ai_api.models import *
 from services.database.models import QA
+from .db import get_session
 
 router = APIRouter()
 
 
 @router.post("/ask")
-async def ask_endpoint(payload: QuestionPayload):
+async def ask_endpoint(payload: QuestionPayload, session: AsyncSession = Depends(get_session)):
     user_id = payload.user_id
     question = payload.question
 
     raw_answer = await get_deepseek_answer(question)
     answer = from_ai_to_human_readable(raw_answer)
 
-    async with async_session() as session:
-        record = QA(user_id=user_id, question=question, answer=answer, created_at=datetime.utcnow())
-        session.add(record)
-        await session.commit()
+    record = QA(user_id=user_id, question=question, answer=answer, created_at=datetime.utcnow())
+    session.add(record)
+    await session.commit()
 
     return {"answer": answer}
 
+
 def from_ai_to_human_readable(raw: str) -> str:
     return markdown_to_telegram_html(raw)
+
 
 def markdown_list_to_numbered_and_bullets(text: str) -> str:
     lines = text.splitlines()
