@@ -26,3 +26,26 @@ next-env.d.ts
 
 #local
 /onchain/
+
+# IDE
+.idea/
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+
+# Node / Next.js
+**/node_modules/
+**/.next/
+coverage/
+out/
+
+# Build artifacts
+build/
+dist/
+
+# Envs
+.venv/
