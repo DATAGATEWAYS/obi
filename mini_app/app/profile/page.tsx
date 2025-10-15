@@ -175,11 +175,11 @@ export default function Profile() {
       </div>
 
       {/* Turtle back */}
-      <div className="shell">
-        <img className="vector" src="/profile/Vector%201.png" alt="" />
-        <img className="img" src="/profile/Group%203.png" alt="" />
-        {/*<img className="bg" src="/profile/Group%2028.svg" alt="" />*/}
-        {/*<img className="bg" src="/profile/Group%2029.svg" alt="" />*/}
+      <div className="shell-sticker">
+        <img className="vector" src="/profile/Vector%201.png"/>
+        <img className="img" src="/profile/Group%203.png" />
+        {/*<img className="bg" src="/profile/Group%2028.svg" />*/}
+        {/*<img className="bg" src="/profile/Group%2029.svg" />*/}
 
         {visible.map((id, i) => {
           const src = `/assets/nfts/${id}.png`;
