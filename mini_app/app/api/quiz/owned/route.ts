@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const api = process.env.API_URL!;
 
-export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
+const NO_CACHE = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -21,7 +28,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(body, {
     status: r.status,
     headers: {
-      "content-type": r.headers.get("content-type") ?? "application/json",
+      "content-type": r.headers.get("content-type") ?? "application/json", ...NO_CACHE
     },
   });
 }
