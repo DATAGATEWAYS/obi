@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query, Depends
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -118,6 +118,10 @@ async def _get_uid_by_privy(session, privy_id: str) -> int:
     return uid
 
 
+def token_id_for_index(quiz_index: int) -> int:
+    return quiz_index + 1
+
+
 @router.get("/state", response_model=QuizStateResponse)
 async def quiz_state(privy_id: str = Query(...), session: AsyncSession = Depends(get_session)):
     today = today_utc()
@@ -146,6 +150,11 @@ async def quiz_state(privy_id: str = Query(...), session: AsyncSession = Depends
         )
         has_unclaimed = (minted is None)
 
+    mint_count = await session.scalar(
+        select(func.count()).select_from(NFTMint).where(NFTMint.user_id == uid)
+    )
+    has_any_badge = bool(mint_count)
+
     q = QUESTIONS[idx]
     return QuizStateResponse(
         finished=False,
@@ -157,6 +166,7 @@ async def quiz_state(privy_id: str = Query(...), session: AsyncSession = Depends
         options=q["options"],
         selected_index=(q["correct"] if locked_today else None),
         has_unclaimed=has_unclaimed,
+        has_any_badge=has_any_badge,
     )
 
 
@@ -238,7 +248,7 @@ async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depen
     if qa.claimed:
         return {"already": True, "token_id": qa.token_id}
 
-    token_id = (qa.quiz_index or 0) + 1
+    token_id = qa.quiz_index + 1
 
     # 3) wallet address
     addr = await session.scalar(
@@ -269,3 +279,17 @@ async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depen
     await session.commit()
 
     return {"token_id": token_id, "tx_hash": tx_hash, "already": False}
+
+
+@router.get("/owned")
+async def quiz_owned(privy_id: str, session: AsyncSession = Depends(get_session)):
+    uid = await session.scalar(select(User.id).where(User.privy_id == privy_id))
+    if not uid:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    rows = await session.scalars(
+        select(NFTMint.quiz_index).where(NFTMint.user_id == uid)
+    )
+    idxs = rows.all()
+    token_ids = [token_id_for_index(i) for i in idxs]
+    return {"count": len(token_ids), "token_ids": token_ids}

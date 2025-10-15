@@ -117,6 +117,7 @@ class QuizStateResponse(BaseModel):
     options: list[str] | None = None
     selected_index: int | None = None
     has_unclaimed: bool = False
+    has_any_badge: bool = False
 
 
 class QuizAnswerPayload(BaseModel):
