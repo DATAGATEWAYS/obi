@@ -176,8 +176,8 @@ export default function Profile() {
 
       {/* Turtle back */}
       <div className="shell">
-        <img className="bg" src="/profile/Vector%201.png" alt="" />
-        <img className="bg" src="/profile/Group%203.png" alt="" />
+        <img className="vector" src="/profile/Vector%201.png" alt="" />
+        <img className="img" src="/profile/Group%203.png" alt="" />
         {/*<img className="bg" src="/profile/Group%2028.svg" alt="" />*/}
         {/*<img className="bg" src="/profile/Group%2029.svg" alt="" />*/}
 
