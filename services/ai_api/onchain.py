@@ -40,7 +40,7 @@ def _mint_sync(to_addr: str, token_id: int) -> str:
         raise RuntimeError("Web3/contract/minter is not configured")
 
     to = Web3.to_checksum_address(to_addr)
-    nonce = _w3.eth.get_transaction_count(_minter.address)
+    nonce = _w3.eth.get_transaction_count(_minter.address, "pending")
     gas_price = _w3.eth.gas_price
 
     try:
@@ -70,7 +70,7 @@ def _mint_sync(to_addr: str, token_id: int) -> str:
             tx["gas"] = 250_000
 
     signed = _w3.eth.account.sign_transaction(tx, private_key=_PRIVKEY)
-    tx_hash = _w3.eth.send_raw_transaction(signed.rawTransaction)
+    tx_hash = _w3.eth.send_raw_transaction(signed.raw_transaction)
     _w3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
     return tx_hash.hex()
 
