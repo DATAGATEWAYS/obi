@@ -232,7 +232,7 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 setState(s);
                 if (s.finished) setBanner("finished");
                 else if (s.locked) {
-                    setBanner("locked");
+                    setBanner(s.has_unclaimed ? "correct" : "locked");
                     if (typeof s.selected_index === "number") setSelected(s.selected_index);
                 } else {
                     setBanner(null);
@@ -334,12 +334,23 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
             });
             const j = await r.json();
             setMinting(false);
-            if (!r.ok || !j?.token_id) throw new Error(j?.error || "Claim failed");
+            if (!r.ok || !j?.token_id) throw new Error(j?.detail || j?.error || "Claim failed");
 
-            // убираем «claimable», показываем попап
-            setState(s => s ? {...s, has_unclaimed: false} : s);
+            try {
+                const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
+                if (!local.includes(j.token_id)) {
+                    local.push(j.token_id);
+                    localStorage.setItem("owned_tokens", JSON.stringify(local));
+                }
+            } catch {
+            }
+
+            setState(s => (s ? {...s, has_unclaimed: false} : s));
+            setBanner("locked");
+
             setMintModal({open: true, tokenId: j.token_id});
         } catch (e: any) {
+            setMinting(false);
             alert(e?.message || "Claim failed");
         }
     }
@@ -387,33 +398,7 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 <button
                     type="button"
                     disabled={currentTokenId == null || minting}
-                    onClick={async () => {
-                        if (currentTokenId == null) return;
-                        try {
-                            setMinting(true);
-                            const r = await fetch("/api/rewards/mint", {
-                                method: "POST",
-                                headers: {"Content-Type": "application/json"},
-                                body: JSON.stringify({privy_id: privyId, day: currentTokenId}),
-                            });
-                            const j = await r.json().catch(() => ({}));
-                            setMinting(false);
-                            if (!r.ok) throw new Error(j?.error || "Mint failed");
-
-                            try {
-                                const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
-                                if (!local.includes(currentTokenId)) {
-                                    local.push(currentTokenId);
-                                    localStorage.setItem("owned_tokens", JSON.stringify(local));
-                                }
-                            } catch {
-                            }
-
-                            setMintModal({open: true, tokenId: currentTokenId});
-                        } catch (e: any) {
-                            alert(e?.message || "Mint failed");
-                        }
-                    }}
+                    onClick={claim}
                     style={{
                         width: "100%",
                         marginTop: 10,
@@ -462,7 +447,7 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 )
             }
             {
-                banner === "locked" && (
+                banner === "locked" && !state.has_unclaimed && (
                     <div style={{
                         marginTop: 10, padding: "10px 12px", borderRadius: 10,
                         background: "#dff3d9", color: "#2f6b33", textAlign: "center", fontWeight: 700,

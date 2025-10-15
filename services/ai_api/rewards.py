@@ -44,7 +44,7 @@ async def mint_badge(payload: MintRequest):
         answered = await session.scalar(
             select(QuizAnswer.user_id).where(
                 QuizAnswer.user_id == uid,
-                QuizAnswer.quiz_index == payload.day
+                QuizAnswer.quiz_index == payload.day - 1
             )
         )
         if not answered:
@@ -54,7 +54,7 @@ async def mint_badge(payload: MintRequest):
         already = await session.scalar(
             select(NFTMint.user_id).where(
                 NFTMint.user_id == uid,
-                NFTMint.quiz_index == payload.day
+                NFTMint.quiz_index == payload.day - 1
             )
         )
         if already:
@@ -81,7 +81,7 @@ async def mint_badge(payload: MintRequest):
     # 5) Send to db
     async with async_session() as session:
         await session.execute(
-            insert(NFTMint).values(user_id=uid, quiz_index=payload.day, tx_hash=tx_hash)
+            insert(NFTMint).values(user_id=uid, quiz_index=payload.day - 1, tx_hash=tx_hash)
         )
         await session.commit()
 

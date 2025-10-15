@@ -219,48 +219,46 @@ async def quiz_week(privy_id: str, date_from: date, date_to: date):
 
 @router.post("/claim")
 async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depends(get_session)):
+    # 1) user
     uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
     if not uid:
         raise HTTPException(status_code=404, detail="user_not_found")
 
-    today = today_utc()
-    qa = await session.scalar(
-        select(QuizAnswer).where(
-            (QuizAnswer.user_id == uid) & (QuizAnswer.answered_on == today)
-        )
+    # 2) today answer not claimed
+    today = date.today()
+    qa: QuizAnswer | None = await session.scalar(
+        select(QuizAnswer)
+        .where(QuizAnswer.user_id == uid, QuizAnswer.answered_on == today)
     )
     if not qa:
-        raise HTTPException(status_code=400, detail="no_answer_for_today")
+        raise HTTPException(status_code=400, detail="no_answer_today")
 
     if qa.claimed:
-        return {"token_id": qa.token_id, "already": True}
+        return {"already": True, "token_id": qa.token_id}
 
     token_id = (qa.quiz_index or 0) + 1
 
-    # wallet address
-    to_addr = await session.scalar(
+    # 3) wallet address
+    addr = await session.scalar(
         select(UserWallet.address)
         .where(UserWallet.user_id == uid)
         .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
     )
-    if not to_addr:
+    if not addr:
         raise HTTPException(status_code=400, detail="user_has_no_wallet")
 
-    # mint
+    # 4) mint
     try:
-        tx_hash = await mint_badge(to_addr, token_id)
+        tx_hash = await mint_badge(addr, token_id)
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"mint_failed:{e}")
+        raise HTTPException(status_code=500, detail=f"mint_error:{e}")
 
-    await session.execute(
-        pg_insert(NFTMint)
-        .values(user_id=uid, quiz_index=qa.quiz_index, tx_hash=tx_hash)
-        .on_conflict_do_nothing()
-    )
-
+    # 5) set status claimed
     qa.claimed = True
     qa.token_id = token_id
     qa.claimed_at = datetime.utcnow()
     await session.commit()
 
-    return {"token_id": token_id, "tx_hash": tx_hash}
+    return {"token_id": token_id, "tx_hash": tx_hash, "already": False}
