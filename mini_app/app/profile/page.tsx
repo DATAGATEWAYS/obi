@@ -137,7 +137,7 @@ export default function Profile() {
         <main className="page-inner">
             <style>{`
         @keyframes skeleton { 0%{background-position:100% 0} 100%{background-position:0 0} }
-        /* панцирь */
+        /* turtle back */
         .shell {
           position: relative;
           width: 100%;
@@ -153,8 +153,6 @@ export default function Profile() {
           border-radius: 12px;
           overflow: hidden;
           display:flex; align-items:center; justify-content:center;
-          background:#f6f6f6aa;
-          box-shadow: 0 2px 10px rgba(0,0,0,.15);
           transform-origin:center;
           transition: transform .25s ease;
         }
