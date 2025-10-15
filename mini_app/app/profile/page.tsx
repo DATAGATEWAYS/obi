@@ -202,7 +202,7 @@ export default function Profile() {
       )}
 
       {/* Settings */}
-      <h4 style={{marginTop: 18, color:"#95654D"}}>Account Settings</h4>
+      <h4 style={{marginTop: 50, color:"#95654D"}}>Account Settings</h4>
       <button
         onClick={() => router.push("/onboarding/username?edit=1")}
         style={{ width:"100%", textAlign:"left", padding:16, borderRadius:16, background:"#f4efdf", border:0, marginBottom:12, color:"#6C584C" }}
