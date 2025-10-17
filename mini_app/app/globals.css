@@ -21,7 +21,6 @@ html, body {
     color: var(--fg);
     margin: 0;
     padding: 0;
-    font-family: "Satoshi Variable";
     overflow-x: hidden;
 }
 
@@ -241,7 +240,6 @@ small {
 
 .welcome-screen .text-wrapper {
     color: #f0ead2;
-    font-family: "Satoshi Variable";
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0;
@@ -279,7 +277,6 @@ small {
     height: 51px;
     left: 131px;
     top: 61px;
-    font-family: 'Satoshi Variable';
     font-style: normal;
     font-weight: 700;
     font-size: 16px;
@@ -295,7 +292,6 @@ small {
     height: 17px;
     left: 111px;
     top: 390px;
-    font-family: 'Satoshi Variable';
     font-style: normal;
     font-weight: 700;
     font-size: 16px;
@@ -313,7 +309,6 @@ small {
     width: 100%;
     padding: 14px;
     border-radius: 10px;
-    font-family: 'Satoshi Variable';
     color: #F0EAD2;
 }
 
@@ -323,6 +318,7 @@ small {
     border-radius: 10px;
     border: 1px solid #ddd;
     margin-top: 95px;
+    color: #949494;
 }
 
 .username-h2 {
@@ -337,10 +333,6 @@ small {
     text-align: center;
     width: 250px;
     padding-top: 20px;
-}
-
-.username-input {
-    color: #949494;
 }
 
 .username-helper {
