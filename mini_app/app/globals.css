@@ -22,7 +22,8 @@ html, body {
     color: var(--fg);
     margin: 0;
     padding: 0;
-    font-family: "Satoshi Variable-Medium";
+    font-family: "Satoshi Variable";
+    overflow-x: hidden;
 }
 
 .container {
@@ -196,6 +197,7 @@ small {
 
 .welcome-screen .background-image {
     width: 100%;
+    height: 694px;
 }
 
 .welcome-screen .btn-text {
@@ -216,7 +218,7 @@ small {
     align-items: center;
     position: absolute;
     left: 60px;
-    bottom: 70px;
+    top: 612px;
 }
 
 .welcome-screen .text-wrapper {
@@ -241,7 +243,7 @@ small {
     position: absolute;
     width: 121.48px;
     left: calc(50% - 121.48px / 2 + 29.74px);
-    top: 60%;
+    top: 391px;
 }
 
 .welcome-screen .logo {
@@ -249,15 +251,15 @@ small {
     width: 192px;
     height: 121px;
     left: calc(50% - 192px / 2);
-    top: calc(50% - 121px / 2 - 200px);
+    top: 120px;
 }
 
 .welcome-screen .learn-crypto-slow {
     position: absolute;
     width: 129px;
-    height: 51px;
+    height: 62px;
     left: calc(50% - 129px / 2 + 0.5px);
-    top: 72px;
+    top: 52px;
     font-family: 'Satoshi Variable';
     font-style: normal;
     font-weight: 700;
@@ -273,7 +275,7 @@ small {
     width: 100%;
     height: 51px;
     left: 10px;
-    top: 385px;
+    top: 357px;
     font-family: 'Satoshi Variable';
     font-style: normal;
     font-weight: 700;
