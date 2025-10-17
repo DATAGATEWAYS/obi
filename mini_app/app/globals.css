@@ -351,7 +351,7 @@ small {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 130px;
+    padding-top: 140px;
 }
 
 .topic-list {
@@ -376,7 +376,7 @@ small {
 
 .next-btn-active {
     background-color: #437338;
-    margin-top: 27px;
+    margin-top: 17px;
     width: 260px;
     height: 40px;
     padding: 14px;
@@ -386,7 +386,7 @@ small {
 
 .next-btn-passive {
     background-color: var(--bg);
-    margin-top: 27px;
+    margin-top: 17px;
     width: 260px;
     height: 40px;
     padding: 14px;

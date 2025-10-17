@@ -28,7 +28,7 @@ export default function Topics() {
     return (
         <main className="page-inner topics-main">
             <button
-                onClick={() => router.push("router.back()")}
+                onClick={() => router.push("/onboarding/username")}
                 className="topics-back-btn"><img className="topics-back-img" src="/topics/back_button.png"
                                                      alt="back_button"/>
             </button>
