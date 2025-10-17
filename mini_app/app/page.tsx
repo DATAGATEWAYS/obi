@@ -56,7 +56,7 @@ export default function Page() {
                 if (prefillName) sessionStorage.setItem("onb_username", prefillName);
                 router.replace("/onboarding/username");
             } else {
-                // router.replace("/dashboard");
+                router.replace("/dashboard");
             }
         })();
     }, [ready, authenticated, user, router]);
