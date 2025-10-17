@@ -23,7 +23,7 @@ export default function Username() {
         const clean = name.trim();
         sessionStorage.setItem("onb_username", clean);
         localStorage.setItem("onb_username", clean);
-        router.push("/onboarding/topics");
+        router.push("/onboarding/done");
     };
 
     // edit mode
