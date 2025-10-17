@@ -86,5 +86,7 @@ export default function Page() {
             <br/>
             with
         </p>
+
+        <p className="privy-status">Privy status: {statusPrivy.text}</p>
     </div>;
 }
