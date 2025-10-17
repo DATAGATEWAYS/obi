@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
           <title>Obi</title>
       </head>
-      <body className={`${satoshi.variable} ${prompt.variable}`}>
+      <body className={`${satoshi.className} ${prompt.variable}`}>
       <Script
           src="https://telegram.org/js/telegram-web-app.js"
           strategy="beforeInteractive"
