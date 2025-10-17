@@ -17,7 +17,6 @@
 }
 
 html, body {
-    height: 100%;
     background: var(--bg);
     color: var(--fg);
     margin: 0;
@@ -189,10 +188,9 @@ small {
 /*========== welcome screen ==========*/
 
 .welcome-screen {
-    min-height: 694px;
-    min-width: 320px;
+    width: 390px;
+    height: 732px;
     position: relative;
-    width: 100%;
 }
 
 .welcome-screen .background-image {
@@ -217,8 +215,8 @@ small {
     display: flex;
     align-items: center;
     position: absolute;
-    left: 60px;
-    top: 612px;
+    left: 65px;
+    top: 642px;
 }
 
 .welcome-screen .text-wrapper {
@@ -242,24 +240,25 @@ small {
 .welcome-screen .turtle {
     position: absolute;
     width: 121.48px;
-    left: calc(50% - 121.48px / 2 + 29.74px);
-    top: 391px;
+    height: 158px;
+    left: 170px;
+    top: 434px;
 }
 
 .welcome-screen .logo {
     position: absolute;
     width: 192px;
     height: 121px;
-    left: calc(50% - 192px / 2);
-    top: 120px;
+    left: 99px;
+    top: 135px;
 }
 
 .welcome-screen .learn-crypto-slow {
     position: absolute;
     width: 129px;
-    height: 62px;
-    left: calc(50% - 129px / 2 + 0.5px);
-    top: 52px;
+    height: 51px;
+    left: 131px;
+    top: 81px;
     font-family: 'Satoshi Variable';
     font-style: normal;
     font-weight: 700;
@@ -272,10 +271,10 @@ small {
 
 .welcome-screen .privy-status {
     position: absolute;
-    width: 100%;
-    height: 51px;
-    left: 10px;
-    top: 357px;
+    width: 168px;
+    height: 17px;
+    left: 111px;
+    top: 403px;
     font-family: 'Satoshi Variable';
     font-style: normal;
     font-weight: 700;
