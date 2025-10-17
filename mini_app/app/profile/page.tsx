@@ -20,6 +20,8 @@ export default function Profile() {
     const newTokenParam = q.get("new");
     const privyId: string | undefined = user?.id;
     const [refreshKey, setRefreshKey] = useState(0);
+    const [walletAddress, setWalletAddress] = useState<string>("");
+    const [walletLoading, setWalletLoading] = useState<boolean>(false);
 
     const [username, setUsername] = useState<string>(() => {
         if (typeof window === "undefined") return "";
@@ -47,7 +49,64 @@ export default function Profile() {
         } finally {
             router.replace("/");
         }
-    };
+    }
+
+    function readWalletFromStorage(): string {
+        if (typeof window === "undefined") return "";
+        try {
+            const s = sessionStorage.getItem("wallet_address");
+            if (s) return s;
+        } catch {
+        }
+        try {
+            const l = localStorage.getItem("wallet_address");
+            if (l) return l;
+        } catch {
+        }
+        return "";
+    }
+
+    useEffect(() => {
+        if (!ready || !authenticated || !privyId) return;
+
+        const cached = readWalletFromStorage();
+        if (cached) {
+            setWalletAddress(cached);
+            return;
+        }
+
+        (async () => {
+            setWalletLoading(true);
+            try {
+                const r = await fetch(`/api/wallets/by-privy?privy_id=${encodeURIComponent(privyId)}`, {
+                    cache: "no-store",
+                });
+                if (r.ok) {
+                    const list = await r.json();
+                    const pickAddress = (arr: any[]): string => {
+                        if (!Array.isArray(arr) || arr.length === 0) return "";
+                        const primary = arr.find(w => w?.is_primary);
+                        const w = primary ?? arr[0];
+                        return (w?.address ?? "").toString();
+                    };
+                    const addr = pickAddress(list);
+                    if (addr) {
+                        setWalletAddress(addr);
+                        try {
+                            localStorage.setItem("wallet_address", addr);
+                        } catch {
+                        }
+                        try {
+                            sessionStorage.setItem("wallet_address", addr);
+                        } catch {
+                        }
+                    }
+                }
+            } finally {
+                setWalletLoading(false);
+            }
+        })();
+    }, [ready, authenticated, privyId, refreshKey]);
 
     useEffect(() => {
         if (!ready || !authenticated || nameLoaded || !privyId) return;
@@ -253,7 +312,13 @@ export default function Profile() {
             }} aria-disabled="true">
                 Language
                 <img src="/assets/badges/soon.svg" alt="Soon"
-                     style={{position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", height: 20}}/>
+                     style={{
+                         position: "absolute",
+                         right: 12,
+                         top: "50%",
+                         transform: "translateY(-50%)",
+                         height: 20
+                     }}/>
             </button>
 
             {/* Other */}
@@ -281,6 +346,10 @@ export default function Profile() {
                 }}>
                     To test
                 </button>
+                <p style={{marginTop: 8, color: "#6C584C"}}>
+                    Your wallet address:&nbsp;
+                    <strong>{walletAddress || (walletLoading ? "Creating…" : "—")}</strong>
+                </p>
                 <button onClick={() => alert("What is Obi? TBD")} style={{
                     width: "100%",
                     textAlign: "left",
