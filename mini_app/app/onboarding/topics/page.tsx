@@ -27,7 +27,11 @@ export default function Topics() {
 
     return (
         <main className="page-inner topics-main">
-            <button onClick={() => router.back()} className="topics-back-btn"><img className="topics-back-img" src="/topics/back_button.png"
+            <button
+                // TODO
+                // router.back()
+                onClick={() => router.push("/onboarding/username")}
+                className="topics-back-btn"><img className="topics-back-img" src="/topics/back_button.png"
                                                      alt="back_button"/>
             </button>
             <h2 className="topics-h2">What brings you here?</h2>
