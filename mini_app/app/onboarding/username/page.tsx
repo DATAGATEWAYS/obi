@@ -54,6 +54,7 @@ export default function Username() {
                 <p className="username-p">This is your nickname inside the app — you can change it anytime.</p>
 
                 <input
+                    onChange={(e) => setName(e.target.value)}
                     className="name-input"
                     placeholder="Start typing..."
                     value={name}
