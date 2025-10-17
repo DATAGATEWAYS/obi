@@ -109,8 +109,6 @@ small {
 .tg-safe--lock {
   height: var(--tg-vh);
   overflow: hidden;
-  padding-top: calc(max(var(--safe-top), var(--tg-header)) + 12px);
-  padding-bottom: calc(var(--safe-bottom) + 12px);
 }
 
 .page-inner { max-width: 420px; margin: 0 auto; padding: 0 16px 16px; }
