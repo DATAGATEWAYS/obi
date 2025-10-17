@@ -1,7 +1,7 @@
 "use client";
-import {useEffect, useRef} from "react";
-import {useCreateWallet, usePrivy, useWallets} from "@privy-io/react-auth";
-import {router} from "next/client";
+import { useEffect, useRef } from "react";
+import { useCreateWallet, usePrivy, useWallets } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
 
 function safeSet(key: string, val: string) {
   try { sessionStorage.setItem(key, val); } catch {}
@@ -14,6 +14,7 @@ export default function Done() {
 
   const postedWalletRef = useRef(false);
   const creatingRef     = useRef(false);
+  const router = useRouter();
 
   async function upsertWalletOnce(payload: any) {
     if (postedWalletRef.current) return;
