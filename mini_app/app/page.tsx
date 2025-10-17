@@ -57,7 +57,6 @@ export default function Page() {
             alt="Background image"
             src="welcome/welcome_background_image.svg"
         />
-        <div className="">Privy status: {statusPrivy.text}</div>
 
         <div className="btn">
             <div className="btn-text">
