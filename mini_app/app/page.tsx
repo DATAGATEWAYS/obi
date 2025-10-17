@@ -62,7 +62,7 @@ export default function Page() {
     }, [ready, authenticated, user, router]);
 
     return (
-        <main className="tg-safe">
+        <main className="tg-safe--lock">
             <div className="welcome-screen">
                 <img className="background-image" alt="Background image" src="welcome/welcome_background_image.svg"/>
 
