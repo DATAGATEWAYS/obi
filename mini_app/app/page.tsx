@@ -16,27 +16,14 @@ export default function Page() {
         return {cls: "fail", text: "Not authenticated"};
     }, [ready, authenticated, authing]);
 
-    const handleLogin = async () => {
-        setAuthing(true);
-        try {
-            const tg = (window as any)?.Telegram?.WebApp;
-            const telegramInitData: string | null = tg?.initData ?? null;
-
-            if (telegramInitData) {
-                try {
-                    await (login as any)({
-                        strategy: "telegram",
-                        telegramInitData,
-                    });
-                    return;
-                } catch {
-                }
-            }
-            await login();
-        } finally {
-            setAuthing(false);
-        }
-    };
+  const handleLogin = async () => {
+    try {
+      setAuthing(true);
+      await login();
+    } finally {
+      setAuthing(false);
+    }
+  };
 
     useEffect(() => {
         if (!ready || !authenticated || postedRef.current) return;
@@ -69,7 +56,7 @@ export default function Page() {
                 if (prefillName) sessionStorage.setItem("onb_username", prefillName);
                 router.replace("/onboarding/username");
             } else {
-                router.replace("/dashboard");
+                // router.replace("/dashboard");
             }
         })();
     }, [ready, authenticated, user, router]);
