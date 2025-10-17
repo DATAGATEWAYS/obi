@@ -270,7 +270,7 @@ export default function Profile() {
                 }}>
                     To dashboard
                 </button>
-                <button onClick={() => router.push("/onboarding/topics")} style={{
+                <button onClick={() => router.push("/onboarding/username")} style={{
                     width: "100%",
                     textAlign: "left",
                     padding: 16,
