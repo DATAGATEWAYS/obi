@@ -69,16 +69,17 @@ export default function Done() {
   }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
   return (
-    <main className="page-inner" style={{textAlign: "center"}}>
-      <h2>You’re all set</h2>
-      <p>You’re ready to explore! Obi can answer your questions anytime.</p>
+      <main className="page-inner done-main tg-safe--lock">
+        <h2 className="done-h2">You’re all set</h2>
+        <p className="done-p">You’re ready to explore! Obi can answer your questions anytime.</p>
 
-      <img src="/turtle.png" alt="" style={{width: 160, margin: "24px auto"}}/>
+        <img className="done-turtle" src="/welcome/obi_turtle.svg" alt="turtle"/>
+        <img className="done-ground" src="/done/ground.png" alt="ground"/>
 
-      <div style={{display: "grid", gap: 12}}>
-        <a href="/chat" className="btn-primary">Ask Obi your first question</a>
-        <a href="/dashboard" className="btn-secondary">Explore dashboard</a>
-      </div>
-    </main>
+        <div className="done-btns">
+          <a href="/chat" className="btn-primary">Ask Obi your first question</a>
+          <a href="/dashboard" className="btn-secondary">Explore dashboard</a>
+        </div>
+      </main>
   );
 }

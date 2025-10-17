@@ -420,3 +420,41 @@ small {
     width: 260px;
     font-size: 12px;
 }
+
+/*========== done ==========*/
+
+.done-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 140px;
+}
+
+.done-turtle {
+    position: absolute;
+    width: 121.48px;
+    height: 158px;
+    left: 170px;
+    top: 440px;
+}
+
+.done-h2 {
+    top: 140px;
+    color: #95654D;
+    width: 230px;
+    text-align: center;
+    font-size: 22px;
+}
+
+.done-p {
+    color: #6C584C;
+    text-align: center;
+    width: 260px;
+    padding-top: 15px;
+    font-size: 12px;
+}
+
+.done-btns {
+    display: grid;
+    gap: 12px;
+}
