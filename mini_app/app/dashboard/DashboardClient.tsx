@@ -67,6 +67,63 @@ function useHasMounted() {
     return m;
 }
 
+/* ---------- UTC countdown to next day ---------- */
+type UpdateMode = "minute" | "static";
+
+function useMsToNextUtcMidnight(mode: UpdateMode = "minute") {
+  const [ms, setMs] = React.useState(0);
+
+  const tick = React.useCallback(() => {
+    const now = new Date();
+    const nextUtcMidnight = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1
+    ));
+    setMs(nextUtcMidnight.getTime() - now.getTime());
+  }, []);
+
+  React.useEffect(() => {
+    tick();
+
+    if (mode === "static") {
+      return;
+    }
+
+    const now = new Date();
+    const delayToNextMinute =
+      (60 - now.getUTCSeconds()) * 1000 - now.getUTCMilliseconds();
+
+    const tId = window.setTimeout(() => {
+      tick();
+      const iId = window.setInterval(tick, 60_000);
+      return () => clearInterval(iId);
+    }, delayToNextMinute);
+
+    return () => clearTimeout(tId);
+  }, [mode, tick]);
+
+  return ms;
+}
+
+function UtcCountdown({ update = "minute" as UpdateMode }) {
+  const ms = useMsToNextUtcMidnight(update);
+  const total = Math.max(ms, 0);
+  const h = Math.floor(total / 3_600_000);
+  const m = Math.floor((total % 3_600_000) / 60_000);
+  const hh = String(h).padStart(2, "0");
+  const mm = String(m).padStart(2, "0");
+
+  return (
+    <div
+      style={{ margin: "4px 0 12px", fontSize: 12, color: "#7a6a56", textAlign: "center" }}
+      title="Quiz resets at 00:00 UTC"
+    >
+      Next quiz in <strong>{hh}:{mm}</strong> · 00:00&nbsp;UTC
+    </div>
+  );
+}
+
 export default function DashboardClient() {
     const router = useRouter();
     const {user, authenticated, ready} = usePrivy();
@@ -154,6 +211,8 @@ export default function DashboardClient() {
 
             {/* CALENDAR (real week) */}
             <CalendarWeek privyId={user?.id ?? ""} ready={ready && authenticated}/>
+
+            <UtcCountdown update="static" />
 
             {/* QUIZ (server-driven) */}
             <QuizCard privyId={user?.id || ""} ready={ready && authenticated}/>
