@@ -239,7 +239,7 @@ export default function Profile() {
 
             {/* To dashboard */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <h2 style={{color: "#859E4F", fontWeight: 700, margin: 0}}>
+                <h2 className="greeting">
                     {greetTitle},{" "}{nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
                 <img

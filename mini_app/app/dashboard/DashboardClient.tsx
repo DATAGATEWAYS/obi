@@ -2,7 +2,6 @@
 import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
-import s from "../profileTest/page.module.css";
 
 /* ---------- palette for good contrast (works in dark TG too) ---------- */
 const COLORS = {
@@ -192,7 +191,7 @@ export default function DashboardClient() {
 
             {/* greeting + profile */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <h2 style={{color: "#859E4F", fontWeight: 700, margin: 0}}>
+                <h2 className="greeting">
                     {greetTitle},{" "}
                     {nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
