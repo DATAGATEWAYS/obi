@@ -433,7 +433,7 @@ small {
 .done-turtle {
     width: 94px;
     height: 123px;
-    margin-top: 204px;
+    margin-top: 180px;
     z-index: 2;
 }
 
@@ -455,7 +455,7 @@ small {
     display: grid;
     z-index: 2;
     gap: 5px;
-    margin-top: 42px;
+    margin-top: 28px;
 }
 
 .done-chat-btn {
