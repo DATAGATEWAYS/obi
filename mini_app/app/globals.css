@@ -196,6 +196,8 @@ small {
 .welcome-screen .background-image {
     width: 100%;
     height: 732px;
+    display:block;
+    max-width:100%;
 }
 
 .welcome-screen .btn-text {
