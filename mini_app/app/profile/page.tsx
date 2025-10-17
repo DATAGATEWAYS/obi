@@ -4,13 +4,6 @@ import {usePrivy} from "@privy-io/react-auth";
 import {useRouter, useSearchParams} from "next/navigation";
 import MintPopup from "../components/MintPopup";
 
-
-function testModal() {
-    setMintModal({open: true, tokenId: 1000})
-}
-
-const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
-
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
     if (h < 18) return "Good afternoon";
@@ -69,6 +62,12 @@ export default function Profile() {
         }
         return "";
     }
+
+    function testModal() {
+        setMintModal({open: true, tokenId: 1000})
+    }
+
+    const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
 
     useEffect(() => {
         if (!ready || !authenticated || !privyId) return;
