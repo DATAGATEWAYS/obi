@@ -468,7 +468,6 @@ small {
 
 .done-dashboard-btn {
     background-color: #F0EAD2;
-    margin-top: 200px;
     width: 260px;
     padding: 14px;
     border-radius: 10px;
@@ -477,4 +476,6 @@ small {
 
 .done-ground {
     z-index: 1;
+    position: absolute;
+    bottom: -215px;
 }
