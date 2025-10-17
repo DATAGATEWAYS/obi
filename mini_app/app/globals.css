@@ -186,6 +186,7 @@ small {
 }
 
 /*========== welcome screen ==========*/
+
 .welcome-screen {
     min-height: 694px;
     min-width: 320px;
@@ -214,8 +215,8 @@ small {
     display: flex;
     align-items: center;
     position: absolute;
-    top: 602px;
-    left: 30px;
+    left: 60px;
+    bottom: 70px;
 }
 
 .welcome-screen .text-wrapper {
@@ -240,7 +241,7 @@ small {
     position: absolute;
     width: 121.48px;
     left: calc(50% - 121.48px / 2 + 29.74px);
-    top: 56.34%;
+    top: 60%;
 }
 
 .welcome-screen .logo {
@@ -248,37 +249,5 @@ small {
     width: 192px;
     height: 121px;
     left: calc(50% - 192px / 2);
-    top: calc(50% - 121px / 2 - 180px);
-}
-
-.welcome-screen .learn-crypto-slow {
-    position: absolute;
-    width: 129px;
-    height: 51px;
-    left: calc(50% - 129px / 2 + 0.5px);
-    top: 60px;
-    font-family: 'Satoshi Variable';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 107.91%;
-    text-align: center;
-    letter-spacing: 0.03em;
-    color: #6C584C;
-}
-
-.welcome-screen .privy-status {
-    position: absolute;
-    width: 100%;
-    height: 51px;
-    left: 10px;
-    top: 310px;
-    font-family: 'Satoshi Variable';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 107.91%;
-    text-align: center;
-    letter-spacing: 0.03em;
-    color: #6C584C;
+    top: calc(50% - 121px / 2 - 200px);
 }
