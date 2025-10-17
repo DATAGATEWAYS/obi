@@ -357,7 +357,8 @@ small {
 .topic-list {
     display: grid;
     gap: 5px;
-    margin-top: 10px
+    margin-top: 10px;
+    width: 260px;
 }
 
 .topic-btn {
@@ -366,13 +367,6 @@ small {
     border-radius: 12px;
     background: #FAFAFA;
     color: #1B1B1B;
-
-    /*position: absolute;*/
-    /*width: 34px;*/
-    /*height: 18px;*/
-    /*left: 13px;*/
-    /*top: calc(50% - 18px/2);*/
-
     font-family: var(--font-prompt);
     font-style: normal;
     font-weight: 400;
@@ -383,15 +377,18 @@ small {
 .next-btn-active {
     background-color: #437338;
     margin-top: 27px;
-    width: 100%;
+    width: 260px;
+    height: 40px;
     padding: 14px;
     border-radius: 10px;
     color: #F0EAD2;
 }
 
 .next-btn-passive {
+    background-color: var(--bg);
     margin-top: 27px;
-    width: 100%;
+    width: 260px;
+    height: 40px;
     padding: 14px;
     border-radius: 10px;
     border: 1px solid #949494;
@@ -399,13 +396,13 @@ small {
 }
 
 .topics-back-btn {
-    font-size: 12px;
+    position: absolute;
+    left: 17px;
+    top: 17px;
+    background: none;
 }
 
 .topics-back-img {
-    position: absolute;
-    left: 30px;
-    top: 45px;
     height: 17px;
     width: 17px;
 }
@@ -421,6 +418,5 @@ small {
     color: #6C584C;
     text-align: center;
     width: 260px;
-    padding-top: 15px;
     font-size: 12px;
 }
