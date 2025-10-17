@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useRef } from "react";
-import { useCreateWallet, usePrivy, useWallets } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
+import {useEffect, useRef, useState} from "react";
+import {useCreateWallet, usePrivy, useWallets} from "@privy-io/react-auth";
+import {useRouter} from "next/navigation";
 
 function safeSet(key: string, val: string) {
   try { sessionStorage.setItem(key, val); } catch {}
@@ -46,6 +46,15 @@ export default function Done() {
     onError: () => {},
   });
 
+  const [username, setUsername] = useState<string>(() => {
+        if (typeof window === "undefined") return "";
+        return (
+            sessionStorage.getItem("onb_username") ||
+            localStorage.getItem("onb_username") ||
+            ""
+        );
+    });
+
   useEffect(() => {
     if (!ready || !authenticated || !walletsReady) return;
 
@@ -72,7 +81,7 @@ export default function Done() {
 
   return (
       <main className="page-inner done-main tg-safe--lock">
-        <h2 className="done-h2">You’re all set</h2>
+        <h2 className="done-h2">You’re all set,{" "}{username}!</h2>
         <p className="done-p">You’re ready to explore! Obi can answer your questions anytime.</p>
 
         <img className="done-turtle" src="/welcome/obi_turtle.svg" alt="turtle"/>

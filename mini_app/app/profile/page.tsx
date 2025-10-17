@@ -3,10 +3,6 @@ import React, {useEffect, useMemo, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter, useSearchParams} from "next/navigation";
 
-function sanitize(s?: string | null) {
-    return (s ?? "").replace(/^@/, "").trim();
-}
-
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
     if (h < 18) return "Good afternoon";
@@ -26,8 +22,8 @@ export default function Profile() {
     const [username, setUsername] = useState<string>(() => {
         if (typeof window === "undefined") return "";
         return (
-            sanitize(sessionStorage.getItem("onb_username")) ||
-            sanitize(localStorage.getItem("onb_username")) ||
+            sessionStorage.getItem("onb_username") ||
+            localStorage.getItem("onb_username") ||
             ""
         );
     });
@@ -119,7 +115,7 @@ export default function Profile() {
                 );
                 if (r.ok) {
                     const j = await r.json();
-                    const name = sanitize(j?.username);
+                    const name = j?.username;
                     if (name) {
                         setUsername(name);
                         localStorage.setItem("onb_username", name);
