@@ -229,7 +229,7 @@ export default function Profile() {
           60% { transform: scale(1.06); filter: drop-shadow(0 6px 14px rgba(47,107,51,.45)); }
           100% { transform: scale(1); filter: drop-shadow(0 2px 6px rgba(47,107,51,.25)); }
         }
-        .highlight { animation: pop .6s ease; outline: 2px solid #2f6b33; }
+        .highlight { animation: pop .6s ease; }
         .pager { display:flex; gap:8px; justify-content:center; margin:6px 0 4px; }
         .pager button{
           border:none; background:#f0f0e8; color:#6C584C; padding:8px 12px; border-radius:10px; cursor:pointer;
