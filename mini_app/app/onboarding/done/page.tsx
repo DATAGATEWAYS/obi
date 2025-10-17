@@ -1,6 +1,7 @@
 "use client";
 import {useEffect, useRef} from "react";
 import {useCreateWallet, usePrivy, useWallets} from "@privy-io/react-auth";
+import {router} from "next/client";
 
 function safeSet(key: string, val: string) {
   try { sessionStorage.setItem(key, val); } catch {}
@@ -77,8 +78,18 @@ export default function Done() {
         <img className="done-ground" src="/done/ground.png" alt="ground"/>
 
         <div className="done-btns">
-          <a href="/chat" className="btn-primary">Ask Obi your first question</a>
-          <a href="/dashboard" className="btn-secondary">Explore dashboard</a>
+          <button
+              className="done-chat-btn"
+              onClick={() => router.push("/chat")}
+          >
+            Ask Obi your first question
+          </button>
+          <button
+              className="done-dashboard-btn"
+              onClick={() => router.push("/dashboard")}
+          >
+            Explore dashboard
+          </button>
         </div>
       </main>
   );

@@ -431,17 +431,15 @@ small {
 }
 
 .done-turtle {
-    position: absolute;
-    width: 121.48px;
-    height: 158px;
-    left: 170px;
-    top: 440px;
+    width: 94px;
+    height: 123px;
+    margin-top: 204px;
+    z-index: 2;
 }
 
 .done-h2 {
-    top: 140px;
     color: #95654D;
-    width: 230px;
+    width: 229px;
     text-align: center;
     font-size: 22px;
 }
@@ -449,12 +447,34 @@ small {
 .done-p {
     color: #6C584C;
     text-align: center;
-    width: 260px;
-    padding-top: 15px;
+    width: 229px;
     font-size: 12px;
 }
 
 .done-btns {
     display: grid;
-    gap: 12px;
+    z-index: 2;
+    gap: 5px;
+    margin-top: 42px;
+}
+
+.done-chat-btn {
+    background-color: #437338;
+    width: 260px;
+    padding: 14px;
+    border-radius: 10px;
+    color: #F0EAD2;
+}
+
+.done-dashboard-btn {
+    background-color: #F0EAD2;
+    margin-top: 200px;
+    width: 260px;
+    padding: 14px;
+    border-radius: 10px;
+    color: #437338;
+}
+
+.done-ground {
+    z-index: 1;
 }
