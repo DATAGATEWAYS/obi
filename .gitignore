@@ -49,3 +49,6 @@ dist/
 
 # Envs
 .venv/
+
+# local test files
+mini_app/public/test.*

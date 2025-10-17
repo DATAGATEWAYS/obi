@@ -55,29 +55,31 @@ export default function Page() {
         <img
             className="background-image"
             alt="Background image"
-            src="/welcome/welcome_background_image.svg"
+            src="welcome/welcome_background_image.svg"
         />
-        <div className="text-wrapper">Privy status: {statusPrivy.text}</div>
+        <div className="">Privy status: {statusPrivy.text}</div>
 
-        <div className="group">
-            <div className="button-yes-wrapper">
-                <div className="button-yes">
-                    <div className="div">
-                        <div className="text-wrapper">Log in with Privy</div>
+        <div className="btn">
+            <div className="btn-text">
+                <div className="text-wrapper">Log in with Privy</div>
 
-                        <img
-                            className="privy-symbol"
-                            alt="Privy symbol"
-                            src="/welcome/privy_symbol.png"
-                        />
-                    </div>
-                </div>
+                <img
+                    className="privy-symbol"
+                    alt="Privy symbol"
+                    src="/welcome/privy_symbol.png"
+                />
             </div>
         </div>
 
-        <div className="group-2"/>
+        <img
+            className="turtle"
+            src="welcome/obi_turtle.svg"
+            alt="turtle"/>
 
-        <div className="text-wrapper-2">obi</div>
+        <img
+            className="logo"
+            src="welcome/obi_logo.svg"
+            alt="logo"/>
 
         <p className="learn-crypto-slow">
             learn crypto slow and steady
