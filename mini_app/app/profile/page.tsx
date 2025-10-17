@@ -2,6 +2,14 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter, useSearchParams} from "next/navigation";
+import MintPopup from "../components/MintPopup";
+
+
+function testModal() {
+    setMintModal({open: true, tokenId: 1000})
+}
+
+const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
 
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
@@ -342,6 +350,21 @@ export default function Profile() {
                 }}>
                     To test
                 </button>
+                <button
+                    type="button"
+                    onClick={testModal}
+                    style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: 16,
+                        borderRadius: 16,
+                        background: "#f4efdf",
+                        border: 0,
+                        color: "#6C584C"
+                    }}
+                >
+                    Test Modal
+                </button>
                 <p style={{marginTop: 8, color: "#6C584C"}}>
                     Your wallet address:&nbsp;
                     <strong>{walletAddress || (walletLoading ? "Creating…" : "—")}</strong>
@@ -369,6 +392,17 @@ export default function Profile() {
                     Log out
                 </button>
             </div>
+            {/* Mint popup */}
+            {mintModal.open && mintModal.tokenId && (
+                <MintPopup
+                    tokenId={mintModal.tokenId}
+                    onClose={() => setMintModal({open: false})}
+                    onView={() => {
+                        setMintModal({open: false});
+                        // router.push(`/profile?new=${mintModal.tokenId}`);
+                    }}
+                />
+            )}
         </main>
     );
 }
