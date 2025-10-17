@@ -270,6 +270,17 @@ export default function Profile() {
                 }}>
                     To dashboard
                 </button>
+                <button onClick={() => router.push("/topics")} style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: 16,
+                    borderRadius: 16,
+                    background: "#f4efdf",
+                    border: 0,
+                    color: "#6C584C"
+                }}>
+                    To test
+                </button>
                 <button onClick={() => alert("What is Obi? TBD")} style={{
                     width: "100%",
                     textAlign: "left",
