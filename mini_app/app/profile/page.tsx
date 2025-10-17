@@ -41,6 +41,14 @@ export default function Profile() {
     const [page, setPage] = useState(0); // по 3 на страницу
     const pageSize = 3;
 
+    const handleLogout = async () => {
+        try {
+            await logout?.();
+        } finally {
+            router.replace("/");
+        }
+    };
+
     useEffect(() => {
         if (!ready || !authenticated || nameLoaded || !privyId) return;
 
@@ -273,7 +281,7 @@ export default function Profile() {
                 }}>
                     What is Obi?
                 </button>
-                <button onClick={() => logout?.()} style={{
+                <button onClick={handleLogout} style={{
                     width: "100%",
                     textAlign: "left",
                     padding: 16,
