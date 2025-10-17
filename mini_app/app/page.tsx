@@ -4,85 +4,99 @@ import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
 export default function Page() {
-  const {ready, authenticated, user, login} = usePrivy();
-  const [authing, setAuthing] = useState(false);
-  const postedRef = useRef(false);
-  const router = useRouter();
+    const {ready, authenticated, user, login} = usePrivy();
+    const [authing, setAuthing] = useState(false);
+    const postedRef = useRef(false);
+    const router = useRouter();
 
-  // статус для вывода
-  const statusPrivy = useMemo(() => {
-    if (!ready) return {cls: "wait", text: "Loading…"};
-    if (authing) return {cls: "wait", text: "Authorizing…"};
-    if (authenticated) return {cls: "ok", text: "Success"};
-    return {cls: "fail", text: "Not authenticated"};
-  }, [ready, authenticated, authing]);
+    const statusPrivy = useMemo(() => {
+        if (!ready) return {cls: "wait", text: "Loading…"};
+        if (authing) return {cls: "wait", text: "Authorizing…"};
+        if (authenticated) return {cls: "ok", text: "Success"};
+        return {cls: "fail", text: "Not authenticated"};
+    }, [ready, authenticated, authing]);
 
-  // обработчик логина
-  const handleLogin = async () => {
-    try {
-      setAuthing(true);
-      await login();               // откроется приви-логин
-    } finally {
-      setAuthing(false);
-    }
-  };
+    const handleLogin = async () => {
+        setAuthing(true);
+        try {
+            const tg = (window as any)?.Telegram?.WebApp;
+            const telegramInitData: string | null = tg?.initData ?? null;
 
-  // твой пост-логин флоу + переход
-  useEffect(() => {
-    if (!ready || !authenticated || postedRef.current) return;
+            if (telegramInitData) {
+                try {
+                    await (login as any)({
+                        strategy: "telegram",
+                        telegramInitData,
+                    });
+                    return;
+                } catch {
+                }
+            }
+            await login();
+        } finally {
+            setAuthing(false);
+        }
+    };
 
-    const tgId = user?.telegram?.telegramUserId;
-    const tgUsername = user?.telegram?.username || null;
-    const privyId = user?.id ?? null;
-    if (!tgId || !privyId) return;
+    useEffect(() => {
+        if (!ready || !authenticated || postedRef.current) return;
 
-    (async () => {
-      postedRef.current = true;
-      const r1 = await fetch(`/api/users/insert`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          telegram_username: tgUsername,
-          telegram_id: tgId,
-          privy_id: privyId,
-        }),
-      });
-      if (!r1.ok) { postedRef.current = false; return; }
+        const tgId = user?.telegram?.telegramUserId;
+        const tgUsername = user?.telegram?.username || null;
+        const privyId = user?.id ?? null;
+        if (!tgId || !privyId) return;
 
-      const r2 = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, {cache: "no-store"});
-      const j2 = r2.ok ? await r2.json() : {has: false};
-      if (!j2.has) {
-        const prefillName = tgUsername ?? "";
-        if (prefillName) sessionStorage.setItem("onb_username", prefillName);
-        router.replace("/onboarding/username");
-      } else {
-        router.replace("/dashboard");  // успех → на дашборд
-      }
-    })();
-  }, [ready, authenticated, user, router]);
+        (async () => {
+            postedRef.current = true;
+            const r1 = await fetch(`/api/users/insert`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    telegram_username: tgUsername,
+                    telegram_id: tgId,
+                    privy_id: privyId,
+                }),
+            });
+            if (!r1.ok) {
+                postedRef.current = false;
+                return;
+            }
 
-  return (
-    <div className="welcome-screen">
-      <img className="background-image" alt="Background image" src="welcome/welcome_background_image.svg" />
+            const r2 = await fetch(`/api/users/has-username?privy_id=${encodeURIComponent(privyId)}`, {cache: "no-store"});
+            const j2 = r2.ok ? await r2.json() : {has: false};
+            if (!j2.has) {
+                const prefillName = tgUsername ?? "";
+                if (prefillName) sessionStorage.setItem("onb_username", prefillName);
+                router.replace("/onboarding/username");
+            } else {
+                router.replace("/dashboard");
+            }
+        })();
+    }, [ready, authenticated, user, router]);
 
-      {/* Кнопка видна только когда можно логиниться */}
-      {ready && !authenticated && (
-        <button onClick={handleLogin} className="btn" disabled={authing}>
-          <div className="btn-text">
-            <div className="text-wrapper">Log in with Privy</div>
-            <img className="privy-symbol" alt="Privy symbol" src="/welcome/privy_symbol.png" />
-          </div>
-        </button>
-      )}
+    return (
+        <main className="page-inner">
+            <div className="welcome-screen">
+                <img className="background-image" alt="Background image" src="welcome/welcome_background_image.svg"/>
 
-      <img className="turtle" src="welcome/obi_turtle.svg" alt="turtle" />
-      <img className="logo" src="welcome/obi_logo.svg" alt="logo" />
+                {ready && !authenticated && (
+                    <button onClick={handleLogin} className="btn" disabled={authing}>
+                        <div className="btn-text">
+                            <div className="text-wrapper">Log in with Privy</div>
+                            <img className="privy-symbol" alt="Privy symbol" src="/welcome/privy_symbol.png"/>
+                        </div>
+                    </button>
+                )}
 
-      <p className="learn-crypto-slow">
-        learn crypto slow and steady<br/>with
-      </p>
+                <img className="turtle" src="welcome/obi_turtle.svg" alt="turtle"/>
+                <img className="logo" src="welcome/obi_logo.svg" alt="logo"/>
 
-      <p className={`privy-status ${statusPrivy.cls}`}>Privy status: {statusPrivy.text}</p>
-    </div>
-  );
+                <p className="learn-crypto-slow">
+                    learn crypto slow and steady<br/>with
+                </p>
+
+                <p className={`privy-status ${statusPrivy.cls}`}>Privy status: {statusPrivy.text}</p>
+            </div>
+        </main>
+    );
 }
