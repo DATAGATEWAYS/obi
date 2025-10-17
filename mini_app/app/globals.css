@@ -184,3 +184,113 @@ small {
   top: 81px;
   width: 68px;
 }
+
+/*========== welcome screen ==========*/
+.welcome-screen {
+  background-color: #f0ead2;
+  min-height: 694px;
+  min-width: 320px;
+  position: relative;
+  width: 100%;
+}
+
+.welcome-screen .background-image {
+  aspect-ratio: 1.5;
+  height: 694px;
+  left: calc(50.00% - 160px);
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  width: 320px;
+}
+
+.welcome-screen .group {
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  left: 30px;
+  position: absolute;
+  top: 602px;
+  width: 260px;
+}
+
+.welcome-screen .button-yes-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 260px;
+}
+
+.welcome-screen .button-yes {
+  align-items: center;
+  background-image: url("mini_app/public/welcome/privy_btn.svg");
+  background-size: 100% 100%;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  width: 260px;
+}
+
+.welcome-screen .div {
+  height: 16px;
+  margin-left: 2.8px;
+  margin-top: -2px;
+  position: relative;
+  width: 114.84px;
+}
+
+.welcome-screen .text-wrapper {
+  color: #f0ead2;
+  font-family: "Satoshi Variable-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: calc(50.00% - 38px);
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: calc(50.00% - 8px);
+}
+
+.welcome-screen .privy-symbol {
+  height: 13px;
+  left: calc(50.00% - 57px);
+  position: absolute;
+  top: calc(50.00% - 5px);
+  width: 10px;
+}
+
+.welcome-screen .group-2 {
+  background-image: url("mini_app/public/welcome/obi_turtle.svg");
+  background-size: 100% 100%;
+  height: 158px;
+  left: 129px;
+  position: absolute;
+  top: 391px;
+  width: 121px;
+}
+
+.welcome-screen .text-wrapper-2 {
+  -webkit-text-stroke: 6px #437338;
+  color: #adc178;
+  font-family: "Oi-Regular", Helvetica;
+  font-size: 76.7px;
+  font-weight: 400;
+  left: calc(50.00% - 102px);
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: calc(50.00% - 224px);
+}
+
+.welcome-screen .learn-crypto-slow {
+  color: #6c584c;
+  font-family: "Satoshi Variable-Bold", Helvetica;
+  font-size: 16px;
+  font-weight: 700;
+  left: calc(50.00% - 64px);
+  letter-spacing: 0.48px;
+  line-height: 17.3px;
+  position: absolute;
+  text-align: center;
+  top: 72px;
+  width: 129px;
+}
