@@ -297,6 +297,7 @@ async def quiz_owned(privy_id: str, session: AsyncSession = Depends(get_session)
     token_ids = [token_id_for_index(i) for i in idxs]
     return {"count": len(token_ids), "token_ids": token_ids}
 
+
 @router.post("/mint-onboarding")
 async def mint_onboarding_badge(payload: WelcomeMintPayload, session: AsyncSession = Depends(get_session)):
     # 1) user
@@ -337,3 +338,16 @@ async def mint_onboarding_badge(payload: WelcomeMintPayload, session: AsyncSessi
     await session.commit()
 
     return {"token_id": WELCOME_TOKEN_ID, "tx_hash": tx_hash, "already": False}
+
+
+@router.get("/minted")
+async def quiz_minted(privy_id: str, session: AsyncSession = Depends(get_session)):
+    uid = await session.scalar(select(User.id).where(User.privy_id == privy_id))
+    if not uid:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
+    rows = await session.execute(
+        select(NFTMint.quiz_index, NFTMint.tx_hash).where(NFTMint.user_id == uid)
+    )
+    items = [{"token_id": r[0] + 1, "tx_hash": r[1]} for r in rows.all()]
+    return {"items": items}

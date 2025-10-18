@@ -4,6 +4,7 @@ import {usePrivy} from "@privy-io/react-auth";
 import {useRouter, useSearchParams} from "next/navigation";
 import MintPopup from "../components/MintPopup";
 import {copyTextToClipboard} from "../utils/copy";
+import popupStyles from "../components/MintPopup.module.css";
 
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
@@ -240,6 +241,52 @@ export default function Profile() {
         }
     }
 
+    function openTxOnPolygonscan(tx: string, net: Net = "mainnet") {
+        if (!tx) return;
+        const host = net === "testnet" ? "amoy.polygonscan.com" : "polygonscan.com";
+        const url = `https://${host}/tx/${encodeURIComponent(tx)}`;
+
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg?.openLink) tg.openLink(url);
+        else window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+    const PINATA_META_BASE = "https://gateway.pinata.cloud/ipfs/bafybeie6t77eu3gcblouw5zvizxaqv5qvkyesznka5zzuiunsasv2d6j54";
+
+    async function fetchPinataMeta(tokenId: number) {
+        const url = `${PINATA_META_BASE}/${tokenId}.json`;
+        const r = await fetch(url, {cache: "force-cache"});
+        if (!r.ok) throw new Error("meta_not_found");
+        return r.json() as Promise<{ name?: string; description?: string; image?: string }>;
+    }
+
+    const [nftModal, setNftModal] = React.useState<{
+        open: boolean;
+        tokenId?: number;
+        name?: string;
+        description?: string;
+        image?: string;
+        tx?: string;
+    }>({open: false});
+
+    const [txByToken, setTxByToken] = React.useState<Record<number, string>>({});
+
+    React.useEffect(() => {
+        (async () => {
+            if (!ready || !authenticated || !privyId) return;
+            try {
+                const r = await fetch(`/api/quiz/minted?privy_id=${encodeURIComponent(privyId)}`);
+                const j = await r.json();
+                if (r.ok && Array.isArray(j?.items)) {
+                    const map: Record<number, string> = {};
+                    for (const it of j.items) map[Number(it.token_id)] = String(it.tx_hash || "");
+                    setTxByToken(map);
+                }
+            } catch {
+            }
+        })();
+    }, [ready, authenticated, privyId]);
+
     return (
         <main className="page-inner">
             {/* To dashboard */}
@@ -264,7 +311,25 @@ export default function Profile() {
                         const src = `/assets/nfts/${id}.png`;
                         const isNew = newTokenParam && Number(newTokenParam) === id;
                         return (
-                            <div key={id} className={`sticker pos-${i} ${isNew ? "highlight" : ""}`}>
+                            <div
+                                key={id}
+                                className={`sticker pos-${i} ${isNew ? "highlight" : ""}`}
+                                onClick={async () => {
+                                    let meta: { name?: string; description?: string; image?: string } = {};
+                                    try {
+                                        meta = await fetchPinataMeta(id);
+                                    } catch {
+                                    }
+                                    setNftModal({
+                                        open: true,
+                                        tokenId: id,
+                                        name: meta.name,
+                                        description: meta.description,
+                                        image: meta.image || src,
+                                        tx: txByToken[id],
+                                    });
+                                }}
+                            >
                                 <img src={src} alt={`Badge ${id}`}/>
                             </div>
                         );
@@ -451,6 +516,23 @@ export default function Profile() {
                         setMintModal({open: false});
                         // router.push(`/profile?new=${mintModal.tokenId}`);
                     }}
+                />
+            )}
+            {nftModal.open && nftModal.tokenId && (
+                <MintPopup
+                    tokenId={nftModal.tokenId}
+                    name={nftModal.name}
+                    description={nftModal.description}
+                    image={nftModal.image}
+                    onClose={() => setNftModal({open: false})}
+                    footer={
+                        <button
+                            className={`${popupStyles.btn} ${popupStyles.btnView}`}
+                            onClick={() => openTxOnPolygonscan(nftModal.tx || "", "testnet")}
+                        >
+                            <p className={popupStyles.textWrapper}>View on Polygonscan</p>
+                        </button>
+                    }
                 />
             )}
         </main>
