@@ -31,6 +31,16 @@ html, body {
     padding: 16px;
 }
 
+button, input, select, textarea {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .card {
     background: var(--card);
     border-radius: 16px;
