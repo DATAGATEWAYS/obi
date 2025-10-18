@@ -244,7 +244,7 @@ export default function Profile() {
     function openTxOnPolygonscan(tx: string, net: Net = "mainnet") {
         if (!tx) return;
         const host = net === "testnet" ? "amoy.polygonscan.com" : "polygonscan.com";
-        const url = `https://${host}/tx/${encodeURIComponent(tx)}`;
+        const url = `https://${host}/tx/0x${encodeURIComponent(tx)}`;
 
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.openLink) tg.openLink(url);
