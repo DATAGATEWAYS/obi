@@ -71,57 +71,57 @@ function useHasMounted() {
 type UpdateMode = "minute" | "static";
 
 function useMsToNextUtcMidnight(mode: UpdateMode = "minute") {
-  const [ms, setMs] = React.useState(0);
+    const [ms, setMs] = React.useState(0);
 
-  const tick = React.useCallback(() => {
-    const now = new Date();
-    const nextUtcMidnight = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + 1
-    ));
-    setMs(nextUtcMidnight.getTime() - now.getTime());
-  }, []);
+    const tick = React.useCallback(() => {
+        const now = new Date();
+        const nextUtcMidnight = new Date(Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate() + 1
+        ));
+        setMs(nextUtcMidnight.getTime() - now.getTime());
+    }, []);
 
-  React.useEffect(() => {
-    tick();
+    React.useEffect(() => {
+        tick();
 
-    if (mode === "static") {
-      return;
-    }
+        if (mode === "static") {
+            return;
+        }
 
-    const now = new Date();
-    const delayToNextMinute =
-      (60 - now.getUTCSeconds()) * 1000 - now.getUTCMilliseconds();
+        const now = new Date();
+        const delayToNextMinute =
+            (60 - now.getUTCSeconds()) * 1000 - now.getUTCMilliseconds();
 
-    const tId = window.setTimeout(() => {
-      tick();
-      const iId = window.setInterval(tick, 60_000);
-      return () => clearInterval(iId);
-    }, delayToNextMinute);
+        const tId = window.setTimeout(() => {
+            tick();
+            const iId = window.setInterval(tick, 60_000);
+            return () => clearInterval(iId);
+        }, delayToNextMinute);
 
-    return () => clearTimeout(tId);
-  }, [mode, tick]);
+        return () => clearTimeout(tId);
+    }, [mode, tick]);
 
-  return ms;
+    return ms;
 }
 
-function UtcCountdown({ update = "minute" as UpdateMode }) {
-  const ms = useMsToNextUtcMidnight(update);
-  const total = Math.max(ms, 0);
-  const h = Math.floor(total / 3_600_000);
-  const m = Math.floor((total % 3_600_000) / 60_000);
-  const hh = String(h).padStart(2, "0");
-  const mm = String(m).padStart(2, "0");
+function UtcCountdown({update = "minute" as UpdateMode}) {
+    const ms = useMsToNextUtcMidnight(update);
+    const total = Math.max(ms, 0);
+    const h = Math.floor(total / 3_600_000);
+    const m = Math.floor((total % 3_600_000) / 60_000);
+    const hh = String(h).padStart(2, "0");
+    const mm = String(m).padStart(2, "0");
 
-  return (
-    <div
-      style={{ margin: "4px 0 12px", fontSize: 12, color: "#7a6a56", textAlign: "center" }}
-      title="Quiz resets at 00:00 UTC"
-    >
-      Next quiz in <strong>{hh}:{mm}</strong> · 00:00&nbsp;UTC
-    </div>
-  );
+    return (
+        <div
+            style={{margin: "4px 0 12px", fontSize: 12, color: "#7a6a56", textAlign: "center"}}
+            title="Quiz resets at 00:00 UTC"
+        >
+            Next quiz in <strong>{hh}:{mm}</strong> · 00:00&nbsp;UTC
+        </div>
+    );
 }
 
 export default function DashboardClient() {
@@ -211,8 +211,6 @@ export default function DashboardClient() {
 
             {/* CALENDAR (real week) */}
             <CalendarWeek privyId={user?.id ?? ""} ready={ready && authenticated}/>
-
-            <UtcCountdown update="static" />
 
             {/* QUIZ (server-driven) */}
             <QuizCard privyId={user?.id || ""} ready={ready && authenticated}/>
@@ -417,110 +415,118 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
     }
 
     return (
-        <div style={{background: COLORS.cardBg, borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,.06)"}}>
-            <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
-            <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
+        <>
+            {state.locked && <UtcCountdown update="static"/>}
+            <div style={{
+                background: COLORS.cardBg,
+                borderRadius: 16,
+                padding: 16,
+                boxShadow: "0 2px 8px rgba(0,0,0,.06)"
+            }}>
+                <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
+                <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
 
-            <div style={{display: "grid", gap: 10, color: "#6C584C"}}>
-                {(state.options || []).map((opt, i) => {
-                    const isSelected = selected === i;
-                    return (
-                        <label
-                            key={i}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                                padding: "12px 14px",
-                                borderRadius: 12,
-                                background: isSelected ? COLORS.optionBgSelected : COLORS.optionBg,
-                                border: `1.5px solid ${isSelected ? COLORS.optionBorderSelected : COLORS.optionBorder}`,
-                                cursor: disabled ? "default" : "pointer",
-                                color: COLORS.optionText,
-                                fontWeight: 500,
-                            }}
-                        >
-                            <input
-                                type="radio"
-                                name={`q-${state.index}`}
-                                checked={isSelected}
-                                disabled={disabled}
-                                onChange={() => choose(i)}
-                                style={{accentColor: COLORS.radioAccent, width: 18, height: 18}}
-                            />
-                            <span>{opt}</span>
-                        </label>
-                    );
-                })}
-            </div>
+                <div style={{display: "grid", gap: 10, color: "#6C584C"}}>
+                    {(state.options || []).map((opt, i) => {
+                        const isSelected = selected === i;
+                        return (
+                            <label
+                                key={i}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 10,
+                                    padding: "12px 14px",
+                                    borderRadius: 12,
+                                    background: isSelected ? COLORS.optionBgSelected : COLORS.optionBg,
+                                    border: `1.5px solid ${isSelected ? COLORS.optionBorderSelected : COLORS.optionBorder}`,
+                                    cursor: disabled ? "default" : "pointer",
+                                    color: COLORS.optionText,
+                                    fontWeight: 500,
+                                }}
+                            >
+                                <input
+                                    type="radio"
+                                    name={`q-${state.index}`}
+                                    checked={isSelected}
+                                    disabled={disabled}
+                                    onChange={() => choose(i)}
+                                    style={{accentColor: COLORS.radioAccent, width: 18, height: 18}}
+                                />
+                                <span>{opt}</span>
+                            </label>
+                        );
+                    })}
+                </div>
 
-            {/* banners */}
-            {banner === "correct" && (
-                <button
-                    type="button"
-                    disabled={currentTokenId == null || minting}
-                    onClick={claim}
-                    style={{
-                        width: "100%",
-                        marginTop: 10,
-                        padding: "10px 12px",
-                        borderRadius: 10,
-                        background: "#dff3d9",
-                        color: "#2f6b33",
-                        fontWeight: 700,
-                        border: "1px solid #bfe9b2",
-                        cursor: "pointer",
-                    }}
-                >
-                    {minting ? "Minting…" : "You were right! Claim reward here"}
-                </button>
-            )}
-            {/* Mint popup */}
-            {mintModal.open && mintModal.tokenId && (
-                <MintPopup
-                    tokenId={mintModal.tokenId}
-                    onClose={() => setMintModal({open: false})}
-                    onView={() => {
-                        setMintModal({open: false});
-                        router.push(`/profile?new=${mintModal.tokenId}`);
-                    }}
-                />
-            )}
-            {
-                banner === "wrong" && (
+                {/* banners */}
+                {banner === "correct" && (
                     <button
                         type="button"
-                        onClick={handleTryAgain}
+                        disabled={currentTokenId == null || minting}
+                        onClick={claim}
                         style={{
                             width: "100%",
                             marginTop: 10,
                             padding: "10px 12px",
                             borderRadius: 10,
-                            background: "#7e2b2b",
-                            color: "#fff",
+                            background: "#dff3d9",
+                            color: "#2f6b33",
                             fontWeight: 700,
-                            border: "none",
+                            border: "1px solid #bfe9b2",
                             cursor: "pointer",
                         }}
                     >
-                        Wrong answer, try again
+                        {minting ? "Minting…" : "You were right! Claim reward here"}
                     </button>
+                )}
+                {/* Mint popup */}
+                {mintModal.open && mintModal.tokenId && (
+                    <MintPopup
+                        tokenId={mintModal.tokenId}
+                        onClose={() => setMintModal({open: false})}
+                        onView={() => {
+                            setMintModal({open: false});
+                            router.push(`/profile?new=${mintModal.tokenId}`);
+                        }}
+                    />
+                )}
+                {
+                    banner === "wrong" && (
+                        <button
+                            type="button"
+                            onClick={handleTryAgain}
+                            style={{
+                                width: "100%",
+                                marginTop: 10,
+                                padding: "10px 12px",
+                                borderRadius: 10,
+                                background: "#7e2b2b",
+                                color: "#fff",
+                                fontWeight: 700,
+                                border: "none",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Wrong answer, try again
+                        </button>
+                    )
+                }
+                {
+                    banner === "locked" && !state.has_unclaimed && (
+                        <div style={{
+                            marginTop: 10, padding: "10px 12px", borderRadius: 10,
+                            background: "#dff3d9", color: "#2f6b33", textAlign: "center", fontWeight: 700,
+                            width: "100%", border: "1px solid #bfe9b2",
+                        }}>
+                            You’ve already answered today
+                        </div>
+                    )
+                }
+            </div>
+        </>
     )
-}
-{
-    banner === "locked" && !state.has_unclaimed && (
-        <div style={{
-            marginTop: 10, padding: "10px 12px", borderRadius: 10,
-            background: "#dff3d9", color: "#2f6b33", textAlign: "center", fontWeight: 700,
-            width: "100%", border: "1px solid #bfe9b2",
-        }}>
-            You’ve already answered today
-        </div>
-    )
-}
-</div>
-)
-    ;
+        ;
 }
 
 /* ===========================
@@ -529,7 +535,6 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
 function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     const [answered, setAnswered] = React.useState<Set<string>>(new Set());
 
-    // сегодня и неделя в UTC
     const today = new Date();
     const weekStart = startOfWeekMonUTC(today);
     const days: Date[] = Array.from({length: 7}, (_, i) => addUTC(weekStart, i));
