@@ -11,7 +11,7 @@ function titleByHour(h: number) {
     return "Good evening";
 }
 
-export function shortenAddress(addr: string, head = 6, tail = 4) {
+function shortenAddress(addr: string, head = 6, tail = 4) {
     if (!addr) return "";
     const startIdx = addr.startsWith("0x") ? 2 : 0;
     const headPart = addr.slice(0, startIdx + head);
