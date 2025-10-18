@@ -232,9 +232,12 @@ export default function Profile() {
         const host = net === "testnet" ? "amoy.polygonscan.com" : "polygonscan.com";
         const url = `https://${host}/address/${encodeURIComponent(addr)}#nfttransfers`;
 
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg?.openLink) tg.openLink(url);
-        else window.open(url, "_blank", "noopener,noreferrer");
+        const isTg = Boolean((window as any).Telegram?.WebApp);
+        if (isTg) {
+            window.open(url, "_blank");
+        } else {
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
     }
 
     return (
