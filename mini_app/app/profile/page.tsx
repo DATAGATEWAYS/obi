@@ -225,6 +225,18 @@ export default function Profile() {
         }
     }
 
+    type Net = "mainnet" | "testnet";
+
+    function openOnPolygonscan(addr: string, net: Net = "mainnet") {
+        if (!addr) return;
+        const host = net === "testnet" ? "amoy.polygonscan.com" : "polygonscan.com";
+        const url = `https://${host}/address/${encodeURIComponent(addr)}#nfttransfers`;
+
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg?.openLink) tg.openLink(url);
+        else window.open(url, "_blank", "noopener,noreferrer");
+    }
+
     return (
         <main className="page-inner">
             {/* To dashboard */}
@@ -300,8 +312,7 @@ export default function Profile() {
                 </div>
             )}
             <button
-                onClick={() => {
-                }}
+                onClick={() => openOnPolygonscan(walletAddress, "testnet")}
                 style={{
                     width: "100%",
                     textAlign: "left",
