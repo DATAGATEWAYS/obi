@@ -272,9 +272,7 @@ export default function Profile() {
             {/* Settings */}
             <h4 style={{marginTop: 50, color: "#95654D"}}>My address</h4>
             <button
-                onClick={() => {
-                    onCopy
-                }}
+                onClick={onCopy}
                 style={{
                     width: "100%",
                     textAlign: "left",
