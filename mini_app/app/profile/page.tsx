@@ -73,12 +73,6 @@ export default function Profile() {
         return "";
     }
 
-    function testModal() {
-        setMintModal({open: true, tokenId: 1000})
-    }
-
-    const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
-
     useEffect(() => {
         if (!ready || !authenticated || !privyId) return;
 
@@ -461,32 +455,6 @@ export default function Profile() {
                 }}>
                     To dashboard
                 </button>
-                <button onClick={() => router.push("/onboarding/username")} style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0,
-                    color: "#6C584C"
-                }}>
-                    To test
-                </button>
-                <button
-                    type="button"
-                    onClick={testModal}
-                    style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: 16,
-                        borderRadius: 16,
-                        background: "#f4efdf",
-                        border: 0,
-                        color: "#6C584C"
-                    }}
-                >
-                    Test Modal
-                </button>
                 <button onClick={() => alert("What is Obi? TBD")} style={{
                     width: "100%",
                     textAlign: "left",
@@ -514,9 +482,9 @@ export default function Profile() {
             {nftModal.open && nftModal.tokenId && (
                 <MintPopup
                     tokenId={nftModal.tokenId}
-                    onClose={() => setMintModal({open: false})}
+                    onClose={() => setNftModal({open: false})}
                     onView={() => {
-                        setMintModal({open: false});
+                        setNftModal({open: false});
                         openTxOnPolygonscan(nftModal.tx || "", "testnet");
                     }}
                     btn_name="View on Polygonscan"
