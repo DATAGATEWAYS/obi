@@ -11,7 +11,7 @@ export default function MintPopup({
                                       image,
                                       onClose,
                                       onView,
-                                      footer,
+                                      btn_name,
                                   }: {
     tokenId: number;
     name?: string;
@@ -19,7 +19,7 @@ export default function MintPopup({
     image?: string;
     onClose: () => void;
     onView?: () => void;
-    footer?: Footer;
+    btn_name?: string;
 }) {
     const img = image ?? `/assets/nfts/${tokenId}.png`;
 
@@ -31,20 +31,16 @@ export default function MintPopup({
                 {description && <p className={styles.mintDesc}>{description}</p>}
 
                 <div className={styles.mintActions}>
-                    {footer ? (
-                        footer
-                    ) : (
-                        <>
-                            <button className={`${styles.btn} ${styles.btnClose}`} onClick={onClose}>
-                                <p className={styles.textWrapper}>Close</p>
+                    <>
+                        <button className={`${styles.btn} ${styles.btnClose}`} onClick={onClose}>
+                            <p className={styles.textWrapper}>Close</p>
+                        </button>
+                        {onView && (
+                            <button className={`${styles.btn} ${styles.btnView}`} onClick={onView}>
+                                <p className={styles.textWrapper}>{btn_name || "View"}</p>
                             </button>
-                            {onView && (
-                                <button className={`${styles.btn} ${styles.btnView}`} onClick={onView}>
-                                    <p className={styles.textWrapper}>View</p>
-                                </button>
-                            )}
-                        </>
-                    )}
+                        )}
+                    </>
                 </div>
             </div>
         </div>

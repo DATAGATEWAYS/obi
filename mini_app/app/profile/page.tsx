@@ -511,31 +511,15 @@ export default function Profile() {
                 </button>
             </div>
             {/* Mint popup */}
-            {mintModal.open && mintModal.tokenId && (
-                <MintPopup
-                    tokenId={mintModal.tokenId}
-                    onClose={() => setMintModal({open: false})}
-                    onView={() => {
-                        setMintModal({open: false});
-                        // router.push(`/profile?new=${mintModal.tokenId}`);
-                    }}
-                />
-            )}
             {nftModal.open && nftModal.tokenId && (
                 <MintPopup
                     tokenId={nftModal.tokenId}
-                    name={nftModal.name}
-                    description={nftModal.description}
-                    image={nftModal.image}
-                    onClose={() => setNftModal({open: false})}
-                    footer={
-                        <button
-                            className={`${popupStyles.btn} ${popupStyles.btnView}`}
-                            onClick={() => openTxOnPolygonscan(nftModal.tx || "", "testnet")}
-                        >
-                            <p className={popupStyles.textWrapper}>View on Polygonscan</p>
-                        </button>
-                    }
+                    onClose={() => setMintModal({open: false})}
+                    onView={() => {
+                        setMintModal({open: false});
+                        openTxOnPolygonscan(nftModal.tx || "", "testnet");
+                    }}
+                    btn_name="View on Polygonscan"
                 />
             )}
         </main>
