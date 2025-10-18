@@ -1,7 +1,7 @@
 "use client";
 import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
-import {useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import MintPopup from "../components/MintPopup";
 
 /* ---------- palette for good contrast (works in dark TG too) ---------- */
@@ -23,10 +23,6 @@ function titleByHour(h: number) {
     if (h < 12) return "Good morning";
     if (h < 18) return "Good afternoon";
     return "Good evening";
-}
-
-function sanitize(s?: string | null) {
-    return (s ?? "").replace(/^@/, "").trim();
 }
 
 /* ---------- types for quiz api ---------- */
@@ -129,9 +125,15 @@ export default function DashboardClient() {
     const {user, authenticated, ready} = usePrivy();
     const hasMounted = useHasMounted();
 
+    const [welcomeTried, setWelcomeTried] = useState(false);
+
     /* name anti-flicker */
     const [username, setUsername] = useState("");
     const [nameLoaded, setNameLoaded] = useState(false);
+    const params = useSearchParams();
+
+    const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
+
 
     useEffect(() => {
         if (!hasMounted) return;
@@ -164,6 +166,54 @@ export default function DashboardClient() {
             }
         })();
     }, [ready, authenticated, user, hasMounted]);
+
+    useEffect(() => {
+        if (!ready || !authenticated || !user?.id) return;
+        if (welcomeTried) return;
+
+        const fromDone = params.get("welcome") === "1";
+        if (!fromDone) return;
+
+        setWelcomeTried(true);
+
+        (async () => {
+            try {
+                const r = await fetch("/api/quiz/mint-onboarding", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({privy_id: user.id}),
+                });
+
+                let j: any = null;
+                try {
+                    j = await r.json();
+                } catch {
+                }
+
+                if (!r.ok) {
+                    const msg = j?.detail || j?.error || `Request failed (${r.status})`;
+                    throw new Error(msg);
+                }
+
+                if (j?.token_id === 1000 && j?.already === false) {
+                    try {
+                        const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
+                        if (!local.includes(1000)) {
+                            local.push(1000);
+                            localStorage.setItem("owned_tokens", JSON.stringify(local));
+                        }
+                    } catch {
+                    }
+                    setMintModal({open: true, tokenId: 1000});
+                }
+                // if already === true - nothing to show
+            } catch (e: any) {
+                alert(e?.message || "Welcome mint failed");
+            } finally {
+                router.replace("/dashboard"); // clear ?welcome=1
+            }
+        })();
+    }, [ready, authenticated, user?.id, params, welcomeTried, router]);
 
     const greetTitle = titleByHour(new Date().getHours());
     const Skeleton = (
@@ -212,8 +262,24 @@ export default function DashboardClient() {
             {/* CALENDAR (real week) */}
             <CalendarWeek privyId={user?.id ?? ""} ready={ready && authenticated}/>
 
-            {/* QUIZ (server-driven) */}
-            <QuizCard privyId={user?.id || ""} ready={ready && authenticated}/>
+            {/* QUIZ  */}
+            <QuizCard
+                privyId={user?.id || ""}
+                ready={ready && authenticated}
+                onOpenMint={(tokenId) => setMintModal({open: true, tokenId})}
+            />
+
+            {/* Mint popup */}
+            {mintModal.open && mintModal.tokenId && (
+                <MintPopup
+                    tokenId={mintModal.tokenId}
+                    onClose={() => setMintModal({open: false})}
+                    onView={() => {
+                        setMintModal({open: false});
+                        router.push(`/profile?new=${mintModal.tokenId}`);
+                    }}
+                />
+            )}
 
             {/* CTA */}
             <a
@@ -271,7 +337,11 @@ export default function DashboardClient() {
 /* ===========================
    Quiz Card (DB-backed)
    =========================== */
-function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
+function QuizCard({privyId, ready, onOpenMint}: {
+    privyId: string;
+    ready: boolean,
+    onOpenMint: (tokenId: number) => void;
+}) {
     const [loading, setLoading] = useState(true);
     const [state, setState] = useState<QuizState | null>(null);
     const [selected, setSelected] = useState<number | null>(null);
@@ -279,7 +349,6 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
     const router = useRouter();
     const currentTokenId: number | null = state?.index == null ? null : state.index + 1;
     const [minting, setMinting] = useState(false);
-    const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
 
     useEffect(() => {
         if (!ready || !privyId) return;
@@ -391,9 +460,19 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({privy_id: privyId}),
             });
-            const j = await r.json();
+
+            let j: any = null;
+            try {
+                j = await r.json();
+            } catch {
+            }
+
+            if (!r.ok || !j?.token_id) {
+                const msg = j?.detail || j?.error || "Claim failed";
+                throw new Error(msg);
+            }
+
             setMinting(false);
-            if (!r.ok || !j?.token_id) throw new Error(j?.detail || j?.error || "Claim failed");
 
             try {
                 const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
@@ -407,7 +486,7 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
             setState(s => (s ? {...s, has_unclaimed: false} : s));
             setBanner("locked");
 
-            setMintModal({open: true, tokenId: j.token_id});
+            onOpenMint(j.token_id);
         } catch (e: any) {
             setMinting(false);
             alert(e?.message || "Claim failed");
@@ -479,17 +558,6 @@ function QuizCard({privyId, ready}: { privyId: string; ready: boolean }) {
                     >
                         {minting ? "Minting…" : "You were right! Claim reward here"}
                     </button>
-                )}
-                {/* Mint popup */}
-                {mintModal.open && mintModal.tokenId && (
-                    <MintPopup
-                        tokenId={mintModal.tokenId}
-                        onClose={() => setMintModal({open: false})}
-                        onView={() => {
-                            setMintModal({open: false});
-                            router.push(`/profile?new=${mintModal.tokenId}`);
-                        }}
-                    />
                 )}
                 {
                     banner === "wrong" && (

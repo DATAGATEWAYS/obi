@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer, NFTMint, \
-    ClaimPayload, UserWallet
+    ClaimPayload, UserWallet, WelcomeMintPayload
 from services.ai_api.onchain import mint_badge
 from .db import get_session
 
@@ -109,6 +109,9 @@ QUESTIONS = [
     },
 ]
 TOTAL = len(QUESTIONS)
+
+WELCOME_TOKEN_ID = 1000
+WELCOME_INDEX = WELCOME_TOKEN_ID - 1
 
 
 async def _get_uid_by_privy(session, privy_id: str) -> int:
@@ -293,3 +296,44 @@ async def quiz_owned(privy_id: str, session: AsyncSession = Depends(get_session)
     idxs = rows.all()
     token_ids = [token_id_for_index(i) for i in idxs]
     return {"count": len(token_ids), "token_ids": token_ids}
+
+@router.post("/mint-onboarding")
+async def mint_onboarding_badge(payload: WelcomeMintPayload, session: AsyncSession = Depends(get_session)):
+    # 1) user
+    uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
+    if not uid:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
+    # 2) minted yet
+    existed = await session.scalar(
+        select(NFTMint.user_id).where(and_(NFTMint.user_id == uid, NFTMint.quiz_index == WELCOME_INDEX))
+    )
+    if existed:
+        return {"token_id": WELCOME_TOKEN_ID, "already": True}
+
+    # 3) has wallet
+    addr = await session.scalar(
+        select(UserWallet.address)
+        .where(UserWallet.user_id == uid)
+        .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
+    )
+    if not addr:
+        raise HTTPException(status_code=400, detail="user_has_no_wallet")
+
+    # 4) mint
+    try:
+        tx_hash = await mint_badge(addr, WELCOME_TOKEN_ID)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"mint_error:{e}")
+
+    # 5) to db
+    await session.execute(
+        pg_insert(NFTMint)
+        .values(user_id=uid, quiz_index=WELCOME_INDEX, tx_hash=tx_hash)
+        .on_conflict_do_nothing()
+    )
+    await session.commit()
+
+    return {"token_id": WELCOME_TOKEN_ID, "tx_hash": tx_hash, "already": False}

@@ -158,3 +158,6 @@ class NFTMint(Base):
 
 class ClaimPayload(BaseModel):
     privy_id: str
+
+class WelcomeMintPayload(BaseModel):
+    privy_id: str
