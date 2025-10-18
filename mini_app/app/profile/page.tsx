@@ -237,7 +237,8 @@ export default function Profile() {
                 {/* pager */}
                 {tokens.length > 3 && (
                     <div className="pager">
-                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0}>{"<"}</button>
+                        <button onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={safePage === 0}>{"<"}</button>
                         <div style={{alignSelf: "center", color: "#6C584C"}}>{safePage + 1} / {totalPages}</div>
                         <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                                 disabled={safePage >= totalPages - 1}>{">"}
@@ -247,6 +248,26 @@ export default function Profile() {
             </div>
 
             {/* Settings */}
+            <h4 style={{marginTop: 50, color: "#95654D"}}>My address</h4>
+            <button
+                onClick={() => {}}
+                style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: 16,
+                    borderRadius: 16,
+                    background: "#f4efdf",
+                    border: 0,
+                    marginBottom: 12,
+                    color: "#6C584C"
+                }}
+            >
+                <p style={{color: "#6C584C"}}>
+                    {walletAddress || (walletLoading ? "Creating…" : "—")}
+                </p>
+                <img src="profile/copy_btn.svg" alt="copy_btn"/>
+            </button>
+
             <h4 style={{marginTop: 50, color: "#95654D"}}>Account Settings</h4>
             <button
                 onClick={() => router.push("/onboarding/username?edit=1")}
@@ -326,10 +347,6 @@ export default function Profile() {
                 >
                     Test Modal
                 </button>
-                <p style={{marginTop: 8, color: "#6C584C"}}>
-                    Your wallet address:&nbsp;
-                    <strong>{walletAddress || (walletLoading ? "Creating…" : "—")}</strong>
-                </p>
                 <button onClick={() => alert("What is Obi? TBD")} style={{
                     width: "100%",
                     textAlign: "left",
