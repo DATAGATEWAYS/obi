@@ -211,6 +211,11 @@ small {
     width: 68px;
 }
 
+.back-with-pager{
+    display: flex;
+    justify-content: center;
+}
+
 /*========== welcome screen ==========*/
 
 .welcome-screen {

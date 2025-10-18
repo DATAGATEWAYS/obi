@@ -256,33 +256,34 @@ export default function Profile() {
                     onClick={() => router.push("/dashboard")}
                 />
             </div>
+            <div className="back-with-pager">
+                {/* Turtle back */}
+                <div className="shell-sticker">
+                    <img className="vector" src="/profile/Vector%201.png"/>
+                    <img className="img" src="/profile/Group%203.png"/>
 
-            {/* Turtle back */}
-            <div className="shell-sticker">
-                <img className="vector" src="/profile/Vector%201.png"/>
-                <img className="img" src="/profile/Group%203.png"/>
-
-                {visible.map((id, i) => {
-                    const src = `/assets/nfts/${id}.png`;
-                    const isNew = newTokenParam && Number(newTokenParam) === id;
-                    return (
-                        <div key={id} className={`sticker pos-${i} ${isNew ? "highlight" : ""}`}>
-                            <img src={src} alt={`Badge ${id}`}/>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* pag ( >3) */}
-            {tokens.length > 3 && (
-                <div className="pager">
-                    <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0}>Prev</button>
-                    <div style={{alignSelf: "center", color: "#6C584C"}}>{safePage + 1} / {totalPages}</div>
-                    <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                            disabled={safePage >= totalPages - 1}>Next
-                    </button>
+                    {visible.map((id, i) => {
+                        const src = `/assets/nfts/${id}.png`;
+                        const isNew = newTokenParam && Number(newTokenParam) === id;
+                        return (
+                            <div key={id} className={`sticker pos-${i} ${isNew ? "highlight" : ""}`}>
+                                <img src={src} alt={`Badge ${id}`}/>
+                            </div>
+                        );
+                    })}
                 </div>
-            )}
+
+                {/* pager */}
+                {tokens.length > 3 && (
+                    <div className="pager">
+                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0}>Prev</button>
+                        <div style={{alignSelf: "center", color: "#6C584C"}}>{safePage + 1} / {totalPages}</div>
+                        <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={safePage >= totalPages - 1}>Next
+                        </button>
+                    </div>
+                )}
+            </div>
 
             {/* Settings */}
             <h4 style={{marginTop: 50, color: "#95654D"}}>Account Settings</h4>
