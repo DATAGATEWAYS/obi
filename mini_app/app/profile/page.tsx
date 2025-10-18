@@ -3,11 +3,20 @@ import React, {useEffect, useMemo, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter, useSearchParams} from "next/navigation";
 import MintPopup from "../components/MintPopup";
+import {copyTextToClipboard} from "../utils/copy";
 
 function titleByHour(h: number) {
     if (h < 12) return "Good morning";
     if (h < 18) return "Good afternoon";
     return "Good evening";
+}
+
+export function shortenAddress(addr: string, head = 6, tail = 4) {
+    if (!addr) return "";
+    const startIdx = addr.startsWith("0x") ? 2 : 0;
+    const headPart = addr.slice(0, startIdx + head);
+    const tailPart = addr.slice(-tail);
+    return `${headPart}…${tailPart}`;
 }
 
 export default function Profile() {
@@ -203,6 +212,19 @@ export default function Profile() {
         />
     );
 
+    const [copied, setCopied] = React.useState(false);
+
+    async function onCopy() {
+        if (!walletAddress) return;
+        try {
+            await copyTextToClipboard(walletAddress);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
+        } catch (e) {
+            alert("Copy failed");
+        }
+    }
+
     return (
         <main className="page-inner">
             {/* To dashboard */}
@@ -251,6 +273,7 @@ export default function Profile() {
             <h4 style={{marginTop: 50, color: "#95654D"}}>My address</h4>
             <button
                 onClick={() => {
+                    onCopy
                 }}
                 style={{
                     width: "100%",
@@ -260,14 +283,24 @@ export default function Profile() {
                     background: "#f4efdf",
                     border: 0,
                     marginBottom: 12,
-                    color: "#6C584C"
+                    color: "#6C584C",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    // aria-label = "Copy wallet address"
+                    // title = "Copy wallet address"
                 }}
             >
-                <p style={{color: "#6C584C"}}>
-                    {walletAddress || (walletLoading ? "Creating…" : "—")}
+                <p style={{color: "#6C584C", margin: 0}}>
+                    {shortenAddress(walletAddress) || (walletLoading ? "Creating…" : "—")}
                 </p>
                 <img src="/profile/copy_btn.svg" alt="copy_btn"/>
             </button>
+            {copied && (
+                <div style={{textAlign: "center", fontSize: 12, color: "#6C584C", marginTop: -8, marginBottom: 12}}>
+                    address copied!
+                </div>
+            )}
             <button
                 onClick={() => {
                 }}
@@ -279,13 +312,20 @@ export default function Profile() {
                     background: "#859e4f",
                     border: 0,
                     marginBottom: 12,
-                    color: "#faf2dd"
+                    color: "#faf2dd",
+                    height: "26px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                 }}
             >
-                <p style={{color: "#FAF2DD"}}>
+                <p style={{color: "#FAF2DD", margin: 0}}>
                     View on Polygonscan
                 </p>
-                <img src="/profile/open_link_btn.svg" alt="open_link_btn"/>
+                <img src="/profile/open_link_btn.svg" alt="open_link_btn"
+                     style={{
+                         marginLeft: "10px",
+                     }}/>
             </button>
 
             <h4 style={{color: "#95654D"}}>Account Settings</h4>
