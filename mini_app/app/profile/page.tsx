@@ -205,45 +205,6 @@ export default function Profile() {
 
     return (
         <main className="page-inner">
-            <style>{`
-        @keyframes skeleton { 0%{background-position:100% 0} 100%{background-position:0 0} }
-        /* turtle back */
-        .shell {
-          position: relative;
-          width: 100%;
-          max-width: 360px;
-          margin: 24px auto 8px;
-          aspect-ratio: 1 / 1;
-        }
-        .shell .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
-        .sticker {
-          position:absolute;
-          width: 34%;
-          aspect-ratio: 1/1;
-          border-radius: 12px;
-          overflow: hidden;
-          display:flex; align-items:center; justify-content:center;
-          transform-origin:center;
-          transition: transform .25s ease;
-        }
-        .sticker img { width:100%; height:100%; object-fit:contain; }
-        .pos-0 { left: 8%;  top: 18%; }
-        .pos-1 { right: 8%; top: 22%; }
-        .pos-2 { left: 32%; bottom: 10%; }
-        /* highlight new badge */
-        @keyframes pop {
-          0% { transform: scale(.7); filter: drop-shadow(0 0 0 rgba(47,107,51,0)); }
-          60% { transform: scale(1.06); filter: drop-shadow(0 6px 14px rgba(47,107,51,.45)); }
-          100% { transform: scale(1); filter: drop-shadow(0 2px 6px rgba(47,107,51,.25)); }
-        }
-        .highlight { animation: pop .6s ease; }
-        .pager { display:flex; gap:8px; justify-content:center; margin:6px 0 4px; }
-        .pager button{
-          border:none; background:#f0f0e8; color:#6C584C; padding:8px 12px; border-radius:10px; cursor:pointer;
-        }
-        .pager button[disabled]{ opacity:.5; cursor:default; }
-      `}</style>
-
             {/* To dashboard */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
                 <h2 className="greeting">
