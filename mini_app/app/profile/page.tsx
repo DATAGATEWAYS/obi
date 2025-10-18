@@ -250,7 +250,8 @@ export default function Profile() {
             {/* Settings */}
             <h4 style={{marginTop: 50, color: "#95654D"}}>My address</h4>
             <button
-                onClick={() => {}}
+                onClick={() => {
+                }}
                 style={{
                     width: "100%",
                     textAlign: "left",
@@ -265,10 +266,29 @@ export default function Profile() {
                 <p style={{color: "#6C584C"}}>
                     {walletAddress || (walletLoading ? "Creating…" : "—")}
                 </p>
-                <img src="profile/copy_btn.svg" alt="copy_btn"/>
+                <img src="/profile/copy_btn.svg" alt="copy_btn"/>
+            </button>
+            <button
+                onClick={() => {
+                }}
+                style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: "#859e4f",
+                    border: 0,
+                    marginBottom: 12,
+                    color: "#faf2dd"
+                }}
+            >
+                <p style={{color: "#FAF2DD"}}>
+                    View on Polygonscan
+                </p>
+                <img src="/profile/open_link_btn.svg" alt="open_link_btn"/>
             </button>
 
-            <h4 style={{marginTop: 50, color: "#95654D"}}>Account Settings</h4>
+            <h4 style={{color: "#95654D"}}>Account Settings</h4>
             <button
                 onClick={() => router.push("/onboarding/username?edit=1")}
                 style={{
