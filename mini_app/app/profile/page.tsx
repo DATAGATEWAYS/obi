@@ -246,9 +246,12 @@ export default function Profile() {
         const host = net === "testnet" ? "amoy.polygonscan.com" : "polygonscan.com";
         const url = `https://${host}/tx/0x${encodeURIComponent(tx)}`;
 
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg?.openLink) tg.openLink(url);
-        else window.open(url, "_blank", "noopener,noreferrer");
+        const isTg = Boolean((window as any).Telegram?.WebApp);
+        if (isTg) {
+            window.open(url, "_blank");
+        } else {
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
     }
 
     const PINATA_META_BASE = "https://gateway.pinata.cloud/ipfs/bafybeie6t77eu3gcblouw5zvizxaqv5qvkyesznka5zzuiunsasv2d6j54";
