@@ -237,10 +237,10 @@ export default function Profile() {
                 {/* pager */}
                 {tokens.length > 3 && (
                     <div className="pager">
-                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0}>Prev</button>
+                        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0}>{"<"}</button>
                         <div style={{alignSelf: "center", color: "#6C584C"}}>{safePage + 1} / {totalPages}</div>
                         <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                                disabled={safePage >= totalPages - 1}>Next
+                                disabled={safePage >= totalPages - 1}>{">"}
                         </button>
                     </div>
                 )}
