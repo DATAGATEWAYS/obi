@@ -16,14 +16,14 @@ export default function Page() {
         return {cls: "fail", text: "Not authenticated"};
     }, [ready, authenticated, authing]);
 
-  const handleLogin = async () => {
-    try {
-      setAuthing(true);
-      await login();
-    } finally {
-      setAuthing(false);
-    }
-  };
+    const handleLogin = async () => {
+        try {
+            setAuthing(true);
+            await login();
+        } finally {
+            setAuthing(false);
+        }
+    };
 
     useEffect(() => {
         if (!ready || !authenticated || postedRef.current) return;
@@ -61,6 +61,15 @@ export default function Page() {
         })();
     }, [ready, authenticated, user, router]);
 
+    const [dots, setDots] = useState<number>(1);
+    useEffect(() => {
+        if (statusPrivy.cls !== "wait") return;
+        const id = setInterval(() => setDots((d) => (d % 3) + 1), 500);
+        return () => clearInterval(id);
+    }, [statusPrivy.cls]);
+
+    const loadingText = useMemo(() => `Loading${".".repeat(dots)}`, [dots]);
+
     return (
         <main className="tg-safe--lock">
             <div className="welcome-screen">
@@ -82,7 +91,9 @@ export default function Page() {
                     learn crypto slow and steady<br/>with
                 </p>
 
-                <p className={`privy-status ${statusPrivy.cls}`}>Privy status: {statusPrivy.text}</p>
+                <p className={`privy-status ${statusPrivy.cls}`}>
+                    {statusPrivy.cls === "wait" ? loadingText : statusPrivy.text}
+                </p>
             </div>
         </main>
     );
