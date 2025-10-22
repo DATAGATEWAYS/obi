@@ -600,7 +600,6 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     text-align: center;
     line-height: 1.05;
     font-size: 12px;
-    /* фон как SVG */
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100% 100%;
@@ -637,7 +636,6 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
                             style={{
                                 backgroundImage: `url(/dashboard/${bgName}.svg)`,
                                 color: textColor,
-                                fontWeight: 700
                             }}
                         >
                             <div>{dayNames[d.getUTCDay()]}</div>
