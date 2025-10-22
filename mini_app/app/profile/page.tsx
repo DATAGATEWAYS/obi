@@ -333,7 +333,7 @@ export default function Profile() {
                                         tokenId: id,
                                         name: meta.name,
                                         description: meta.description,
-                                        image: meta.image || src,
+                                        image: src,
                                         tx: txByToken[id],
                                     });
 

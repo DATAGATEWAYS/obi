@@ -47,18 +47,29 @@
     align-items: center;
 }
 
-.btnClose {
-    background: #9e4f4f;
-    color: #faf2dd;
+.close {
+    color: #6c584c;
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    cursor: pointer;
 }
 
-.close {
+.closeX {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   color: #6c584c;
-  text-decoration-line: underline;
-  text-decoration-color: currentColor;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-  text-decoration-skip-ink: auto;
+  font-size: 18px;
+  line-height: 1;
   cursor: pointer;
 }
 
