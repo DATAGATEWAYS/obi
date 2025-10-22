@@ -9,6 +9,7 @@
 }
 
 .mintCard {
+    position: relative;
     width: min(85vw, 360px);
     background: #faf2dd;
     border-radius: 16px;
@@ -56,21 +57,21 @@
 }
 
 .closeX {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #6c584c;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
+    position: absolute;
+    top: 17px;
+    right: 14px;
+    width: 12px;
+    height: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #6c584c;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
 }
 
 .btnView {
