@@ -4,7 +4,7 @@ import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 import MintPopup from "../components/MintPopup";
 
-/* ---------- palette for good contrast (works in dark TG too) ---------- */
+/* ---------- palette for good contrast ---------- */
 const COLORS = {
     cardBg: "#FAF2DD",
     quizBorder: "#b58752",
@@ -15,6 +15,7 @@ const COLORS = {
     optionBorderSelected: "#6B8749",
     radioAccent: "#2F6B33",
     ctaBg: "#2f6b33",
+    cta2Bg: "#859E4F",
     ctaText: "#ffffff",
 };
 
@@ -325,7 +326,7 @@ export default function DashboardClient() {
                     marginTop: 16,
                     padding: 14,
                     borderRadius: 12,
-                    background: COLORS.ctaBg,
+                    background: COLORS.cta2Bg,
                     color: COLORS.ctaText,
                     textDecoration: "none",
                 }}
