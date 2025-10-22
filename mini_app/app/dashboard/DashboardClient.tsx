@@ -218,7 +218,7 @@ export default function DashboardClient() {
       `}</style>
 
             {/* greeting + profile */}
-            <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+            <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10,}}>
                 <h2 className="greeting">
                     {greetTitle},{" "}
                     {nameLoaded ? (username || "friend") : Skeleton}!
