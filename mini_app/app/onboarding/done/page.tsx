@@ -154,6 +154,30 @@ export default function Done() {
         }
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
+    const complete = async (target: "chat" | "dashboard") => {
+        try {
+            const username =
+                sessionStorage.getItem("onb_username") || localStorage.getItem("onb_username") || "";
+            let topics: any = {};
+            try {
+                topics = JSON.parse(localStorage.getItem("onb_topics") || "{}");
+            } catch {
+            }
+
+            if (ready && authenticated && user?.id) {
+                await fetch("/api/users/onboarding/complete", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({privy_id: user.id, username, topics}),
+                    cache: "no-store",
+                }).catch(() => {
+                });
+            }
+        } finally {
+            router.push(target === "chat" ? "/chat" : "/dashboard");
+        }
+    };
+
     return (
         <main className="page-inner done-main tg-safe--lock">
             <h2 className="done-h2">You’re all set,{" "}{username}!</h2>
@@ -165,13 +189,13 @@ export default function Done() {
             <div className="done-btns">
                 <button
                     className="done-chat-btn"
-                    onClick={() => router.push("/chat")}
+                    onClick={() => complete("chat")}
                 >
                     Ask Obi your first question
                 </button>
                 <button
                     className="done-dashboard-btn"
-                    onClick={() => router.push("/dashboard")}
+                    onClick={() => complete("dashboard")}
                 >
                     Explore dashboard
                 </button>

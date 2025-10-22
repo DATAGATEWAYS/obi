@@ -5,7 +5,7 @@ import {usePrivy} from "@privy-io/react-auth";
 
 export default function Username() {
     const search = useSearchParams();
-    const isEdit = search.get("edit") === "1"; // режим редактирования с профиля
+    const isEdit = search.get("edit") === "1";
 
     const {user, authenticated, ready} = usePrivy();
     const [name, setName] = useState<string>(() => {
@@ -47,26 +47,38 @@ export default function Username() {
 
     const action = isEdit ? save : next;
 
+    const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!name.trim()) return;
+        await action();
+    };
+
     return (
         <main className="page-inner">
             <div className="username-helper">
                 <h2 className="username-h2">What would you like Obi to call you?</h2>
                 <p className="username-p">This is your nickname inside the app — you can change it anytime.</p>
 
-                <input
-                    onChange={(e) => setName(e.target.value)}
-                    className="name-input"
-                    placeholder="Start typing..."
-                    value={name}
-                />
+                <form onSubmit={handleSubmit}>
+                    <input
+                        className="name-input"
+                        placeholder="Start typing..."
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        autoComplete="nickname"
+                        inputMode="text"
+                        enterKeyHint={isEdit ? "done" : "next"}
+                    />
 
-                <button
-                    className="name-save-btn"
-                    disabled={!name.trim()}
-                    onClick={action}
-                >
-                    {isEdit ? "Save" : "Next"}
-                </button>
+                    <button
+                        className="name-save-btn"
+                        type="submit"
+                        disabled={!name.trim()}
+                    >
+                        {isEdit ? "Save" : "Next"}
+                    </button>
+                </form>
             </div>
         </main>
     );
