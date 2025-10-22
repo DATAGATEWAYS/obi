@@ -19,7 +19,7 @@ const COLORS = {
 };
 
 const QUIZ_ASSETS = {
-    bg: "/dashboard/dashboard.png",
+    bg: "/dashboard/dashboard_max.png",
     radio_default: "/dashboard/radio_default.svg",
     radio_right: "/dashboard/radio_right.svg",
     radio_wrong: "/dashboard/radio_wrong.svg",
@@ -486,7 +486,7 @@ function QuizCard({privyId, ready, onOpenMint}: {
                     padding: 16,
                     backgroundImage: `url(${QUIZ_ASSETS.bg})`,
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: "contain",
+                    backgroundSize: "100% 100%",
 
                 }}>
                 <div
