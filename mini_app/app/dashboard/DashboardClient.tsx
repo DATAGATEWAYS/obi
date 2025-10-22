@@ -272,6 +272,9 @@ export default function DashboardClient() {
                        textDecoration: "none",
                        boxShadow: "0 2px 8px rgba(0,0,0,.06)",
                        height: "80px",
+                       justifyContent: "center",
+                       display: "flex",
+                       alignItems: "center",
                    }}
                 >
                     Grants
@@ -287,6 +290,9 @@ export default function DashboardClient() {
                        textDecoration: "none",
                        boxShadow: "0 2px 8px rgba(0,0,0,.06)",
                        height: "80px",
+                       justifyContent: "center",
+                       display: "flex",
+                       alignItems: "center",
                    }}
                 >
                     dApps
