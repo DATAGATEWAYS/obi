@@ -2,8 +2,6 @@
 import React from "react";
 import styles from "./MintPopup.module.css";
 
-type Footer = React.ReactNode;
-
 export default function MintPopup({
                                       tokenId,
                                       name,

@@ -284,6 +284,15 @@ export default function Profile() {
         })();
     }, [ready, authenticated, privyId]);
 
+    const [mintLoading, setMintLoading] = useState(false);
+    const [mintDots, setMintDots] = useState(1);
+    useEffect(() => {
+        if (!mintLoading) return;
+        const id = setInterval(() => setMintDots(d => (d % 3) + 1), 500);
+        return () => clearInterval(id);
+    }, [mintLoading]);
+    const mintLoadingText = `Loading${".".repeat(mintDots)}`;
+
     return (
         <main className="page-inner">
             {/* To dashboard */}
@@ -362,8 +371,6 @@ export default function Profile() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    // aria-label = "Copy wallet address"
-                    // title = "Copy wallet address"
                 }}
             >
                 <p style={{color: "#6C584C", margin: 0}}>
@@ -478,10 +485,19 @@ export default function Profile() {
                     Log out
                 </button>
             </div>
+            {/* Popup loader */}
+            {mintLoading && (
+                <div className={popupStyles.mintBackdrop} aria-live="polite" aria-busy="true">
+                    <p style={{fontSize: 18, fontWeight: 700}}>{mintLoadingText}</p>
+                </div>
+            )}
             {/* Mint popup */}
             {nftModal.open && nftModal.tokenId && (
                 <MintPopup
                     tokenId={nftModal.tokenId}
+                    name={nftModal.name}
+                    description={nftModal.description}
+                    image={nftModal.image}
                     onClose={() => setNftModal({open: false})}
                     onView={() => {
                         setNftModal({open: false});
