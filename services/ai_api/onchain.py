@@ -39,6 +39,9 @@ _minter = (_w3.eth.account.from_key(_PRIVKEY) if (_w3 and _PRIVKEY) else None)
 
 _nonce_lock = threading.Lock()
 
+print("[onchain] _minter:", _minter)
+print("[onchain] _w3:", _w3)
+
 if _w3 and _minter:
     try:
         bal = _w3.eth.get_balance(_minter.address)
