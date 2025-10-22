@@ -278,24 +278,6 @@ export default function DashboardClient() {
             {/* Explore */}
             <h4 style={{marginTop: 24, color: "#95654D"}}>Explore Polygon Community</h4>
             <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
-                <a onClick={() => openLink("https://polygon.technology/community")}
-                   href="#"
-                   style={{
-                       padding: 24,
-                       borderRadius: 16,
-                       background: COLORS.cardBg,
-                       textAlign: "center",
-                       color: "#B0AC9A",
-                       textDecoration: "none",
-                       boxShadow: "0 2px 8px rgba(0,0,0,.06)",
-                       height: "80px",
-                       justifyContent: "center",
-                       display: "flex",
-                       alignItems: "center",
-                   }}
-                >
-                    Community
-                </a>
                 <a onClick={() => openLink("https://polygon.technology/ecosystem")}
                    href="#"
                    style={{
@@ -313,6 +295,24 @@ export default function DashboardClient() {
                    }}
                 >
                     dApps
+                </a>
+                <a onClick={() => openLink("https://polygon.technology/community")}
+                   href="#"
+                   style={{
+                       padding: 24,
+                       borderRadius: 16,
+                       background: COLORS.cardBg,
+                       textAlign: "center",
+                       color: "#B0AC9A",
+                       textDecoration: "none",
+                       boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+                       height: "80px",
+                       justifyContent: "center",
+                       display: "flex",
+                       alignItems: "center",
+                   }}
+                >
+                    Community Hub
                 </a>
             </div>
 

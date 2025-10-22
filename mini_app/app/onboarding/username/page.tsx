@@ -60,26 +60,31 @@ export default function Username() {
                 <h2 className="username-h2">What would you like Obi to call you?</h2>
                 <p className="username-p">This is your nickname inside the app — you can change it anytime.</p>
 
-                <form onSubmit={handleSubmit}>
+                <form style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    }}
+                    onSubmit={handleSubmit}>
                     <input
-                        className="name-input"
-                        placeholder="Start typing..."
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        autoComplete="nickname"
-                        inputMode="text"
-                        enterKeyHint={isEdit ? "done" : "next"}
+                    className="name-input"
+                    placeholder="Start typing..."
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="nickname"
+                    inputMode="text"
+                    enterKeyHint={isEdit ? "done" : "next"}
                     />
 
                     <button
-                        className="name-save-btn"
-                        type="submit"
-                        disabled={!name.trim()}
-                    >
-                        {isEdit ? "Save" : "Next"}
-                    </button>
-                </form>
-            </div>
-        </main>
-    );
+                    className="name-save-btn"
+                    type="submit"
+                    disabled={!name.trim()}
+                >
+                    {isEdit ? "Save" : "Next"}
+                </button>
+            </form>
+        </div>
+</main>
+)
+    ;
 }
