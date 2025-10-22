@@ -321,6 +321,8 @@ export default function Profile() {
                                 key={id}
                                 className={`sticker pos-${i} ${isNew ? "highlight" : ""}`}
                                 onClick={async () => {
+                                    if (mintLoading) return;
+                                    setMintLoading(true);
                                     let meta: { name?: string; description?: string; image?: string } = {};
                                     try {
                                         meta = await fetchPinataMeta(id);
@@ -334,6 +336,8 @@ export default function Profile() {
                                         image: meta.image || src,
                                         tx: txByToken[id],
                                     });
+
+                                    setTimeout(() => setMintLoading(false), 0);
                                 }}
                             >
                                 <img src={src} alt={`Badge ${id}`}/>

@@ -30,9 +30,7 @@ export default function MintPopup({
 
                 <div className={styles.mintActions}>
                     <>
-                        <button className={`${styles.btn} ${styles.btnClose}`} onClick={onClose}>
-                            <p className={styles.textWrapper}>Close</p>
-                        </button>
+                        <p onClick={onClose} className={`${styles.textWrapper} ${styles.btnClose}`}>Close</p>
                         {onView && (
                             <button className={`${styles.btn} ${styles.btnView}`} onClick={onView}>
                                 <p className={styles.textWrapper}>{btn_name || "View"}</p>
