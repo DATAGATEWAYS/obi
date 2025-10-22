@@ -39,30 +39,6 @@ _minter = (_w3.eth.account.from_key(_PRIVKEY) if (_w3 and _PRIVKEY) else None)
 
 _nonce_lock = threading.Lock()
 
-print("[onchain] _minter:", _minter)
-print("[onchain] _w3:", _w3)
-
-if _w3 and _minter:
-    try:
-        bal = _w3.eth.get_balance(_minter.address)
-        print("[onchain] RPC:", _RPC_URL, "chain:", _CHAIN_ID)
-        print("[onchain] MINTER:", _minter.address, "balance:", Web3.from_wei(bal, "ether"), "MATIC")
-    except Exception as e:
-        print("[onchain] init check failed:", e)
-
-
-def get_onchain_status():
-    if not (_w3 and _contract and _minter):
-        return {"ready": False}
-    bal = _w3.eth.get_balance(_minter.address)
-    nonce = _w3.eth.get_transaction_count(_minter.address, "pending")
-    return {
-        "ready": True, "rpc": _RPC_URL, "chain_id": _CHAIN_ID,
-        "contract": _CONTRACT_ADDR, "minter_address": _minter.address,
-        "minter_balance_matic": float(Web3.from_wei(bal, "ether")),
-        "next_nonce": int(nonce),
-    }
-
 
 def _mint_sync(to_addr: str, token_id: int) -> str:
     if not (_w3 and _contract and _minter):

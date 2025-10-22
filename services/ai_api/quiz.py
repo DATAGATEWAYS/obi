@@ -3,13 +3,14 @@ from datetime import date, datetime, timezone
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy import select, and_, func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from services.ai_api import onchain as oc
 from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAnswerPayload, QuizAnswer, NFTMint, \
     ClaimPayload, UserWallet, WelcomeMintPayload
 from services.ai_api.onchain import mint_badge
 from .db import get_session
-from sqlalchemy.exc import OperationalError
 
 
 def today_utc() -> date:
@@ -113,6 +114,23 @@ TOTAL = len(QUESTIONS)
 
 WELCOME_TOKEN_ID = 1000
 WELCOME_INDEX = WELCOME_TOKEN_ID - 1
+
+@router.get("/onchain_status")
+async def onchain_status():
+    if not (oc._w3 and oc._minter):
+        return {"ready": False}
+    from web3 import Web3
+    bal = oc._w3.eth.get_balance(oc._minter.address)
+    nonce = oc._w3.eth.get_transaction_count(oc._minter.address, "pending")
+    return {
+        "ready": True,
+        "rpc": oc._RPC_URL,
+        "chain_id": oc._CHAIN_ID,
+        "contract": oc._CONTRACT_ADDR,
+        "minter_address": oc._minter.address,
+        "minter_balance_matic": float(Web3.from_wei(bal, "ether")),
+        "next_nonce": int(nonce),
+    }
 
 
 async def _get_uid_by_privy(session, privy_id: str) -> int:
