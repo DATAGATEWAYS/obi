@@ -366,7 +366,7 @@ function QuizCard({privyId, ready, onOpenMint}: {
                 color: "#6c584c"
             }}>
                 <h3 style={{margin: 0, color: "#6d7d4f"}}>Quiz of the day:</h3>
-                <p style={{margin: "8px 0 12px"}}>Loading…</p>
+                <p style={{margin: 0}}>Loading…</p>
             </div>
         );
     }
@@ -480,133 +480,141 @@ function QuizCard({privyId, ready, onOpenMint}: {
     return (
         <>
             {state.locked && <UtcCountdown update="static"/>}
-            <div style={{
-                borderRadius: 16,
-                padding: 16,
-                backgroundImage: `url(${QUIZ_ASSETS.bg})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "100% 100%",
-            }}>
-                <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
-                <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
+            <div
+                style={{
+                    borderRadius: 16,
+                    padding: 16,
+                    backgroundImage: `url(${QUIZ_ASSETS.bg})`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "contain",
 
-                <div style={{display: "grid", gap: 10}}>
-                    {(state.options || []).map((opt, i) => {
-                        const isSelected = selected === i;
+                }}>
+                <img src="/dashboard/dashboard.svg" alt=""/>
+                <div
+                style={{
+                    padding: 16,
+                }}>
+                    <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
+                    <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
 
-                        const radioName =
-                            banner === "correct" && isSelected
-                                ? "radio_right"
-                                : banner === "wrong" && isSelected
-                                    ? "radio_wrong"
-                                    : "radio_default";
+                    <div>
+                        {(state.options || []).map((opt, i) => {
+                            const isSelected = selected === i;
 
-                        const rowColor =
-                            banner === "correct" && isSelected
-                                ? QUIZ_COLORS.textRight
-                                : banner === "wrong" && isSelected
-                                    ? QUIZ_COLORS.textWrong
-                                    : QUIZ_COLORS.textDefault;
+                            const radioName =
+                                banner === "correct" && isSelected
+                                    ? "radio_right"
+                                    : banner === "wrong" && isSelected
+                                        ? "radio_wrong"
+                                        : "radio_default";
 
-                        const disabled = state.locked || banner === "correct" || banner === "wrong";
+                            const rowColor =
+                                banner === "correct" && isSelected
+                                    ? QUIZ_COLORS.textRight
+                                    : banner === "wrong" && isSelected
+                                        ? QUIZ_COLORS.textWrong
+                                        : QUIZ_COLORS.textDefault;
 
-                        return (
-                            <label
-                                key={i}
-                                onClick={() => (!disabled ? choose(i) : null)}
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 10,
-                                    cursor: disabled ? "default" : "pointer",
-                                    color: rowColor,
-                                    fontWeight: 500,
-                                    padding: "6px 2px",
-                                    userSelect: "none",
-                                }}
-                            >
-                                <input
-                                    type="radio"
-                                    name={`q-${state.index}`}
-                                    checked={isSelected}
-                                    onChange={() => choose(i)}
-                                    disabled={disabled}
-                                    style={{position: "absolute", opacity: 0, pointerEvents: "none"}}
-                                />
-                                <span
-                                    aria-hidden
+                            const disabled = state.locked || banner === "correct" || banner === "wrong";
+
+                            return (
+                                <label
+                                    key={i}
+                                    onClick={() => (!disabled ? choose(i) : null)}
                                     style={{
-                                        flex: "0 0 18px",
-                                        width: 18,
-                                        height: 18,
-                                        backgroundImage: `url(${QUIZ_ASSETS[radioName as keyof typeof QUIZ_ASSETS]})`,
-                                        backgroundRepeat: "no-repeat",
-                                        backgroundSize: "100% 100%",
-                                        display: "inline-block",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 10,
+                                        cursor: disabled ? "default" : "pointer",
+                                        color: rowColor,
+                                        fontWeight: 500,
+                                        padding: "6px 2px",
+                                        userSelect: "none",
                                     }}
-                                />
-                                <span>{opt}</span>
-                            </label>
-                        );
-                    })}
-                </div>
-
-                {/* banners */}
-                {banner === "correct" && (
-                    <button
-                        type="button"
-                        disabled={currentTokenId == null || minting}
-                        onClick={claim}
-                        style={{
-                            width: "100%",
-                            marginTop: 12,
-                            padding: "12px 14px",
-                            borderRadius: 12,
-                            background: QUIZ_COLORS.btnRight,
-                            color: "#FFFFFF",
-                            fontWeight: 700,
-                            border: "none",
-                            cursor: currentTokenId == null || minting ? "default" : "pointer",
-                        }}
-                    >
-                        {minting ? "Minting…" : "You were right! Claim reward here"}
-                    </button>
-                )}
-                {banner === "wrong" && (
-                    <button
-                        type="button"
-                        onClick={handleTryAgain}
-                        style={{
-                            width: "100%",
-                            marginTop: 12,
-                            padding: "12px 14px",
-                            borderRadius: 12,
-                            background: QUIZ_COLORS.btnWrong,
-                            color: "#FFFFFF",
-                            fontWeight: 700,
-                            border: "none",
-                            cursor: "pointer",
-                        }}
-                    >
-                        Wrong answer, try again
-                    </button>
-                )}
-                {banner === "locked" && !state.has_unclaimed && (
-                    <div
-                        style={{
-                            marginTop: 12,
-                            padding: "12px 14px",
-                            borderRadius: 12,
-                            background: "#E7F0DB",
-                            color: QUIZ_COLORS.textRight,
-                            textAlign: "center",
-                            fontWeight: 700,
-                            width: "100%",
-                        }}
-                    >
-                        You’ve already answered today
+                                >
+                                    <input
+                                        type="radio"
+                                        name={`q-${state.index}`}
+                                        checked={isSelected}
+                                        onChange={() => choose(i)}
+                                        disabled={disabled}
+                                        style={{position: "absolute", opacity: 0, pointerEvents: "none"}}
+                                    />
+                                    <span
+                                        aria-hidden
+                                        style={{
+                                            flex: "0 0 18px",
+                                            width: 18,
+                                            height: 18,
+                                            backgroundImage: `url(${QUIZ_ASSETS[radioName as keyof typeof QUIZ_ASSETS]})`,
+                                            backgroundRepeat: "no-repeat",
+                                            backgroundSize: "100% 100%",
+                                            display: "inline-block",
+                                        }}
+                                    />
+                                    <span>{opt}</span>
+                                </label>
+                            );
+                        })}
                     </div>
-                )}
+
+                    {/* banners */}
+                    {banner === "correct" && (
+                        <button
+                            type="button"
+                            disabled={currentTokenId == null || minting}
+                            onClick={claim}
+                            style={{
+                                width: "100%",
+                                marginTop: 12,
+                                padding: "12px 14px",
+                                borderRadius: 12,
+                                background: QUIZ_COLORS.btnRight,
+                                color: "#FFFFFF",
+                                fontWeight: 700,
+                                border: "none",
+                                cursor: currentTokenId == null || minting ? "default" : "pointer",
+                            }}
+                        >
+                            {minting ? "Minting…" : "You were right! Claim reward here"}
+                        </button>
+                    )}
+                    {banner === "wrong" && (
+                        <button
+                            type="button"
+                            onClick={handleTryAgain}
+                            style={{
+                                width: "100%",
+                                marginTop: 12,
+                                padding: "12px 14px",
+                                borderRadius: 12,
+                                background: QUIZ_COLORS.btnWrong,
+                                color: "#FFFFFF",
+                                fontWeight: 700,
+                                border: "none",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Wrong answer, try again
+                        </button>
+                    )}
+                    {banner === "locked" && !state.has_unclaimed && (
+                        <div
+                            style={{
+                                marginTop: 12,
+                                padding: "12px 14px",
+                                borderRadius: 12,
+                                background: "#E7F0DB",
+                                color: QUIZ_COLORS.textRight,
+                                textAlign: "center",
+                                fontWeight: 700,
+                                width: "100%",
+                            }}
+                        >
+                            You’ve already answered today
+                        </div>
+                    )}
+                </div>
             </div>
         </>
     )
