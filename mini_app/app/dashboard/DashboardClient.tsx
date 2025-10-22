@@ -314,6 +314,24 @@ export default function DashboardClient() {
                     dApps
                 </a>
             </div>
+
+            {/* Still lost */}
+            <h4 style={{marginTop: 24, color: "#95654D"}}>Still lost?</h4>
+            <a
+                onClick={() => openLink("https://t.me/OBIonboardAI")}
+                style={{
+                    display: "block",
+                    textAlign: "center",
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 12,
+                    background: COLORS.ctaBg,
+                    color: COLORS.ctaText,
+                    textDecoration: "none",
+                }}
+            >
+                Talk to an expert
+            </a>
         </main>
     );
 }
@@ -490,10 +508,10 @@ function QuizCard({privyId, ready, onOpenMint}: {
 
                 }}>
                 <div
-                style={{
-                    padding: 16,
-                    marginTop: 16,
-                }}>
+                    style={{
+                        padding: 16,
+                        marginTop: 16,
+                    }}>
                     <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
                     <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
 
