@@ -6,7 +6,7 @@ import MintPopup from "../components/MintPopup";
 
 /* ---------- palette for good contrast (works in dark TG too) ---------- */
 const COLORS = {
-    cardBg: "#ffffff",
+    cardBg: "#FAF2DD",
     quizBorder: "#b58752",
     optionBg: "#F0F5E6",
     optionBorder: "#D6E3C7",
@@ -259,7 +259,7 @@ export default function DashboardClient() {
             </a>
 
             {/* Explore */}
-            <h4 style={{marginTop: 24, color: "#7a6a56"}}>Explore Polygon Community</h4>
+            <h4 style={{marginTop: 24, color: "#95654D"}}>Explore Polygon Community</h4>
             <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
                 <a onClick={() => openLink("https://obi-onboard.vercel.app/about")}
                    href="#"
@@ -268,9 +268,10 @@ export default function DashboardClient() {
                        borderRadius: 16,
                        background: COLORS.cardBg,
                        textAlign: "center",
-                       color: "#6d7d4f",
+                       color: "#B0AC9A",
                        textDecoration: "none",
                        boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+                       height: "80px",
                    }}
                 >
                     Grants
@@ -282,9 +283,10 @@ export default function DashboardClient() {
                        borderRadius: 16,
                        background: COLORS.cardBg,
                        textAlign: "center",
-                       color: "#6d7d4f",
+                       color: "#B0AC9A",
                        textDecoration: "none",
                        boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+                       height: "80px",
                    }}
                 >
                     dApps
@@ -586,17 +588,36 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     return (
         <>
             <style>{`
-        .cal { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; margin:12px 0 16px; }
-        .cal-day { padding: 6px 4px; border-radius: 10px; text-align: center; line-height: 1.05;
-                   font-size: 12px; border: 1.5px solid #9BB37C; color: #7a6a56; background: transparent; }
-        .cal-day .d { opacity: .9; font-size: 11px; }
-        .cal-day.correct { background: #E6F0D9; border-color: #6B8749; color: #2f6b33; }
-        .cal-day.today.correct { background: #2f6b33; border-color: #2f6b33; color: #ffffff; }
-        .cal-day.today:not(.correct) { background: #6D8F52; border-color: #6D8F52; color: #ffffff; }
-        @media (max-width: 380px) { .cal { gap:4px; } .cal-day { padding: 5px 2px; border-radius: 8px; font-size: 10.5px; }
-                                    .cal-day .d { font-size: 10px; } }
-        @media (max-width: 340px) { .cal-day { font-size: 9.5px; } .cal-day .d { font-size: 9px; } }
-      `}</style>
+  .cal {
+    display:grid; grid-template-columns: repeat(7, minmax(0,1fr));
+    gap:6px; margin:12px 0 16px;
+  }
+  .cal-day {
+    position: relative;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 6px 2px;
+    border-radius: 10px;
+    text-align: center;
+    line-height: 1.05;
+    font-size: 12px;
+    /* фон как SVG */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    border: 0;
+  }
+  .cal-day .d { opacity: .95; font-size: 11px; }
+
+  @media (max-width: 380px) {
+    .cal { gap:4px; }
+    .cal-day { padding: 5px 2px; border-radius: 8px; font-size: 10.5px; }
+    .cal-day .d { font-size: 10px; }
+  }
+  @media (max-width: 340px) {
+    .cal-day { font-size: 9.5px; }
+    .cal-day .d { font-size: 9px; }
+  }
+`}</style>
 
             <div className="cal">
                 {days.map((d, i) => {
@@ -604,17 +625,20 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
                     const isToday = ymd === todayYMD;
                     const wasCorrect = answered.has(ymd);
 
-                    const cls = [
-                        "cal-day",
-                        isToday ? "today" : "",
-                        wasCorrect ? "correct" : "",
-                    ].join(" ");
+                    const bgName = wasCorrect ? "answer_day" : (isToday ? "current_day" : "day");
+
+                    const textColor = wasCorrect ? "#F0EAD2" : (isToday ? "#437338" : "#ADC178");
 
                     return (
                         <div
                             key={i}
-                            className={cls}
-                            title={`${ymd}${wasCorrect ? " • Correct" : ""}${isToday ? " • Today" : ""}`}
+                            className="cal-day"
+                            title={`${ymd}${wasCorrect ? " • Answered" : ""}${isToday ? " • Today" : ""}`}
+                            style={{
+                                backgroundImage: `url(/dashboard/${bgName}.svg)`,
+                                color: textColor,
+                                fontWeight: 700
+                            }}
                         >
                             <div>{dayNames[d.getUTCDay()]}</div>
                             <div className="d">{String(d.getUTCDate()).padStart(2, "0")}</div>
