@@ -277,7 +277,7 @@ export default function DashboardClient() {
             {/* Explore */}
             <h4 style={{marginTop: 24, color: "#95654D"}}>Explore Polygon Community</h4>
             <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
-                <a onClick={() => openLink("https://obi-onboard.vercel.app/about")}
+                <a onClick={() => openLink("https://polygon.technology/community")}
                    href="#"
                    style={{
                        padding: 24,
@@ -293,9 +293,9 @@ export default function DashboardClient() {
                        alignItems: "center",
                    }}
                 >
-                    Grants
+                    Community
                 </a>
-                <a onClick={() => openLink("https://obi-onboard.vercel.app/about")}
+                <a onClick={() => openLink("https://polygon.technology/ecosystem")}
                    href="#"
                    style={{
                        padding: 24,
