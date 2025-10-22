@@ -19,7 +19,7 @@ const COLORS = {
 };
 
 const QUIZ_ASSETS = {
-    bg: "/dashboard/dashboard_h2.png",
+    bg: "/dashboard/dashboard.png",
     radio_default: "/dashboard/radio_default.svg",
     radio_right: "/dashboard/radio_right.svg",
     radio_wrong: "/dashboard/radio_wrong.svg",
@@ -492,6 +492,7 @@ function QuizCard({privyId, ready, onOpenMint}: {
                 <div
                 style={{
                     padding: 16,
+                    marginTop: 16,
                 }}>
                     <h3 style={{margin: 0, color: "#95654D"}}>Quiz of the day:</h3>
                     <p style={{margin: "8px 0 12px", color: "#6C584C"}}>{state.question}</p>
@@ -569,7 +570,7 @@ function QuizCard({privyId, ready, onOpenMint}: {
                                 padding: "12px 14px",
                                 borderRadius: 12,
                                 background: QUIZ_COLORS.btnRight,
-                                color: "#FFFFFF",
+                                color: "#F5F3F3",
                                 fontWeight: 700,
                                 border: "none",
                                 cursor: currentTokenId == null || minting ? "default" : "pointer",
@@ -588,7 +589,7 @@ function QuizCard({privyId, ready, onOpenMint}: {
                                 padding: "12px 14px",
                                 borderRadius: 12,
                                 background: QUIZ_COLORS.btnWrong,
-                                color: "#FFFFFF",
+                                color: "#F5F3F3",
                                 fontWeight: 700,
                                 border: "none",
                                 cursor: "pointer",
