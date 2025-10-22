@@ -414,9 +414,8 @@ small {
 
 .welcome-screen .privy-status {
     position: absolute;
-    width: 168px;
+    width: 100%;
     height: 17px;
-    left: 138px;
     top: 390px;
     font-style: normal;
     font-weight: 700;

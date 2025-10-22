@@ -19,7 +19,7 @@ const COLORS = {
 };
 
 const QUIZ_ASSETS = {
-    bg: "/dashboard/dashboard_max.png",
+    bg: "/dashboard/dashboard_h2.png",
     radio_default: "/dashboard/radio_default.svg",
     radio_right: "/dashboard/radio_right.svg",
     radio_wrong: "/dashboard/radio_wrong.svg",
