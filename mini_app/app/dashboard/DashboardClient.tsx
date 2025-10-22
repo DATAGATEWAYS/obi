@@ -599,7 +599,7 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     border-radius: 10px;
     text-align: center;
     line-height: 1.05;
-    font-size: 12px;
+    font-size: 10px;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100% 100%;
