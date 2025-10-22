@@ -2,6 +2,10 @@
 import {useEffect, useRef, useState} from "react";
 import {useCreateWallet, usePrivy, useWallets} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
+import MintPopup from "../../components/MintPopup";
+import popupCss from "../../components/MintPopup.module.css";
+
+const WELCOME_TOKEN_ID = 1000;
 
 function safeSet(key: string, val: string) {
     try {
@@ -22,6 +26,17 @@ export default function Done() {
     const creatingRef = useRef(false);
     const router = useRouter();
 
+    const [mintLoading, setMintLoading] = useState(false);
+    const [mintDots, setMintDots] = useState(1);
+    useEffect(() => {
+        if (!mintLoading) return;
+        const id = setInterval(() => setMintDots(d => (d % 3) + 1), 500);
+        return () => clearInterval(id);
+    }, [mintLoading]);
+    const mintingText = `Minting your first badge${".".repeat(mintDots)}`;
+
+    const [mintModal, setMintModal] = useState<{ open: boolean }>({open: false});
+
     async function upsertWalletOnce(payload: any) {
         if (postedWalletRef.current) return;
         postedWalletRef.current = true;
@@ -36,6 +51,55 @@ export default function Done() {
         }
     }
 
+    const welcomeTriedRef = useRef(false);
+    const triggerWelcomeMintOnce = async () => {
+        if (welcomeTriedRef.current) return;
+        welcomeTriedRef.current = true;
+
+        try {
+            const owned = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
+            if (Array.isArray(owned) && owned.includes(WELCOME_TOKEN_ID)) return;
+        } catch {
+        }
+
+        setMintLoading(true);
+        try {
+            const r = await fetch("/api/quiz/mint-onboarding", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({privy_id: user?.id}),
+            });
+
+            let j: any = null;
+            try {
+                j = await r.json();
+            } catch {
+            }
+
+            if (!r.ok) {
+                const msg = j?.detail || j?.error || `Mint failed (${r.status})`;
+                throw new Error(msg);
+            }
+
+            if (j?.token_id === WELCOME_TOKEN_ID) {
+                try {
+                    const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
+                    if (!local.includes(WELCOME_TOKEN_ID)) {
+                        local.push(WELCOME_TOKEN_ID);
+                        localStorage.setItem("owned_tokens", JSON.stringify(local));
+                    }
+                } catch {
+                }
+            }
+
+            setMintModal({open: true});
+        } catch (e: any) {
+            console.error(e?.message || e);
+        } finally {
+            setMintLoading(false);
+        }
+    };
+
     const {createWallet} = useCreateWallet({
         onSuccess: async ({wallet}) => {
             safeSet("wallet_address", wallet.address);
@@ -48,6 +112,7 @@ export default function Done() {
                 is_embedded: wallet.walletClientType === "privy",
                 is_primary: true,
             });
+            await triggerWelcomeMintOnce();
         },
         onError: () => {
         },
@@ -69,14 +134,17 @@ export default function Done() {
         if (existing) {
             safeSet("wallet_address", existing.address);
             if ((existing as any).id) safeSet("wallet_id", (existing as any).id);
-            upsertWalletOnce({
-                privy_id: user?.id,
-                wallet_id: (existing as any).id ?? null,
-                chain_type: "ethereum",
-                address: existing.address,
-                is_embedded: existing.walletClientType === "privy",
-                is_primary: true,
-            });
+            (async () => {
+                await upsertWalletOnce({
+                    privy_id: user?.id,
+                    wallet_id: (existing as any).id ?? null,
+                    chain_type: "ethereum",
+                    address: existing.address,
+                    is_embedded: existing.walletClientType === "privy",
+                    is_primary: true,
+                });
+                triggerWelcomeMintOnce();
+            })();
             return;
         }
 
@@ -103,11 +171,30 @@ export default function Done() {
                 </button>
                 <button
                     className="done-dashboard-btn"
-                    onClick={() => router.push("/dashboard?welcome=1")}
+                    onClick={() => router.push("/dashboard")}
                 >
                     Explore dashboard
                 </button>
             </div>
+            {/* mint loader */}
+            {mintLoading && (
+                <div className={popupCss.mintBackdrop} aria-live="polite" aria-busy="true">
+                    <p style={{fontSize: 18, fontWeight: 700}}>{mintingText}</p>
+                </div>
+            )}
+            {/* popup after mint" */}
+            {mintModal.open && (
+                <MintPopup
+                    tokenId={WELCOME_TOKEN_ID}
+                    image={`/assets/nfts/${WELCOME_TOKEN_ID}.png`}
+                    name="Welcome to Obi!"
+                    description="This is your first badge — congrats!"
+                    onClose={() => setMintModal({open: false})}
+                    mode="single"
+                    primaryLabel="Great!"
+                    onPrimary={() => setMintModal({open: false})}
+                />
+            )}
         </main>
     );
 }

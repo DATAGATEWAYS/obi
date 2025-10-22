@@ -1,7 +1,7 @@
 "use client";
 import React, {useEffect, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
-import {useRouter, useSearchParams} from "next/navigation";
+import {useRouter} from "next/navigation";
 import MintPopup from "../components/MintPopup";
 
 /* ---------- palette for good contrast (works in dark TG too) ---------- */
@@ -113,9 +113,8 @@ function UtcCountdown({update = "minute" as UpdateMode}) {
     return (
         <div
             style={{margin: "4px 0 12px", fontSize: 12, color: "#7a6a56", textAlign: "center"}}
-            title="Quiz resets at 00:00 UTC"
         >
-            Next quiz in <strong>{hh}:{mm}</strong> · 00:00&nbsp;UTC
+            Next quiz in <strong>{hh}:{mm}</strong>
         </div>
     );
 }
@@ -130,7 +129,6 @@ export default function DashboardClient() {
     /* name anti-flicker */
     const [username, setUsername] = useState("");
     const [nameLoaded, setNameLoaded] = useState(false);
-    const params = useSearchParams();
 
     const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
 
@@ -166,54 +164,6 @@ export default function DashboardClient() {
             }
         })();
     }, [ready, authenticated, user, hasMounted]);
-
-    useEffect(() => {
-        if (!ready || !authenticated || !user?.id) return;
-        if (welcomeTried) return;
-
-        const fromDone = params.get("welcome") === "1";
-        if (!fromDone) return;
-
-        setWelcomeTried(true);
-
-        (async () => {
-            try {
-                const r = await fetch("/api/quiz/mint-onboarding", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({privy_id: user.id}),
-                });
-
-                let j: any = null;
-                try {
-                    j = await r.json();
-                } catch {
-                }
-
-                if (!r.ok) {
-                    const msg = j?.detail || j?.error || `Request failed (${r.status})`;
-                    throw new Error(msg);
-                }
-
-                if (j?.token_id === 1000 && j?.already === false) {
-                    try {
-                        const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
-                        if (!local.includes(1000)) {
-                            local.push(1000);
-                            localStorage.setItem("owned_tokens", JSON.stringify(local));
-                        }
-                    } catch {
-                    }
-                    setMintModal({open: true, tokenId: 1000});
-                }
-                // if already === true - nothing to show
-            } catch (e: any) {
-                alert(e?.message || "Welcome mint failed");
-            } finally {
-                router.replace("/dashboard"); // clear ?welcome=1
-            }
-        })();
-    }, [ready, authenticated, user?.id, params, welcomeTried, router]);
 
     const greetTitle = titleByHour(new Date().getHours());
     const Skeleton = (
