@@ -1,66 +1,73 @@
 .mintBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(62, 39, 27, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+    position: fixed;
+    inset: 0;
+    background: rgba(62, 39, 27, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
 
 .mintCard {
-  width: min(85vw, 360px);
-  background: #faf2dd;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  text-align: center;
-  color: #6c584c;
+    width: min(85vw, 360px);
+    background: #faf2dd;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    color: #6c584c;
 }
 
 .mintTitle {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .mintImg {
-  width: 160px;
-  height: 160px;
-  object-fit: contain;
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
 }
 
 .mintActions {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-  flex-direction: column-reverse;
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-direction: column-reverse;
 }
 
 .btn {
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 700;
-  height: 26px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    height: 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .btnClose {
-  background: #9e4f4f;
-  color: #faf2dd;
+    background: #9e4f4f;
+    color: #faf2dd;
 }
 
-.close{
-
+.close {
+  color: #6c584c;
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: auto;
+  cursor: pointer;
 }
 
 .btnView {
-  background: #859e4f;
-  color: #faf2dd;
+    background: #859e4f;
+    color: #faf2dd;
 }
 
 .textWrapper {
-  margin: 0;
+    margin: 0;
+    font-weight: 500;
 }
