@@ -10,10 +10,13 @@ from web3.exceptions import ContractLogicError
 
 from services.ai_api.models import UserWallet
 
-_RPC_URL = os.getenv("AMOY_RPC_URL") or os.getenv("RPC_URL")
+import threading
+import time
+
+_RPC_URL = os.getenv("AMOY_RPC_URL")
 _CONTRACT_ADDR = os.getenv("OBI_BADGES_ADDRESS")
-_CHAIN_ID = int(os.getenv("CHAIN_ID_TEST", "80002"))
-_PRIVKEY = (os.getenv("MINTER_PRIVATE_KEY") or "").strip()
+_CHAIN_ID = int(os.getenv("CHAIN_ID_TEST"))
+_PRIVKEY = os.getenv("MINTER_PRIVATE_KEY")
 
 _abi_path = os.getenv("OBI_BADGES_ABI_PATH")
 _abi = None
@@ -34,45 +37,74 @@ _contract = (
 )
 _minter = (_w3.eth.account.from_key(_PRIVKEY) if (_w3 and _PRIVKEY) else None)
 
+_nonce_lock = threading.Lock()
+
+if _w3 and _minter:
+    try:
+        bal = _w3.eth.get_balance(_minter.address)
+        print("[onchain] RPC:", _RPC_URL, "chain:", _CHAIN_ID)
+        print("[onchain] MINTER:", _minter.address, "balance:", Web3.from_wei(bal, "ether"), "MATIC")
+    except Exception as e:
+        print("[onchain] init check failed:", e)
+
+
+def get_onchain_status():
+    if not (_w3 and _contract and _minter):
+        return {"ready": False}
+    bal = _w3.eth.get_balance(_minter.address)
+    nonce = _w3.eth.get_transaction_count(_minter.address, "pending")
+    return {
+        "ready": True, "rpc": _RPC_URL, "chain_id": _CHAIN_ID,
+        "contract": _CONTRACT_ADDR, "minter_address": _minter.address,
+        "minter_balance_matic": float(Web3.from_wei(bal, "ether")),
+        "next_nonce": int(nonce),
+    }
+
 
 def _mint_sync(to_addr: str, token_id: int) -> str:
     if not (_w3 and _contract and _minter):
         raise RuntimeError("Web3/contract/minter is not configured")
 
     to = Web3.to_checksum_address(to_addr)
-    nonce = _w3.eth.get_transaction_count(_minter.address, "pending")
-    gas_price = _w3.eth.gas_price
-
+    tx_func = _contract.functions.mintTo(to, int(token_id))
     try:
-        tx_func = _contract.functions.mint(to, int(token_id), 1, b"")
         _ = tx_func.estimate_gas({"from": _minter.address})
     except Exception:
-        try:
-            tx_func = _contract.functions.mint(to, int(token_id))
-            _ = tx_func.estimate_gas({"from": _minter.address})
-        except Exception:
-            try:
-                tx_func = _contract.functions.mintTo(to, int(token_id))
-                _ = tx_func.estimate_gas({"from": _minter.address})
-            except Exception as e:
-                raise RuntimeError(f"No suitable mint method in ABI for token {token_id}: {e}")
+        tx_func = _contract.functions.mint(to, int(token_id), 1, b"")
 
-    tx = tx_func.build_transaction({
-        "from": _minter.address,
-        "nonce": nonce,
-        "chainId": _CHAIN_ID,
-        "gasPrice": gas_price,
-    })
-    if "gas" not in tx:
-        try:
-            tx["gas"] = _w3.eth.estimate_gas(tx)
-        except Exception:
-            tx["gas"] = 250_000
+    last_err = None
+    for _ in range(3):
+        with _nonce_lock:
+            nonce = _w3.eth.get_transaction_count(_minter.address, "pending")
+            gas_price = _w3.eth.gas_price
+            tx = tx_func.build_transaction({
+                "from": _minter.address,
+                "nonce": nonce,
+                "chainId": _CHAIN_ID,
+                "gasPrice": gas_price,
+            })
+            if "gas" not in tx:
+                try:
+                    tx["gas"] = _w3.eth.estimate_gas(tx)
+                except Exception:
+                    tx["gas"] = 250_000
 
-    signed = _w3.eth.account.sign_transaction(tx, private_key=_PRIVKEY)
-    tx_hash = _w3.eth.send_raw_transaction(signed.raw_transaction)
-    _w3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
-    return tx_hash.hex()
+            signed = _w3.eth.account.sign_transaction(tx, private_key=_PRIVKEY)
+
+        try:
+            tx_hash = _w3.eth.send_raw_transaction(signed.raw_transaction)
+            _w3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
+            return tx_hash.hex()
+        except ValueError as e:
+            msg = str(e)
+            last_err = e
+            if "nonce too low" in msg or "replacement" in msg:
+                time.sleep(1.0)
+                continue
+            if "insufficient funds" in msg:
+                raise
+            raise
+    raise last_err
 
 
 async def mint_badge_to_wallet(session: AsyncSession, user_id: int, token_id: int) -> str:

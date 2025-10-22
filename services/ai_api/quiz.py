@@ -9,6 +9,7 @@ from services.ai_api.models import User, QuizProgress, QuizStateResponse, QuizAn
     ClaimPayload, UserWallet, WelcomeMintPayload
 from services.ai_api.onchain import mint_badge
 from .db import get_session
+from sqlalchemy.exc import OperationalError
 
 
 def today_utc() -> date:
@@ -230,28 +231,31 @@ async def quiz_week(privy_id: str, date_from: date, date_to: date, session: Asyn
 
 @router.post("/claim")
 async def claim_quiz_reward(payload: ClaimPayload, session: AsyncSession = Depends(get_session)):
-    uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
-    if not uid:
-        raise HTTPException(status_code=404, detail="user_not_found")
-
     # 1) user
     uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
     if not uid:
         raise HTTPException(status_code=404, detail="user_not_found")
 
-    # 2) today answer not claimed
+    # 2) строка ответа за сегодня под блокировкой (исключаем конкуренцию клеймов)
     today = today_utc()
-    qa: QuizAnswer | None = await session.scalar(
-        select(QuizAnswer)
-        .where(QuizAnswer.user_id == uid, QuizAnswer.answered_on == today)
-    )
+    try:
+        res = await session.execute(
+            select(QuizAnswer).where(
+                (QuizAnswer.user_id == uid) & (QuizAnswer.answered_on == today)
+            ).with_for_update()
+        )
+    except OperationalError:
+        raise HTTPException(status_code=409, detail="claim_in_progress")
+
+    qa: QuizAnswer | None = res.scalar_one_or_none()
+
     if not qa:
         raise HTTPException(status_code=400, detail="no_answer_today")
 
     if qa.claimed:
         return {"already": True, "token_id": qa.token_id}
 
-    token_id = qa.quiz_index + 1
+    token_id = token_id_for_index(qa.quiz_index)
 
     # 3) wallet address
     addr = await session.scalar(
