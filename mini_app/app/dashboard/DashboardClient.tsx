@@ -645,15 +645,19 @@ function QuizCard({privyId, ready, onOpenMint}: {
    =========================== */
 function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     const [answered, setAnswered] = React.useState<Set<string>>(new Set());
+    const [offset, setOffset] = React.useState<number>(0);
 
     const today = new Date();
-    const weekStart = startOfWeekMonUTC(today);
+    const base = addUTC(today, offset * 7);
+    const weekStart = startOfWeekMonUTC(base);
     const days: Date[] = Array.from({length: 7}, (_, i) => addUTC(weekStart, i));
     const from = toYMDUTC(days[0]);
     const to = toYMDUTC(days[6]);
     const todayYMD = toYMDUTC(today);
 
-    React.useEffect(() => {
+    const label = offset === -1 ? "Last week" : offset === 0 ? "This week" : "Next week";
+
+    useEffect(() => {
         if (!ready || !privyId) return;
         (async () => {
             const r = await fetch(
@@ -669,10 +673,20 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     return (
         <>
             <style>{`
-  .cal {
-    display:grid; grid-template-columns: repeat(7, minmax(0,1fr));
-    gap:6px; margin:12px 0 16px;
-  }
+  .cal-nav {
+          display:flex; align-items:center; justify-content:space-between;
+          margin: 8px 0 6px; color:#6C584C;
+        }
+    .cal-nav .btn {
+      border:0; border-radius:10px; padding:6px 10px; line-height:1;
+      background:#f4efdf; color:#6C584C; cursor:pointer;
+    }
+    .cal-nav .btn:disabled { opacity:.4; cursor:default; }
+    
+    .cal {
+      display:grid; grid-template-columns: repeat(7, minmax(0,1fr));
+      gap:6px; margin:12px 0 16px;
+    }
   .cal-day {
     position: relative;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -698,6 +712,31 @@ function CalendarWeek({privyId, ready}: { privyId: string; ready: boolean }) {
     .cal-day .d { font-size: 9px; }
   }
 `}</style>
+            <div className="cal-nav">
+                <button
+                    type="button"
+                    className="btn"
+                    onClick={() => setOffset(o => Math.max(-1, o - 1))}
+                    disabled={offset <= -1}
+                    aria-label="Previous week"
+                    title="Previous week"
+                >
+                    {"<"}
+                </button>
+
+                <div style={{fontWeight: 600}}>{label}</div>
+
+                <button
+                    type="button"
+                    className="btn"
+                    onClick={() => setOffset(o => Math.min(1, o + 1))}
+                    disabled={offset >= 1}
+                    aria-label="Next week"
+                    title="Next week"
+                >
+                    {">"}
+                </button>
+            </div>
 
             <div className="cal">
                 {days.map((d, i) => {
