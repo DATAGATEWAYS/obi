@@ -181,6 +181,16 @@ export default function DashboardClient() {
         />
     );
 
+    function openLink(url: string) {
+        if (!url) return;
+        const isTg = Boolean((window as any).Telegram?.WebApp);
+        if (isTg) {
+            window.open(url, "_blank");
+        } else {
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+    }
+
     return (
         <main className="page-inner">
             <style>{`
@@ -251,31 +261,31 @@ export default function DashboardClient() {
             {/* Explore */}
             <h4 style={{marginTop: 24, color: "#7a6a56"}}>Explore Polygon Community</h4>
             <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
-                <a
-                    href="#"
-                    style={{
-                        padding: 24,
-                        borderRadius: 16,
-                        background: COLORS.cardBg,
-                        textAlign: "center",
-                        color: "#6d7d4f",
-                        textDecoration: "none",
-                        boxShadow: "0 2px 8px rgba(0,0,0,.06)",
-                    }}
+                <a onClick={() => openLink("https://obi-onboard.vercel.app/about")}
+                   href="#"
+                   style={{
+                       padding: 24,
+                       borderRadius: 16,
+                       background: COLORS.cardBg,
+                       textAlign: "center",
+                       color: "#6d7d4f",
+                       textDecoration: "none",
+                       boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+                   }}
                 >
                     Grants
                 </a>
-                <a
-                    href="#"
-                    style={{
-                        padding: 24,
-                        borderRadius: 16,
-                        background: COLORS.cardBg,
-                        textAlign: "center",
-                        color: "#6d7d4f",
-                        textDecoration: "none",
-                        boxShadow: "0 2px 8px rgba(0,0,0,.06)",
-                    }}
+                <a onClick={() => openLink("https://obi-onboard.vercel.app/about")}
+                   href="#"
+                   style={{
+                       padding: 24,
+                       borderRadius: 16,
+                       background: COLORS.cardBg,
+                       textAlign: "center",
+                       color: "#6d7d4f",
+                       textDecoration: "none",
+                       boxShadow: "0 2px 8px rgba(0,0,0,.06)",
+                   }}
                 >
                     dApps
                 </a>

@@ -222,6 +222,16 @@ export default function Profile() {
 
     type Net = "mainnet" | "testnet";
 
+    function openLink(url: string) {
+        if (!url) return;
+        const isTg = Boolean((window as any).Telegram?.WebApp);
+        if (isTg) {
+            window.open(url, "_blank");
+        } else {
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+    }
+
     function openOnPolygonscan(addr: string, net: Net = "mainnet") {
         if (!addr) return;
         const host = net === "testnet" ? "amoy.polygonscan.com" : "polygonscan.com";
@@ -466,7 +476,7 @@ export default function Profile() {
                 }}>
                     To dashboard
                 </button>
-                <button onClick={() => alert("What is Obi? TBD")} style={{
+                <button onClick={() => openLink("https://obi-onboard.vercel.app/about")} style={{
                     width: "100%",
                     textAlign: "left",
                     padding: 16,
