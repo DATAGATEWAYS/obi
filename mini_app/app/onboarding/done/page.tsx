@@ -204,7 +204,6 @@ export default function Done() {
 
             <div className="done-obi-btns">
                 <img className="done-turtle" src="/welcome/obi_turtle.svg" alt="turtle"/>
-                {/*<img className="done-ground" src="/done/ground.png" alt="ground"/>*/}
 
                 <div className="done-btns">
                     <button
