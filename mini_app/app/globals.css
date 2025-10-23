@@ -579,8 +579,10 @@ small {
 /*    z-index: 2;*/
 /*}*/
 
-.done-header {
-    padding-top: 140px;
+.done-obi-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .done-h2 {
@@ -634,7 +636,7 @@ small {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-around;
 
     background: url("/done/ground.png") center bottom / 100% auto no-repeat;
 }

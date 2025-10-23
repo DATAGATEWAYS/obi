@@ -202,23 +202,26 @@ export default function Done() {
                 <p className="done-p">You’re ready to explore! Obi can answer your questions anytime.</p>
             </div>
 
-            <img className="done-turtle" src="/welcome/obi_turtle.svg" alt="turtle"/>
-            {/*<img className="done-ground" src="/done/ground.png" alt="ground"/>*/}
+            <div className="done-obi-btns">
+                <img className="done-turtle" src="/welcome/obi_turtle.svg" alt="turtle"/>
+                {/*<img className="done-ground" src="/done/ground.png" alt="ground"/>*/}
 
-            <div className="done-btns">
-                <button
-                    className="done-chat-btn"
-                    onClick={() => complete("chat")}
-                >
-                    Ask Obi your first question
-                </button>
-                <button
-                    className="done-dashboard-btn"
-                    onClick={() => complete("dashboard")}
-                >
-                    Explore dashboard
-                </button>
+                <div className="done-btns">
+                    <button
+                        className="done-chat-btn"
+                        onClick={() => complete("chat")}
+                    >
+                        Ask Obi your first question
+                    </button>
+                    <button
+                        className="done-dashboard-btn"
+                        onClick={() => complete("dashboard")}
+                    >
+                        Explore dashboard
+                    </button>
+                </div>
             </div>
+
             {/* loader */}
             {mintLoading && (
                 <div className={popupCss.mintBackdrop} aria-live="polite" aria-busy="true">
