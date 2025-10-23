@@ -26,8 +26,14 @@ export default function Done() {
     const creatingRef = useRef(false);
     const router = useRouter();
 
+
+    const [saving, setSaving] = useState(false);
+    const [savingText, setSavingText] = useState("Saving settings...");
+
     const [mintLoading, setMintLoading] = useState(false);
     const [mintDots, setMintDots] = useState(1);
+
+
     useEffect(() => {
         if (!mintLoading) return;
         const id = setInterval(() => setMintDots(d => (d % 3) + 1), 500);
@@ -155,9 +161,14 @@ export default function Done() {
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
     const complete = async (target: "chat" | "dashboard") => {
+        setSaving(true);
+        setSavingText("Saving settings...");
+
         try {
             const username =
-                sessionStorage.getItem("onb_username") || localStorage.getItem("onb_username") || "";
+                sessionStorage.getItem("onb_username") ||
+                localStorage.getItem("onb_username") ||
+                "";
 
             let raw: any = {};
             try {
@@ -168,7 +179,6 @@ export default function Done() {
                 );
             } catch {
             }
-
             const topics = {
                 crypto_basics: !!raw.crypto_basics,
                 crypto_wallets: !!raw.crypto_wallets,
@@ -180,7 +190,13 @@ export default function Done() {
                 other: !!raw.other,
             };
 
-            if (ready && authenticated && user?.id) {
+            const deadline = Date.now() + 2000;
+            while (!(ready && authenticated && user?.id) && Date.now() < deadline) {
+                await new Promise((r) => setTimeout(r, 120));
+            }
+
+            if (user?.id) {
+                setSavingText("Syncing with server...");
                 const r = await fetch("/api/users/onboarding/complete", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -188,10 +204,17 @@ export default function Done() {
                     cache: "no-store",
                 });
                 if (!r.ok) {
-                    console.error("onboarding/complete failed", r.status, await r.text().catch(() => ""));
+                    console.error(
+                        "onboarding/complete failed",
+                        r.status,
+                        await r.text().catch(() => "")
+                    );
                 }
+            } else {
+                console.warn("Privy user.id not ready — skipped onboarding/complete");
             }
         } finally {
+            setSaving(false);
             router.push(target === "chat" ? "/chat" : "/dashboard");
         }
     };
@@ -218,10 +241,12 @@ export default function Done() {
                     Explore dashboard
                 </button>
             </div>
-            {/* mint loader */}
-            {mintLoading && (
+            {/* loader */}
+            {(saving || mintLoading) && (
                 <div className={popupCss.mintBackdrop} aria-live="polite" aria-busy="true">
-                    <p style={{fontSize: 18, fontWeight: 700}}>{mintingText}</p>
+                    <p style={{fontSize: 18, fontWeight: 700}}>
+                        {saving ? savingText : mintingText}
+                    </p>
                 </div>
             )}
             {/* popup after mint" */}
