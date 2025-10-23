@@ -47,7 +47,7 @@ export default function Topics() {
                 ))}
             </div>
             <button
-                className={`next-btn ${hasSelected ? "next-btn-active" : "next-btn-passive"}`}
+                className={`next-btn next-topic-btn ${hasSelected ? "next-btn-active" : "next-btn-passive"}`}
                 disabled={!hasSelected}
                 onClick={() => {
                     if (!hasSelected) return;
