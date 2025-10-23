@@ -30,7 +30,7 @@ export default function Topics() {
             <button
                 onClick={() => router.push("/onboarding/username")}
                 className="topics-back-btn"><img className="topics-back-img" src="/topics/back_button.png"
-                                                     alt="back_button"/>
+                                                 alt="back_button"/>
             </button>
             <h2 className="topics-h2">What brings you here?</h2>
             <p className="topics-p">Choose what you want to chat with Obi about.</p>
@@ -51,7 +51,15 @@ export default function Topics() {
                 disabled={!hasSelected}
                 onClick={() => {
                     if (!hasSelected) return;
-                    sessionStorage.setItem("onb_topics", JSON.stringify(topics));
+                    const json = JSON.stringify(topics);
+                    try {
+                        sessionStorage.setItem("onb_topics", json);
+                    } catch {
+                    }
+                    try {
+                        localStorage.setItem("onb_topics", json);
+                    } catch {
+                    }
                     router.push("/onboarding/done");
                 }}
             >

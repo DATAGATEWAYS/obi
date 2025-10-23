@@ -158,20 +158,38 @@ export default function Done() {
         try {
             const username =
                 sessionStorage.getItem("onb_username") || localStorage.getItem("onb_username") || "";
-            let topics: any = {};
+
+            let raw: any = {};
             try {
-                topics = JSON.parse(localStorage.getItem("onb_topics") || "{}");
+                raw = JSON.parse(
+                    sessionStorage.getItem("onb_topics") ||
+                    localStorage.getItem("onb_topics") ||
+                    "{}"
+                );
             } catch {
             }
 
+            const topics = {
+                crypto_basics: !!raw.crypto_basics,
+                crypto_wallets: !!raw.crypto_wallets,
+                nfts: !!raw.nfts,
+                crypto_games: !!raw.crypto_games,
+                money_transactions: !!raw.money_transactions,
+                scam_awareness: !!raw.scam_awareness,
+                exploring: !!raw.exploring,
+                other: !!raw.other,
+            };
+
             if (ready && authenticated && user?.id) {
-                await fetch("/api/users/onboarding/complete", {
+                const r = await fetch("/api/users/onboarding/complete", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({privy_id: user.id, username, topics}),
                     cache: "no-store",
-                }).catch(() => {
                 });
+                if (!r.ok) {
+                    console.error("onboarding/complete failed", r.status, await r.text().catch(() => ""));
+                }
             }
         } finally {
             router.push(target === "chat" ? "/chat" : "/dashboard");
