@@ -176,6 +176,7 @@ export default function Done() {
                     is_primary: true,
                 });
                 triggerWelcomeMintOnce();
+                await insertToDB(user?.id);
             })();
             return;
         }
@@ -184,8 +185,6 @@ export default function Done() {
             creatingRef.current = true;
             createWallet();
         }
-
-        insertToDB(user?.id);
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
     const complete = async (target: "chat" | "dashboard") => {
