@@ -439,6 +439,21 @@ export default function Profile() {
             >
                 Username
             </button>
+            <button
+                onClick={() => router.push("/onboarding/username")}
+                style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: 16,
+                    borderRadius: 16,
+                    background: "#f4efdf",
+                    border: 0,
+                    marginBottom: 12,
+                    color: "#6C584C"
+                }}
+            >
+                Test
+            </button>
             <button disabled style={{
                 width: "100%",
                 textAlign: "left",
