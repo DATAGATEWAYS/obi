@@ -124,12 +124,34 @@ export default function Done() {
         },
     });
 
+    const insertToDB = async (privyId: string | undefined) => {
+        const payload = {privy_id: privyId, username, topics};
+
+        await fetch("/api/users/onboarding/complete", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload),
+            keepalive: true,
+            cache: "no-store",
+        }).catch(() => {
+        });
+    };
+
     const [username, setUsername] = useState<string>(() => {
         if (typeof window === "undefined") return "";
         return (
             sessionStorage.getItem("onb_username") ||
             localStorage.getItem("onb_username") ||
             ""
+        );
+    });
+
+    const [topics, setTopics] = useState<string>(() => {
+        if (typeof window === "undefined") return "";
+        return (
+            sessionStorage.getItem("onb_topics") ||
+            localStorage.getItem("onb_topics") ||
+            "{}"
         );
     });
 
@@ -162,75 +184,12 @@ export default function Done() {
             creatingRef.current = true;
             createWallet();
         }
+
+        insertToDB(user?.id);
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
     const complete = async (target: "chat" | "dashboard") => {
-        setSaving(true);
-        setSavingText("Saving settings...");
-
-        try {
-            const username =
-                sessionStorage.getItem("onb_username") ||
-                localStorage.getItem("onb_username") ||
-                "";
-
-            let raw: any = {};
-            try {
-                raw = JSON.parse(
-                    sessionStorage.getItem("onb_topics") ||
-                    localStorage.getItem("onb_topics") ||
-                    "{}"
-                );
-            } catch {
-            }
-            const topics = {
-                crypto_basics: !!raw.crypto_basics,
-                crypto_wallets: !!raw.crypto_wallets,
-                nfts: !!raw.nfts,
-                crypto_games: !!raw.crypto_games,
-                money_transactions: !!raw.money_transactions,
-                scam_awareness: !!raw.scam_awareness,
-                exploring: !!raw.exploring,
-                other: !!raw.other,
-            };
-
-            const t0 = Date.now();
-            while (!(ready && authenticated && user?.id) && Date.now() - t0 < 400) {
-                await new Promise(r => setTimeout(r, 80));
-            }
-
-            const privyId =
-                user?.id ||
-                sessionStorage.getItem("privy_id") ||
-                localStorage.getItem("privy_id");
-
-            if (privyId) {
-                setSavingText("Syncing with server...");
-
-                const payload = {privy_id: privyId, username, topics};
-
-                const ok = navigator.sendBeacon?.(
-                    "/api/users/onboarding/complete",
-                    new Blob([JSON.stringify(payload)], {type: "application/json"})
-                );
-
-                if (!ok) {
-                    await fetch("/api/users/onboarding/complete", {
-                        method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify(payload),
-                        keepalive: true,
-                        cache: "no-store",
-                    }).catch(() => {
-                    });
-                }
-            } else {
-                console.warn("No privy_id yet — skipping onboarding/complete");
-            }
-        } finally {
-            setSaving(false);
-            router.push(target === "chat" ? "/chat" : "/dashboard");
-        }
+        router.push(target === "chat" ? "/chat" : "/dashboard");
     };
 
     return (
@@ -256,10 +215,10 @@ export default function Done() {
                 </button>
             </div>
             {/* loader */}
-            {(saving || mintLoading) && (
+            {mintLoading && (
                 <div className={popupCss.mintBackdrop} aria-live="polite" aria-busy="true">
                     <p style={{fontSize: 18, fontWeight: 700}}>
-                        {saving ? savingText : mintingText}
+                        {mintingText}
                     </p>
                 </div>
             )}
