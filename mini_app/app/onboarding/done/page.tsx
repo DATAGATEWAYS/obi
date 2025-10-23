@@ -136,6 +136,10 @@ export default function Done() {
     useEffect(() => {
         if (!ready || !authenticated || !walletsReady) return;
 
+        if (user?.id) {
+            safeSet("privy_id", user.id);
+        }
+
         const existing = wallets.find(w => w.walletClientType === "privy") ?? wallets[0];
         if (existing) {
             safeSet("wallet_address", existing.address);
@@ -190,28 +194,38 @@ export default function Done() {
                 other: !!raw.other,
             };
 
-            const deadline = Date.now() + 2000;
-            while (!(ready && authenticated && user?.id) && Date.now() < deadline) {
-                await new Promise((r) => setTimeout(r, 120));
+            const t0 = Date.now();
+            while (!(ready && authenticated && user?.id) && Date.now() - t0 < 400) {
+                await new Promise(r => setTimeout(r, 80));
             }
 
-            if (user?.id) {
+            const privyId =
+                user?.id ||
+                sessionStorage.getItem("privy_id") ||
+                localStorage.getItem("privy_id");
+
+            if (privyId) {
                 setSavingText("Syncing with server...");
-                const r = await fetch("/api/users/onboarding/complete", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({privy_id: user.id, username, topics}),
-                    cache: "no-store",
-                });
-                if (!r.ok) {
-                    console.error(
-                        "onboarding/complete failed",
-                        r.status,
-                        await r.text().catch(() => "")
-                    );
+
+                const payload = {privy_id: privyId, username, topics};
+
+                const ok = navigator.sendBeacon?.(
+                    "/api/users/onboarding/complete",
+                    new Blob([JSON.stringify(payload)], {type: "application/json"})
+                );
+
+                if (!ok) {
+                    await fetch("/api/users/onboarding/complete", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(payload),
+                        keepalive: true,
+                        cache: "no-store",
+                    }).catch(() => {
+                    });
                 }
             } else {
-                console.warn("Privy user.id not ready — skipped onboarding/complete");
+                console.warn("No privy_id yet — skipping onboarding/complete");
             }
         } finally {
             setSaving(false);
