@@ -127,7 +127,7 @@ export default function Done() {
     const insertToDB = async (privyId: string | undefined) => {
         const payload = {privy_id: privyId, username, topics};
 
-        await fetch("/api/users/onboarding/complete", {
+        await fetch("/api/users/onboarding-complete", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(payload),

@@ -156,7 +156,7 @@ export default function DashboardClient() {
             sessionStorage.getItem("onb_username") ||
             localStorage.getItem("onb_username");
         if (cached) {
-            setUsername(cached.replace(/^@/, "").trim());
+            setUsername(cached);
             setNameLoaded(true);
         }
     }, [hasMounted]);
