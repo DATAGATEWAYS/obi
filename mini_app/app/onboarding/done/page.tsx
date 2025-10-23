@@ -126,7 +126,6 @@ export default function Done() {
 
     const insertToDB = async (privyId: string | undefined) => {
         const payload = {privy_id: privyId, username, topics};
-
         await fetch("/api/users/onboarding-complete", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -146,13 +145,18 @@ export default function Done() {
         );
     });
 
-    const [topics, setTopics] = useState<string>(() => {
-        if (typeof window === "undefined") return "";
-        return (
-            sessionStorage.getItem("onb_topics") ||
-            localStorage.getItem("onb_topics") ||
-            "{}"
-        );
+    const [topics, setTopics] = useState<Record<string, boolean>>(() => {
+        if (typeof window === "undefined") return {};
+        try {
+            const raw =
+                sessionStorage.getItem("onb_topics") ||
+                localStorage.getItem("onb_topics") ||
+                "{}";
+            const obj = JSON.parse(raw);
+            return obj && typeof obj === "object" && !Array.isArray(obj) ? obj : {};
+        } catch {
+            return {};
+        }
     });
 
     useEffect(() => {
