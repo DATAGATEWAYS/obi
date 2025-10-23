@@ -14,10 +14,15 @@
 }
 
 @supports (height: 100svh) {
-  :root { --tg-vh: 100svh; }
+    :root {
+        --tg-vh: 100svh;
+    }
 }
+
 @supports (height: 100dvh) {
-  :root { --tg-vh: 100dvh; }
+    :root {
+        --tg-vh: 100dvh;
+    }
 }
 
 * {
@@ -574,6 +579,10 @@ small {
 /*    z-index: 2;*/
 /*}*/
 
+.done-header {
+    padding-top: 140px;
+}
+
 .done-h2 {
     color: #95654D;
     width: 229px;
@@ -618,22 +627,26 @@ small {
 /*}*/
 /*TEST*/
 .done-main {
-  min-height: var(--tg-vh);
-  padding-top: calc(max(var(--safe-top), var(--tg-header)) + 16px);
-  padding-bottom: calc(var(--safe-bottom) + 16px);
+    min-height: var(--tg-vh);
+    padding-top: calc(max(var(--safe-top), var(--tg-header)) + 16px);
+    padding-bottom: calc(var(--safe-bottom) + 16px);
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
 
-  background: url("/done/ground.png") center bottom / 100% auto no-repeat;
+    background: url("/done/ground.png") center bottom / 100% auto no-repeat;
 }
 
 .done-turtle {
-  width: 94px;
-  height: 123px;
-  margin: 0 0 20px;
+    width: 94px;
+    height: 123px;
+    margin: 0 0 20px;
 }
 
-.done-btns { margin-top: 16px; }
+.done-btns {
+    margin-top: 16px;
+    display: grid;
+    gap: 5px;
+}

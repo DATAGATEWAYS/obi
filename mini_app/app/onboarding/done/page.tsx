@@ -197,8 +197,10 @@ export default function Done() {
 
     return (
         <main className="page-inner done-main tg-safe--lock">
-            <h2 className="done-h2">You’re all set, {username}!</h2>
-            <p className="done-p">You’re ready to explore! Obi can answer your questions anytime.</p>
+            <div className="done-header">
+                <h2 className="done-h2">You’re all set, {username}!</h2>
+                <p className="done-p">You’re ready to explore! Obi can answer your questions anytime.</p>
+            </div>
 
             <img className="done-turtle" src="/welcome/obi_turtle.svg" alt="turtle"/>
             {/*<img className="done-ground" src="/done/ground.png" alt="ground"/>*/}
