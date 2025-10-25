@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
 
-type Msg = { role: "user" | "assistant" | "system"; text: string; typing?: boolean; html?: boolean;};
+type Msg = { role: "user" | "assistant" | "system"; text: string; typing?: boolean; html?: boolean; };
 
 const SUGGESTIONS = [
     "What's a wallet?",
@@ -23,6 +23,10 @@ export default function ChatClient() {
     const router = useRouter();
     const {user, ready, authenticated} = usePrivy();
     const [typingStep, setTypingStep] = useState(0);
+    type ChatDTO = { id: number; name: string };
+
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [chats, setChats] = useState<ChatDTO[]>([]);
 
     const [msgs, setMsgs] = useState<Msg[]>([
         {role: "assistant", text: "Hey, what would you like to learn today?"},
@@ -30,6 +34,7 @@ export default function ChatClient() {
     const [input, setInput] = useState("");
     const [sending, setSending] = useState(false);
     const listRef = useRef<HTMLDivElement>(null);
+    const [chatId, setChatId] = useState<number | null>(null);
 
     useEffect(() => {
         const hasTyping = msgs.some(m => m.typing);
@@ -61,80 +66,110 @@ export default function ChatClient() {
     }
 
     async function send(text?: string) {
-  const q = (text ?? input).trim();
-  if (!q || sending) return;
+        const q = (text ?? input).trim();
+        if (!q || sending) return;
 
-  setMsgs(m => [...m, { role: "user", text: q }]);
-  setInput("");
-  setSending(true);
+        setMsgs(m => [...m, {role: "user", text: q}]);
+        setInput("");
+        setSending(true);
 
-  setMsgs(m => [...m, { role: "assistant", text: "typing", typing: true }]);
+        setMsgs(m => [...m, {role: "assistant", text: "typing", typing: true}]);
 
-  try {
-    const tgId = getTgId();
-    if (!tgId) {
-      setMsgs(m => {
-        const n = [...m];
-        const i = n.findIndex(mm => mm.typing);
-        const msg = {
-          role: "system",
-          text:
-            "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
-        } as Msg;
-        if (i >= 0) n[i] = msg; else n.push(msg);
-        return n;
-      });
-      return;
+        try {
+            const tgId = getTgId();
+            if (!tgId) {
+                setMsgs(m => {
+                    const n = [...m];
+                    const i = n.findIndex(mm => mm.typing);
+                    const msg = {
+                        role: "system",
+                        text:
+                            "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
+                    } as Msg;
+                    if (i >= 0) n[i] = msg; else n.push(msg);
+                    return n;
+                });
+                return;
+            }
+
+            const r = await fetch("/api/chat/ask", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({telegram_id: tgId, question: q, chat_id: chatId}),
+            });
+
+            let data: any;
+            const ct = r.headers.get("content-type") || "";
+            data = ct.includes("application/json") ? await r.json() : await r.text();
+
+            let raw =
+                typeof data === "string"
+                    ? data
+                    : data?.answer ?? data?.text ?? data?.message ?? "";
+
+            if (!raw) raw = "Sorry, I couldn't generate a response.";
+
+            const html = raw.replace(/\n/g, "<br/>");
+
+            setMsgs(m => {
+                const n = [...m];
+                const i = n.findIndex(mm => mm.typing);
+                const msg: Msg = {role: "assistant", text: html, html: true};
+                if (i >= 0) n[i] = msg; else n.push(msg);
+                return n;
+            });
+        } catch (e: any) {
+            setMsgs(m => {
+                const n = [...m];
+                const i = n.findIndex(mm => mm.typing);
+                const msg: Msg = {
+                    role: "system",
+                    text: `Request failed: ${String(e?.message || e)}`,
+                };
+                if (i >= 0) n[i] = msg; else n.push(msg);
+                return n;
+            });
+        } finally {
+            setSending(false);
+        }
     }
 
-    const r = await fetch("/api/chat/ask", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: tgId, question: q }),
-    });
+    useEffect(() => {
+        const tgId = getTgId();
+        if (!tgId) return;
+        (async () => {
+            const r = await fetch("/api/chat/create", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({telegram_id: tgId, name: "General"}),
+            });
+            const j = await r.json();
+            if (r.ok && j?.id) {
+                setChatId(Number(j.id));
+                refreshChats();
+            }
+        })();
+    }, [ready]);
 
-    let data: any;
-    const ct = r.headers.get("content-type") || "";
-    data = ct.includes("application/json") ? await r.json() : await r.text();
+    async function refreshChats() {
+        const tgId = getTgId();
+        if (!tgId) return;
+        const r = await fetch(`/api/chat/list?telegram_id=${tgId}`, {cache: "no-store"});
+        if (!r.ok) return;
+        const items: ChatDTO[] = await r.json();
+        setChats(items);
+    }
 
-    let raw =
-      typeof data === "string"
-        ? data
-        : data?.answer ?? data?.text ?? data?.message ?? "";
-
-    if (!raw) raw = "Sorry, I couldn't generate a response.";
-
-    const html = raw.replace(/\n/g, "<br/>");
-
-    setMsgs(m => {
-      const n = [...m];
-      const i = n.findIndex(mm => mm.typing);
-      const msg: Msg = { role: "assistant", text: html, html: true };
-      if (i >= 0) n[i] = msg; else n.push(msg);
-      return n;
-    });
-  } catch (e: any) {
-    setMsgs(m => {
-      const n = [...m];
-      const i = n.findIndex(mm => mm.typing);
-      const msg: Msg = {
-        role: "system",
-        text: `Request failed: ${String(e?.message || e)}`,
-      };
-      if (i >= 0) n[i] = msg; else n.push(msg);
-      return n;
-    });
-  } finally {
-    setSending(false);
-  }
-}
+    useEffect(() => {
+        refreshChats();
+    }, [chatId]);
 
     return (
         <main style={{display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", background: "#EEE8C9"}}>
             {/* header */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px"}}>
                 <button
-                    onClick={() => router.push("/dashboard")}
+                    onClick={() => setSidebarOpen(o => !o)}
                     aria-label="Back"
                     style={{background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
                 >
@@ -165,7 +200,9 @@ export default function ChatClient() {
                             whiteSpace: "pre-wrap",
                             background: m.role === "user" ? "#d9e7cf" : "#fff",
                             color: "#2b2b2b",
-                            boxShadow: "0 1px 3px rgba(0,0,0,.06)"
+                            boxShadow: "0 1px 3px rgba(0,0,0,.06)",
+                            overflowWrap: "anywhere",
+                            wordBreak: "break-word",
                         }}>
                             {m.typing ? (
                                 <span>typing{'.'.repeat(typingStep)}</span>
@@ -238,6 +275,84 @@ export default function ChatClient() {
                     {sending ? "…" : "Send"}
                 </button>
             </form>
+            {/* LEFT DRAWER */}
+            <div
+                onClick={() => setSidebarOpen(false)}
+                style={{
+                    position: "fixed",
+                    inset: 0,
+                    background: sidebarOpen ? "rgba(0,0,0,.15)" : "transparent",
+                    pointerEvents: sidebarOpen ? "auto" : "none",
+                    transition: "background .2s ease",
+                    zIndex: 50,
+                }}
+            >
+                <aside
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                        position: "absolute",
+                        left: 0, top: 0, bottom: 0,
+                        width: 280,
+                        background: "#fff",
+                        boxShadow: "2px 0 12px rgba(0,0,0,.08)",
+                        transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+                        transition: "transform .2s ease",
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <div style={{padding: 12, borderBottom: "1px solid #eee", fontWeight: 700, color: "#6d7d4f"}}>
+                        Your chats
+                    </div>
+
+                    <div style={{padding: 8, display: "grid", gap: 6, overflowY: "auto"}}>
+                        {chats.map(c => (
+                            <button
+                                key={c.id}
+                                onClick={() => {
+                                    setChatId(c.id);
+                                    setSidebarOpen(false);
+                                }}
+                                style={{
+                                    textAlign: "left",
+                                    background: chatId === c.id ? "#EAF0D8" : "#F7F7F7",
+                                    color: "#556045",
+                                    padding: "10px 12px",
+                                    borderRadius: 12,
+                                    cursor: "pointer",
+                                }}
+                            >
+                                {c.name}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div style={{marginTop: "auto", padding: 12, borderTop: "1px solid #eee"}}>
+                        <button
+                            onClick={async () => {
+                                const tgId = getTgId();
+                                if (!tgId) return;
+                                const name = prompt("New chat name");
+                                if (!name) return;
+                                const r = await fetch("/api/chat/create", {
+                                    method: "POST",
+                                    headers: {"Content-Type": "application/json"},
+                                    body: JSON.stringify({telegram_id: tgId, name}),
+                                });
+                                const j = await r.json();
+                                if (r.ok && j?.id) {
+                                    setChatId(Number(j.id));
+                                    await refreshChats();
+                                    setSidebarOpen(false);
+                                }
+                            }}
+                            style={{background: "#6b8749", color: "#fff", width: "100%"}}
+                        >
+                            + Add chat
+                        </button>
+                    </div>
+                </aside>
+            </div>
         </main>
     );
 }

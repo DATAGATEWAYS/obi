@@ -1,19 +1,14 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import BigInteger, Text, TIMESTAMP, func, ForeignKey, Boolean, UniqueConstraint, Computed, Date, \
-    Integer, text, DateTime
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+    Integer, text, DateTime, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class UsernameUpdatePayload(BaseModel):
     privy_id: str
     username: str
-
-
-class QuestionPayload(BaseModel):
-    user_id: int
-    question: str
 
 
 class UserInsertPayload(BaseModel):
@@ -156,8 +151,63 @@ class NFTMint(Base):
         nullable=False,
     )
 
+
 class ClaimPayload(BaseModel):
     privy_id: str
 
+
 class WelcomeMintPayload(BaseModel):
     privy_id: str
+
+
+class QuestionPayload(BaseModel):
+    telegram_id: int
+    question: str
+    chat_id: int | None = None
+
+
+class ChatCreatePayload(BaseModel):
+    telegram_id: int
+    name: str = Field(min_length=1, max_length=100)
+
+
+class ChatDTO(BaseModel):
+    id: int
+    name: str
+
+
+class Chat(Base):
+    __tablename__ = "chats"
+    __table_args__ = (
+        UniqueConstraint("user_id", "name", name="uq_chats_user_name"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), index=True,
+                                         nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
+
+    user: Mapped["User"] = relationship(backref="chats")
+
+
+class QA(Base):
+    __tablename__ = "qa_history"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"),
+        index=True, nullable=False
+    )
+    chat_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("chats.id", ondelete="CASCADE"),
+        index=True, nullable=False
+    )
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+
+    user: Mapped["User"] = relationship()
+    chat: Mapped["Chat"] = relationship()

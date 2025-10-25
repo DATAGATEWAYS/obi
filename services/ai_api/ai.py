@@ -1,25 +1,110 @@
 import re
 
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, Query, HTTPException
+from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.ai_api.deepseek_client import get_deepseek_answer
 from services.ai_api.models import *
-from services.database.models import QA
+from services.ai_api.models import QA
 from .db import get_session
 
 router = APIRouter()
 
 
+async def build_context(session: AsyncSession, chat_id: int, limit: int = 6) -> str:
+    q = select(QA).where(QA.chat_id == chat_id).order_by(desc(QA.id)).limit(limit)
+    rows = list(reversed((await session.execute(q)).scalars().all()))
+    if not rows:
+        return ""
+    lines = []
+    for r in rows:
+        lines.append(f"User: {r.question}")
+        lines.append(f"Assistant: {r.answer}")
+    return "Conversation so far:\n" + "\n".join(lines) + "\n"
+
+
+async def get_or_create_user(session: AsyncSession, telegram_id: int) -> User:
+    res = await session.execute(select(User).where(User.telegram_id == telegram_id))
+    user = res.scalar_one_or_none()
+    if user:
+        return user
+    user = User(telegram_id=telegram_id)  # остальное можно дополнить позже
+    session.add(user)
+    await session.flush()
+    return user
+
+
+async def get_or_create_default_chat(session: AsyncSession, user_id: int) -> Chat:
+    res = await session.execute(
+        select(Chat).where(Chat.user_id == user_id, Chat.name == "General")
+    )
+    chat = res.scalar_one_or_none()
+    if chat:
+        return chat
+    chat = Chat(user_id=user_id, name="General")
+    session.add(chat)
+    await session.flush()
+    return chat
+
+
+@router.post("/chat/create")
+async def create_chat(payload: ChatCreatePayload, session: AsyncSession = Depends(get_session)) -> ChatDTO:
+    user = await get_or_create_user(session, payload.telegram_id)
+    res = await session.execute(
+        select(Chat).where(Chat.user_id == user.id, Chat.name == payload.name)
+    )
+    chat = res.scalar_one_or_none()
+    if chat is None:
+        chat = Chat(user_id=user.id, name=payload.name)
+        session.add(chat)
+        await session.flush()
+    await session.commit()
+    return ChatDTO(id=chat.id, name=chat.name)
+
+
+@router.get("/chat/list")
+async def list_chats(telegram_id: int = Query(...), session: AsyncSession = Depends(get_session)) -> list[ChatDTO]:
+    user = await get_or_create_user(session, telegram_id)
+    res = await session.execute(select(Chat).where(Chat.user_id == user.id).order_by(Chat.id.asc()))
+    items = res.scalars().all()
+    return [ChatDTO(id=c.id, name=c.name) for c in items]
+
+
 @router.post("/ask")
 async def ask_endpoint(payload: QuestionPayload, session: AsyncSession = Depends(get_session)):
-    user_id = payload.user_id
-    question = payload.question
+    if not payload.question.strip():
+        raise HTTPException(status_code=400, detail="Question is empty")
 
-    raw_answer = await get_deepseek_answer(question)
+    user = await get_or_create_user(session, payload.telegram_id)
+
+    chat: Chat | None = None
+    if payload.chat_id is not None:
+        res = await session.execute(select(Chat).where(Chat.id == payload.chat_id))
+        chat = res.scalar_one_or_none()
+        if chat is None or chat.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Chat not found or does not belong to user")
+    else:
+        chat = await get_or_create_default_chat(session, user.id)
+
+    context_block = await build_context(session, chat.id, limit=6)
+    prompt = (
+        "You are Obi, a helpful crypto tutor. "
+        "Keep answers brief (≤120 words or 5 bullets). "
+        "Continue the same conversation, resolve pronouns from context.\n\n"
+        f"{context_block}"
+        f"User: {payload.question}\nAssistant:"
+    )
+    raw_answer = await get_deepseek_answer(prompt)
     answer = from_ai_to_human_readable(raw_answer)
 
-    record = QA(user_id=user_id, question=question, answer=answer, created_at=datetime.utcnow())
+    record = QA(
+        user_id=user.id,
+        chat_id=chat.id,
+        question=payload.question,
+        answer=answer,
+        created_at=datetime.utcnow(),
+    )
     session.add(record)
     await session.commit()
 
