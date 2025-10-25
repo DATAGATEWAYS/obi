@@ -29,7 +29,7 @@ async def get_or_create_user(session: AsyncSession, telegram_id: int) -> User:
     user = res.scalar_one_or_none()
     if user:
         return user
-    user = User(telegram_id=telegram_id)  # остальное можно дополнить позже
+    user = User(telegram_id=telegram_id)
     session.add(user)
     await session.flush()
     return user
@@ -109,6 +109,28 @@ async def ask_endpoint(payload: QuestionPayload, session: AsyncSession = Depends
     await session.commit()
 
     return {"answer": answer}
+
+@router.get("/chat/history")
+async def chat_history(
+    telegram_id: int = Query(...),
+    chat_id: int = Query(...),
+    limit: int = Query(100, ge=1, le=500),
+    session: AsyncSession = Depends(get_session),
+):
+    user = await get_or_create_user(session, telegram_id)
+    res = await session.execute(select(Chat).where(Chat.id == chat_id))
+    chat = res.scalar_one_or_none()
+    if chat is None or chat.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Chat not found or does not belong to user")
+
+    q = select(QA).where(QA.chat_id == chat_id).order_by(QA.id.asc()).limit(limit)
+    rows = (await session.execute(q)).scalars().all()
+
+    items = []
+    for r in rows:
+        items.append({"role": "user", "text": r.question})
+        items.append({"role": "assistant", "text": markdown_to_telegram_html(r.answer), "html": True})
+    return items
 
 
 def from_ai_to_human_readable(raw: str) -> str:

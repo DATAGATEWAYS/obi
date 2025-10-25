@@ -164,6 +164,19 @@ export default function ChatClient() {
         refreshChats();
     }, [chatId]);
 
+    async function loadHistory(currentChatId: number) {
+        const tgId = getTgId();
+        if (!tgId) return;
+        const r = await fetch(`/api/chat/history?telegram_id=${tgId}&chat_id=${currentChatId}&limit=100`, {cache: "no-store"});
+        if (!r.ok) return;
+        const items: Msg[] = await r.json();
+        setMsgs(items.length ? items : [{role: "assistant", text: "Hey, what would you like to learn today?"}]);
+    }
+
+    useEffect(() => {
+        if (chatId) loadHistory(chatId);
+    }, [chatId]);
+
     return (
         <main style={{display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", background: "#EEE8C9"}}>
             {/* header */}
@@ -312,6 +325,7 @@ export default function ChatClient() {
                                 onClick={() => {
                                     setChatId(c.id);
                                     setSidebarOpen(false);
+                                    loadHistory(c.id);
                                 }}
                                 style={{
                                     textAlign: "left",
