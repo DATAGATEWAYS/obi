@@ -46,6 +46,12 @@ export default function ChatClient() {
         return () => clearInterval(id);
     }, [loadingHistory]);
 
+    const scrollToBottom = (smooth = false) => {
+        const el = listRef.current;
+        if (!el) return;
+        el.scrollTo({top: el.scrollHeight, behavior: smooth ? "smooth" : "auto"});
+    };
+
     const [typingDots, setTypingDots] = useState(1);
     useEffect(() => {
         if (!sending) {
@@ -80,7 +86,8 @@ export default function ChatClient() {
 
     // autoscroll
     useEffect(() => {
-        listRef.current?.scrollTo({top: listRef.current.scrollHeight, behavior: "smooth"});
+        const id = requestAnimationFrame(() => scrollToBottom(true));
+        return () => cancelAnimationFrame(id);
     }, [msgs.length]);
 
     function getTgId(): number | null {
@@ -103,6 +110,9 @@ export default function ChatClient() {
 
         setMsgs(m => [...m, {role: "user", text: q}]);
         setInput("");
+
+        void renameChatByFirstQuestion(q);
+
         setSending(true);
 
         try {
@@ -140,14 +150,8 @@ export default function ChatClient() {
 
             const html = raw.replace(/\n/g, "<br/>");
 
-            setMsgs(m => [...m, { role: "assistant", text: html, html: true }]);
+            setMsgs(m => [...m, {role: "assistant", text: html, html: true}]);
 
-            setMsgs(m => {
-                const n = [...m];
-                const msg: Msg = {role: "assistant", text: html, html: true};
-                n.push(msg);
-                return n;
-            });
         } catch (e: any) {
             setMsgs(m => {
                 const n = [...m];
@@ -170,7 +174,7 @@ export default function ChatClient() {
             const r = await fetch("/api/chat/create", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({telegram_id: tgId, name: "General"}),
+                body: JSON.stringify({telegram_id: tgId, name: "New chat"}),
             });
             const j = await r.json();
             if (r.ok && j?.id) {
@@ -202,6 +206,7 @@ export default function ChatClient() {
             if (!r.ok) return;
             const items: Msg[] = await r.json();
             setMsgs(items.length ? items : [{role: "assistant", text: "Hey, what would you like to learn today?"}]);
+            requestAnimationFrame(() => scrollToBottom(false));
         } finally {
             setLoadingHistory(false);
         }
@@ -211,149 +216,187 @@ export default function ChatClient() {
         if (chatId) loadHistory(chatId);
     }, [chatId]);
 
-    return (
-        <main style={{display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", background: "#EEE8C9"}}>
-            {/* header */}
-            <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px"}}>
-                {/*<button*/}
-                {/*    onClick={() => setSidebarOpen(o => !o)}*/}
-                {/*    aria-label="Back"*/}
-                {/*    style={{color: "#859E4F", background: "none", border: 0, fontSize: 18, cursor: "pointer"}}*/}
-                {/*>*/}
-                {/*    ⟲*/}
-                {/*</button>*/}
-                <img
-                    onClick={() => setSidebarOpen(o => !o)}
-                    src="/chat/history.svg"
-                    width={26}
-                    height={26}
-                    style={{flex: "0 0 26px"}}
-                    alt=""
-                />
-                <div style={{fontWeight: 700, color: "#859E4F"}}>{getGreeting()}</div>
-                <button
-                    onClick={() => router.push("/dashboard")}
-                    aria-label="Close"
-                    style={{color: "#859E4F", background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
-                >
-                    ✕
-                </button>
-            </div>
+    async function renameChatByFirstQuestion(firstQuestion: string) {
+        const tgId = getTgId();
+        if (!chatId || !tgId) return;
+        const current = chats.find(c => c.id === chatId);
+        if (!current || current.name !== "New chat") return;
 
-            {/* messages */}
-            <div style={{position: "relative"}}>
-                {msgs.map((m, i) => {
-                    const isUser = m.role === "user";
-                    return (
-                        <div
-                            key={i}
-                            style={{
-                                display: "flex",
-                                justifyContent: isUser ? "flex-end" : "flex-start",
-                                alignItems: "flex-end",
-                                gap: 8,
-                                padding: "6px 12px",
-                            }}
-                        >
-                            {/* bots avatar */}
-                            {!isUser && (
-                                <img
-                                    src="/chat/obi_icon.svg"
-                                    alt="Obi"
-                                    width={26}
-                                    height={26}
+        const newName = firstQuestion.slice(0, 20) + "...";
+
+        setChats(cs => cs.map(c => (c.id === chatId ? {...c, name: newName} : c)));
+
+        try {
+            await fetch("/api/chat/update", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({telegram_id: tgId, chat_id: chatId, name: newName}),
+            });
+        } catch (_) {
+        } finally {
+            refreshChats();
+        }
+    }
+
+    return (
+        <main style={{display: "grid", gridTemplateRows: "1fr auto", height: "100dvh", background: "#EEE8C9"}}>
+
+            <div
+                ref={listRef}
+                style={{
+                    position: "relative",
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: 0,
+                }}
+            >
+
+                {/* header + messages */}
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 16px"
+                }}>
+                    <img
+                        onClick={() => setSidebarOpen(o => !o)}
+                        src="/chat/history.svg"
+                        width={26}
+                        height={26}
+                        style={{flex: "0 0 26px"}}
+                        alt=""
+                    />
+                    <div style={{fontWeight: 700, color: "#859E4F"}}>{getGreeting()}</div>
+                    <img
+                        onClick={() => router.push("/dashboard")}
+                        src="/chat/close.svg"
+                        width={26}
+                        height={26}
+                        style={{flex: "0 0 26px"}}
+                        alt=""
+                    />
+                </div>
+                <div style={{position: "relative"}}>
+                    {msgs.map((m, i) => {
+                        const isUser = m.role === "user";
+                        return (
+                            <div
+                                key={i}
+                                style={{
+                                    display: "flex",
+                                    justifyContent: isUser ? "flex-end" : "flex-start",
+                                    alignItems: "flex-end",
+                                    gap: 8,
+                                    padding: "6px 12px",
+                                }}
+                            >
+                                {/* bots avatar */}
+                                {!isUser && (
+                                    <img
+                                        src="/chat/obi_icon.svg"
+                                        alt="Obi"
+                                        width={26}
+                                        height={26}
+                                        style={{
+                                            flex: "0 0 26px",
+                                            cursor: "pointer"
+                                        }}
+                                    />
+                                )}
+
+                                {/* bubble */}
+                                <div
                                     style={{
-                                        flex: "0 0 26px",
+                                        maxWidth: "78%",
+                                        padding: "10px 12px",
+                                        borderRadius: 14,
+                                        background: isUser ? "#FFFFFF" : "#FAF2DD",
+                                        color: "#2b2b2b",
+                                        whiteSpace: "pre-wrap",
+                                        overflowWrap: "anywhere",
+                                        wordBreak: "break-word",
+                                        boxShadow: "0 1px 3px rgba(0,0,0,.06)",
+                                    }}
+                                    dangerouslySetInnerHTML={m.html ? {__html: m.text} : undefined}
+                                >
+                                    {m.html ? null : m.text}
+                                </div>
+
+                                {/* users avatar */}
+                                {isUser && (
+                                    <div
+                                        aria-label="You"
+                                        style={{
+                                            width: 26,
+                                            height: 26,
+                                            borderRadius: "50%",
+                                            backgroundImage: "url(/chat/user_icon.svg)",
+                                            backgroundSize: "cover",
+                                            backgroundPosition: "center",
+                                            display: "grid",
+                                            placeItems: "center",
+                                            fontFamily: "Satoshi, system-ui, sans-serif",
+                                            fontWeight: 700,
+                                            fontSize: 12,
+                                            color: "#437338",
+                                            lineHeight: 1,
+                                            flex: "0 0 26px",
+                                        }}
+                                    >
+                                        {getUserInitial()}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {/* status typing… */}
+                    {sending && (
+                        <div style={{padding: "0 12px 8px", color: "#979797", fontStyle: "italic"}}>
+                            typing{'.'.repeat(typingDots)}
+                        </div>
+                    )}
+                </div>
+
+                {
+                    loadingHistory && (
+                        <div className="chat-loader" aria-live="polite" aria-busy="true">
+                            <p>loading chats{'.'.repeat(dots)}</p>
+                        </div>
+                    )
+                }
+
+                {/* quick suggestions */
+                }
+                {
+                    !loadingHistory && !msgs.some(m => m.role === "user") && (
+                        <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
+                            {SUGGESTIONS.map((s) => (
+                                <button
+                                    key={s}
+                                    onClick={() => send(s)}
+                                    disabled={sending}
+                                    style={{
+                                        border: "1px solid #ADC178",
+                                        padding: "8px 10px",
+                                        borderRadius: 18,
+                                        background: "none",
+                                        color: "#859E4F",
+                                        fontWeight: 400,
                                         cursor: "pointer"
                                     }}
-                                />
-                            )}
-
-                            {/* bubble */}
-                            <div
-                                style={{
-                                    maxWidth: "78%",
-                                    padding: "10px 12px",
-                                    borderRadius: 14,
-                                    background: isUser ? "#FFFFFF" : "#FAF2DD",
-                                    color: "#2b2b2b",
-                                    whiteSpace: "pre-wrap",
-                                    overflowWrap: "anywhere",
-                                    wordBreak: "break-word",
-                                    boxShadow: "0 1px 3px rgba(0,0,0,.06)",
-                                }}
-                                dangerouslySetInnerHTML={m.html ? {__html: m.text} : undefined}
-                            >
-                                {m.html ? null : m.text}
-                            </div>
-
-                            {/* users avatar */}
-                            {isUser && (
-                                <div
-                                    aria-label="You"
-                                    style={{
-                                        width: 26,
-                                        height: 26,
-                                        borderRadius: "50%",
-                                        backgroundImage: "url(/chat/user_icon.svg)",
-                                        backgroundSize: "cover",
-                                        backgroundPosition: "center",
-                                        display: "grid",
-                                        placeItems: "center",
-                                        fontFamily: "Satoshi, system-ui, sans-serif",
-                                        fontWeight: 700,
-                                        fontSize: 12,
-                                        color: "#437338",
-                                        lineHeight: 1,
-                                        flex: "0 0 26px",
-                                    }}
                                 >
-                                    {getUserInitial()}
-                                </div>
-                            )}
+                                    {s}
+                                </button>
+                            ))}
                         </div>
-                    );
-                })}
-
-                {/* status typing… */}
-                {sending && (
-                    <div style={{padding: "0 12px 8px", color: "#979797", fontStyle: "italic"}}>
-                        typing{'.'.repeat(typingDots)}
-                    </div>
-                )}
+                    )
+                }
             </div>
 
-            {loadingHistory && (
-                <div className="chat-loader" aria-live="polite" aria-busy="true">
-                    <p>loading chats{'.'.repeat(dots)}</p>
-                </div>
-            )}
-
-            {/* quick suggestions */}
-            {!loadingHistory && !msgs.some(m => m.role === "user") && (
-                <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
-                    {SUGGESTIONS.map((s) => (
-                        <button
-                            key={s}
-                            onClick={() => send(s)}
-                            disabled={sending}
-                            style={{
-                                border: "1px solid #ADC178",
-                                padding: "8px 10px",
-                                borderRadius: 18,
-                                background: "none",
-                                color: "#859E4F",
-                                fontWeight: 400,
-                                cursor: "pointer"
-                            }}
-                        >
-                            {s}
-                        </button>
-                    ))}
-                </div>
-            )}
-
-            {/* composer */}
+            {/* composer */
+            }
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -391,7 +434,8 @@ export default function ChatClient() {
                     {sending ? "…" : "Send"}
                 </button>
             </form>
-            {/* LEFT DRAWER */}
+            {/* LEFT DRAWER */
+            }
             <div
                 onClick={() => setSidebarOpen(false)}
                 style={{
@@ -451,12 +495,10 @@ export default function ChatClient() {
                             onClick={async () => {
                                 const tgId = getTgId();
                                 if (!tgId) return;
-                                const name = prompt("New chat name");
-                                if (!name) return;
                                 const r = await fetch("/api/chat/create", {
                                     method: "POST",
                                     headers: {"Content-Type": "application/json"},
-                                    body: JSON.stringify({telegram_id: tgId, name}),
+                                    body: JSON.stringify({telegram_id: tgId, name: "New chat"}),
                                 });
                                 const j = await r.json();
                                 if (r.ok && j?.id) {
@@ -473,5 +515,6 @@ export default function ChatClient() {
                 </aside>
             </div>
         </main>
-    );
+    )
+        ;
 }

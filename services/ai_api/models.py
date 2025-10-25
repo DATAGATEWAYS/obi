@@ -175,6 +175,11 @@ class ChatDTO(BaseModel):
     id: int
     name: str
 
+class ChatUpdatePayload(BaseModel):
+    telegram_id: int
+    chat_id: int
+    name: str = Field(min_length=1, max_length=100)
+
 
 class Chat(Base):
     __tablename__ = "chats"

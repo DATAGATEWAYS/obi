@@ -37,12 +37,12 @@ async def get_or_create_user(session: AsyncSession, telegram_id: int) -> User:
 
 async def get_or_create_default_chat(session: AsyncSession, user_id: int) -> Chat:
     res = await session.execute(
-        select(Chat).where(Chat.user_id == user_id, Chat.name == "General")
+        select(Chat).where(Chat.user_id == user_id, Chat.name == "New chat")
     )
     chat = res.scalar_one_or_none()
     if chat:
         return chat
-    chat = Chat(user_id=user_id, name="General")
+    chat = Chat(user_id=user_id, name="New chat")
     session.add(chat)
     await session.flush()
     return chat
@@ -110,12 +110,13 @@ async def ask_endpoint(payload: QuestionPayload, session: AsyncSession = Depends
 
     return {"answer": answer}
 
+
 @router.get("/chat/history")
 async def chat_history(
-    telegram_id: int = Query(...),
-    chat_id: int = Query(...),
-    limit: int = Query(100, ge=1, le=500),
-    session: AsyncSession = Depends(get_session),
+        telegram_id: int = Query(...),
+        chat_id: int = Query(...),
+        limit: int = Query(100, ge=1, le=500),
+        session: AsyncSession = Depends(get_session),
 ):
     user = await get_or_create_user(session, telegram_id)
     res = await session.execute(select(Chat).where(Chat.id == chat_id))
@@ -131,6 +132,21 @@ async def chat_history(
         items.append({"role": "user", "text": r.question})
         items.append({"role": "assistant", "text": markdown_to_telegram_html(r.answer), "html": True})
     return items
+
+
+@router.post("/chat/update")
+async def update_chat(payload: ChatUpdatePayload, session: AsyncSession = Depends(get_session)) -> ChatDTO:
+    user = await get_or_create_user(session, payload.telegram_id)
+
+    res = await session.execute(select(Chat).where(Chat.id == payload.chat_id))
+    chat = res.scalar_one_or_none()
+    if chat is None or chat.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Chat not found or does not belong to user")
+
+    chat.name = payload.name
+    await session.commit()
+
+    return ChatDTO(id=chat.id, name=chat.name)
 
 
 def from_ai_to_human_readable(raw: str) -> str:
