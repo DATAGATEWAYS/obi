@@ -199,8 +199,7 @@ export default function ChatClient() {
         hasAnyUserMsgRef.current = true;
 
         if (!hadBefore) {
-            // TODO
-            // void triggerFirstQuestionMintOnce();
+            void triggerFirstQuestionMintOnce();
         }
 
         setSending(true);
