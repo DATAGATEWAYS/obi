@@ -296,15 +296,15 @@ export default function ChatClient() {
                 )}
             </div>
 
-            {loadingHistory && (
-                <div
-                    className="chat-loader"
-                    aria-live="polite"
-                    aria-busy="true"
-                >
-                    <p>loading chat…</p>
-                </div>
-            )}
+            {/*{loadingHistory && (*/}
+            {/*    <div*/}
+            {/*        className="chat-loader"*/}
+            {/*        aria-live="polite"*/}
+            {/*        aria-busy="true"*/}
+            {/*    >*/}
+            {/*        <p>loading chat…</p>*/}
+            {/*    </div>*/}
+            {/*)}*/}
 
             {/* quick suggestions */}
             {!loadingHistory && !msgs.some(m => m.role === "user") && (
