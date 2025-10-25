@@ -199,7 +199,7 @@ export default function ChatClient() {
         hasAnyUserMsgRef.current = true;
 
         if (!hadBefore) {
-            // TODO uncomment when ready to test
+            // TODO
             // void triggerFirstQuestionMintOnce();
         }
 
@@ -371,9 +371,9 @@ export default function ChatClient() {
                     <img
                         onClick={() => router.push("/dashboard")}
                         src="/chat/close.svg"
-                        width={26}
-                        height={26}
-                        style={{flex: "0 0 26px"}}
+                        width={18}
+                        height={18}
+                        style={{flex: "0 0 18px"}}
                         alt=""
                     />
                 </div>
@@ -610,7 +610,7 @@ export default function ChatClient() {
                         ))}
                     </div>
 
-                    <div style={{marginTop: "auto", padding: 12, borderTop: "1px solid #eee"}}>
+                    <div style={{marginTop: "auto", padding: 12}}>
                         <button
                             onClick={async () => {
                                 const tgId = getTgId();
@@ -629,7 +629,7 @@ export default function ChatClient() {
                             }}
                             style={{background: "#6b8749", color: "#F0EAD2", width: "100%"}}
                         >
-                            + Add chat
+                            New chat
                         </button>
                     </div>
                 </aside>
