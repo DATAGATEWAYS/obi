@@ -35,6 +35,19 @@ export default function ChatClient() {
     const [sending, setSending] = useState(false);
     const listRef = useRef<HTMLDivElement>(null);
     const [chatId, setChatId] = useState<number | null>(null);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+
+    function getUserInitial(): string {
+        const t = (typeof window !== "undefined" ? (window as any).Telegram : null)?.WebApp?.initDataUnsafe?.user;
+        if (t?.first_name) return String(t.first_name).charAt(0).toUpperCase();
+        if (t?.username) return String(t.username).charAt(0).toUpperCase();
+        try {
+            const u = localStorage.getItem("username");
+            if (u) return u.charAt(0).toUpperCase();
+        } catch {
+        }
+        return "U";
+    }
 
     useEffect(() => {
         const hasTyping = msgs.some(m => m.typing);
@@ -167,10 +180,15 @@ export default function ChatClient() {
     async function loadHistory(currentChatId: number) {
         const tgId = getTgId();
         if (!tgId) return;
-        const r = await fetch(`/api/chat/history?telegram_id=${tgId}&chat_id=${currentChatId}&limit=100`, {cache: "no-store"});
-        if (!r.ok) return;
-        const items: Msg[] = await r.json();
-        setMsgs(items.length ? items : [{role: "assistant", text: "Hey, what would you like to learn today?"}]);
+        setLoadingHistory(true);
+        try {
+            const r = await fetch(`/api/chat/history?telegram_id=${tgId}&chat_id=${currentChatId}&limit=100`, {cache: "no-store"});
+            if (!r.ok) return;
+            const items: Msg[] = await r.json();
+            setMsgs(items.length ? items : [{role: "assistant", text: "Hey, what would you like to learn today?"}]);
+        } finally {
+            setLoadingHistory(false);
+        }
     }
 
     useEffect(() => {
@@ -184,71 +202,134 @@ export default function ChatClient() {
                 <button
                     onClick={() => setSidebarOpen(o => !o)}
                     aria-label="Back"
-                    style={{background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
+                    style={{color: "#859E4F", background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
                 >
                     ⟲
                 </button>
-                <div style={{fontWeight: 700, color: "#6d7d4f"}}>{getGreeting()}</div>
+                <div style={{fontWeight: 700, color: "#859E4F"}}>{getGreeting()}</div>
                 <button
                     onClick={() => router.push("/dashboard")}
                     aria-label="Close"
-                    style={{background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
+                    style={{color: "#859E4F", background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
                 >
                     ✕
                 </button>
             </div>
 
             {/* messages */}
-            <div ref={listRef} style={{overflowY: "auto", padding: "8px 12px"}}>
-                {msgs.map((m, i) => (
-                    <div key={i} style={{
-                        display: "flex",
-                        justifyContent: m.role === "user" ? "flex-end" : "flex-start",
-                        margin: "8px 0"
-                    }}>
-                        <div style={{
-                            maxWidth: "80%",
-                            padding: "10px 12px",
-                            borderRadius: 14,
-                            whiteSpace: "pre-wrap",
-                            background: m.role === "user" ? "#d9e7cf" : "#fff",
-                            color: "#2b2b2b",
-                            boxShadow: "0 1px 3px rgba(0,0,0,.06)",
-                            overflowWrap: "anywhere",
-                            wordBreak: "break-word",
-                        }}>
-                            {m.typing ? (
-                                <span>typing{'.'.repeat(typingStep)}</span>
-                            ) : m.html ? (
-                                <div dangerouslySetInnerHTML={{__html: m.text}}/>
-                            ) : (
-                                m.text
+            <div style={{position: "relative"}}>
+                {msgs.map((m, i) => {
+                    const isUser = m.role === "user";
+                    return (
+                        <div
+                            key={i}
+                            style={{
+                                display: "flex",
+                                justifyContent: isUser ? "flex-end" : "flex-start",
+                                alignItems: "flex-end",
+                                gap: 8,
+                                padding: "6px 12px",
+                            }}
+                        >
+                            {/* bots avatar */}
+                            {!isUser && (
+                                <img
+                                    src="/chat/obi_icon.svg"
+                                    alt="Obi"
+                                    width={26}
+                                    height={26}
+                                    style={{flex: "0 0 26px"}}
+                                />
+                            )}
+
+                            {/* bubble */}
+                            <div
+                                style={{
+                                    maxWidth: "78%",
+                                    padding: "10px 12px",
+                                    borderRadius: 14,
+                                    background: isUser ? "#EAF0D8" : "#FFFFFF",
+                                    color: "#2b2b2b",
+                                    whiteSpace: "pre-wrap",
+                                    overflowWrap: "anywhere",
+                                    wordBreak: "break-word",
+                                    boxShadow: "0 1px 3px rgba(0,0,0,.06)",
+                                }}
+                                dangerouslySetInnerHTML={m.html ? {__html: m.text} : undefined}
+                            >
+                                {!m.html && m.text}
+                            </div>
+
+                            {/* users avatar */}
+                            {isUser && (
+                                <div
+                                    aria-label="You"
+                                    style={{
+                                        width: 26,
+                                        height: 26,
+                                        borderRadius: "50%",
+                                        backgroundImage: "url(/chat/user_icon.svg)",
+                                        backgroundSize: "cover",
+                                        backgroundPosition: "center",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        fontFamily: "Satoshi, system-ui, sans-serif",
+                                        fontWeight: 700,
+                                        fontSize: 12,
+                                        color: "#437338",
+                                        lineHeight: 1,
+                                        flex: "0 0 26px",
+                                    }}
+                                >
+                                    {getUserInitial()}
+                                </div>
                             )}
                         </div>
+                    );
+                })}
+
+                {/* status typing… */}
+                {sending && (
+                    <div style={{padding: "0 12px 8px", color: "#979797", fontStyle: "italic"}}>
+                        typing…
                     </div>
-                ))}
+                )}
             </div>
 
+            {loadingHistory && (
+                <div
+                    className="chat-loader"
+                    aria-live="polite"
+                    aria-busy="true"
+                >
+                    <p>loading chat…</p>
+                </div>
+            )}
+
             {/* quick suggestions */}
-            <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
-                {SUGGESTIONS.map((s) => (
-                    <button
-                        key={s}
-                        onClick={() => send(s)}
-                        disabled={sending}
-                        style={{
-                            border: 0,
-                            padding: "8px 10px",
-                            borderRadius: 18,
-                            background: "#EAF0D8",
-                            color: "#556045",
-                            cursor: "pointer",
-                        }}
-                    >
-                        {s}
-                    </button>
-                ))}
-            </div>
+            {!loadingHistory && !msgs.some(m => m.role === "user") && (
+                <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
+                    {SUGGESTIONS.map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => send(s)}
+                            disabled={sending}
+                            style={{
+                                border: 0,
+                                padding: "8px 10px",
+                                borderRadius: 18,
+                                background: "#ADC178",
+                                color: "#FFFFFF",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                boxShadow: "0 1px 2px rgba(0,0,0,.06)"
+                            }}
+                        >
+                            {s}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* composer */}
             <form
@@ -306,7 +387,7 @@ export default function ChatClient() {
                         position: "absolute",
                         left: 0, top: 0, bottom: 0,
                         width: 280,
-                        background: "#fff",
+                        background: "#F0EAD2",
                         boxShadow: "2px 0 12px rgba(0,0,0,.08)",
                         transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
                         transition: "transform .2s ease",
@@ -329,11 +410,13 @@ export default function ChatClient() {
                                 }}
                                 style={{
                                     textAlign: "left",
-                                    background: chatId === c.id ? "#EAF0D8" : "#F7F7F7",
-                                    color: "#556045",
+                                    background: "#FAF2DD",
+                                    color: "#6C584C",
                                     padding: "10px 12px",
                                     borderRadius: 12,
                                     cursor: "pointer",
+                                    border: chatId === c.id ? "2px solid #859E4F" : "2px solid transparent",
+                                    fontWeight: chatId === c.id ? 700 : 600
                                 }}
                             >
                                 {c.name}
@@ -360,7 +443,7 @@ export default function ChatClient() {
                                     setSidebarOpen(false);
                                 }
                             }}
-                            style={{background: "#6b8749", color: "#fff", width: "100%"}}
+                            style={{background: "#859E4F", color: "#fff", width: "100%"}}
                         >
                             + Add chat
                         </button>

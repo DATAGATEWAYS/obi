@@ -625,3 +625,20 @@ small {
     display: grid;
     gap: 5px;
 }
+
+
+/* chat */
+.chat-loader {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(240, 234, 210, 0.7);
+    z-index: 20;
+}
+
+.chat-loader p {
+    font-size: 18px;
+    font-weight: 700;
+    color: #6C584C;
+}
