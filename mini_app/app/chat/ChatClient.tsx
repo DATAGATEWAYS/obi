@@ -36,6 +36,25 @@ export default function ChatClient() {
     const listRef = useRef<HTMLDivElement>(null);
     const [chatId, setChatId] = useState<number | null>(null);
     const [loadingHistory, setLoadingHistory] = useState(false);
+    const [dots, setDots] = useState(1);
+    useEffect(() => {
+        if (!loadingHistory) {
+            setDots(1);
+            return;
+        }
+        const id = setInterval(() => setDots(d => (d % 3) + 1), 400);
+        return () => clearInterval(id);
+    }, [loadingHistory]);
+
+    const [typingDots, setTypingDots] = useState(1);
+    useEffect(() => {
+        if (!sending) {
+            setTypingDots(1);
+            return;
+        }
+        const id = setInterval(() => setTypingDots(d => (d % 3) + 1), 400);
+        return () => clearInterval(id);
+    }, [sending]);
 
     function getUserInitial(): string {
         const t = (typeof window !== "undefined" ? (window as any).Telegram : null)?.WebApp?.initDataUnsafe?.user;
@@ -86,20 +105,17 @@ export default function ChatClient() {
         setInput("");
         setSending(true);
 
-        setMsgs(m => [...m, {role: "assistant", text: "typing", typing: true}]);
-
         try {
             const tgId = getTgId();
             if (!tgId) {
                 setMsgs(m => {
                     const n = [...m];
-                    const i = n.findIndex(mm => mm.typing);
                     const msg = {
                         role: "system",
                         text:
                             "I couldn’t detect your Telegram ID. Please open the mini app from the bot or log in with Telegram.",
                     } as Msg;
-                    if (i >= 0) n[i] = msg; else n.push(msg);
+                    n.push(msg);
                     return n;
                 });
                 return;
@@ -124,22 +140,22 @@ export default function ChatClient() {
 
             const html = raw.replace(/\n/g, "<br/>");
 
+            setMsgs(m => [...m, { role: "assistant", text: html, html: true }]);
+
             setMsgs(m => {
                 const n = [...m];
-                const i = n.findIndex(mm => mm.typing);
                 const msg: Msg = {role: "assistant", text: html, html: true};
-                if (i >= 0) n[i] = msg; else n.push(msg);
+                n.push(msg);
                 return n;
             });
         } catch (e: any) {
             setMsgs(m => {
                 const n = [...m];
-                const i = n.findIndex(mm => mm.typing);
                 const msg: Msg = {
                     role: "system",
                     text: `Request failed: ${String(e?.message || e)}`,
                 };
-                if (i >= 0) n[i] = msg; else n.push(msg);
+                n.push(msg);
                 return n;
             });
         } finally {
@@ -246,7 +262,10 @@ export default function ChatClient() {
                                     alt="Obi"
                                     width={26}
                                     height={26}
-                                    style={{flex: "0 0 26px"}}
+                                    style={{
+                                        flex: "0 0 26px",
+                                        cursor: "pointer"
+                                    }}
                                 />
                             )}
 
@@ -256,7 +275,7 @@ export default function ChatClient() {
                                     maxWidth: "78%",
                                     padding: "10px 12px",
                                     borderRadius: 14,
-                                    background: isUser ? "#EAF0D8" : "#FFFFFF",
+                                    background: isUser ? "#FFFFFF" : "#FAF2DD",
                                     color: "#2b2b2b",
                                     whiteSpace: "pre-wrap",
                                     overflowWrap: "anywhere",
@@ -299,18 +318,14 @@ export default function ChatClient() {
                 {/* status typing… */}
                 {sending && (
                     <div style={{padding: "0 12px 8px", color: "#979797", fontStyle: "italic"}}>
-                        typing…
+                        typing{'.'.repeat(typingDots)}
                     </div>
                 )}
             </div>
 
             {loadingHistory && (
-                <div
-                    className="chat-loader"
-                    aria-live="polite"
-                    aria-busy="true"
-                >
-                    <p>loading chat…</p>
+                <div className="chat-loader" aria-live="polite" aria-busy="true">
+                    <p>loading chats{'.'.repeat(dots)}</p>
                 </div>
             )}
 
@@ -327,8 +342,8 @@ export default function ChatClient() {
                                 padding: "8px 10px",
                                 borderRadius: 18,
                                 background: "none",
-                                color: "#ADC178",
-                                fontWeight: 500,
+                                color: "#859E4F",
+                                fontWeight: 400,
                                 cursor: "pointer"
                             }}
                         >
@@ -450,7 +465,7 @@ export default function ChatClient() {
                                     setSidebarOpen(false);
                                 }
                             }}
-                            style={{background: "#859E4F", color: "#fff", width: "100%"}}
+                            style={{background: "#6b8749", color: "#F0EAD2", width: "100%"}}
                         >
                             + Add chat
                         </button>
