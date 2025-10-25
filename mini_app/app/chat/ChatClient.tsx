@@ -199,13 +199,21 @@ export default function ChatClient() {
         <main style={{display: "grid", gridTemplateRows: "auto 1fr auto", height: "100dvh", background: "#EEE8C9"}}>
             {/* header */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px"}}>
-                <button
+                {/*<button*/}
+                {/*    onClick={() => setSidebarOpen(o => !o)}*/}
+                {/*    aria-label="Back"*/}
+                {/*    style={{color: "#859E4F", background: "none", border: 0, fontSize: 18, cursor: "pointer"}}*/}
+                {/*>*/}
+                {/*    ⟲*/}
+                {/*</button>*/}
+                <img
                     onClick={() => setSidebarOpen(o => !o)}
-                    aria-label="Back"
-                    style={{color: "#859E4F", background: "none", border: 0, fontSize: 18, cursor: "pointer"}}
-                >
-                    ⟲
-                </button>
+                    src="/chat/history.svg"
+                    width={26}
+                    height={26}
+                    style={{flex: "0 0 26px"}}
+                    alt=""
+                />
                 <div style={{fontWeight: 700, color: "#859E4F"}}>{getGreeting()}</div>
                 <button
                     onClick={() => router.push("/dashboard")}
@@ -315,14 +323,13 @@ export default function ChatClient() {
                             onClick={() => send(s)}
                             disabled={sending}
                             style={{
-                                border: 0,
+                                border: "1px solid #ADC178",
                                 padding: "8px 10px",
                                 borderRadius: 18,
-                                background: "#ADC178",
-                                color: "#FFFFFF",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                boxShadow: "0 1px 2px rgba(0,0,0,.06)"
+                                background: "none",
+                                color: "#ADC178",
+                                fontWeight: 500,
+                                cursor: "pointer"
                             }}
                         >
                             {s}
@@ -361,7 +368,7 @@ export default function ChatClient() {
                         borderRadius: 18,
                         border: 0,
                         background: "#6b8749",
-                        color: "#fff",
+                        color: "#F0EAD2",
                         cursor: "pointer",
                         minWidth: 64
                     }}
