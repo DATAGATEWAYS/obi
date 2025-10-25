@@ -11,35 +11,43 @@ function isEmbeddedFrame(): boolean {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const embedded = useMemo(isEmbeddedFrame, []);
-  const wcPid = process.env.NEXT_PUBLIC_WC_PROJECT_ID; // можно не указывать, если WalletConnect не нужен
 
   useEffect(() => {
-    // защитный хак от "Blocked a frame ... accessing a cross-origin frame"
-    if (embedded) {
-      try {
-        if ((window as any).ethereum === undefined) (window as any).ethereum = {};
-      } catch {}
-    }
+    if (!embedded) return;
+
+    try {
+      const w: any = window as any;
+      const noop = () => {};
+      if (!w.ethereum || typeof w.ethereum.on !== "function") {
+        w.ethereum = {
+          isInjectedShim: true,
+          request: async () => { throw new Error("No injected provider in iframe"); },
+          on: noop,
+          off: noop,
+          addListener: noop,
+          removeListener: noop,
+        };
+      }
+    } catch {}
   }, [embedded]);
 
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
       config={{
-        walletConnectCloudProjectId: wcPid,
         loginMethods: ["telegram"],
         defaultChain: polygon,
         supportedChains: [polygon, polygonAmoy],
+
         appearance: {
           theme: "dark",
           accentColor: "#2f6b33",
           walletList: embedded
             ? []
-            : (wcPid
-                ? ["detected_wallets", "metamask", "coinbase_wallet", "wallet_connect"]
-                : ["detected_wallets", "metamask", "coinbase_wallet"]),
+            : ["detected_wallets", "metamask", "coinbase_wallet"],
           walletChainType: "ethereum-only",
         },
+
         embeddedWallets: {
           ethereum: { createOnLogin: "users-without-wallets" },
         },
