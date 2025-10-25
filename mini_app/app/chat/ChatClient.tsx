@@ -62,6 +62,8 @@ export default function ChatClient() {
         return () => clearInterval(id);
     }, [sending]);
 
+    const showSuggestions = !loadingHistory && !msgs.some(m => m.role === "user");
+
     function getUserInitial(): string {
         const t = (typeof window !== "undefined" ? (window as any).Telegram : null)?.WebApp?.initDataUnsafe?.user;
         if (t?.first_name) return String(t.first_name).charAt(0).toUpperCase();
@@ -88,7 +90,7 @@ export default function ChatClient() {
     useEffect(() => {
         const id = requestAnimationFrame(() => scrollToBottom(true));
         return () => cancelAnimationFrame(id);
-    }, [msgs.length]);
+    }, [msgs.length, sending]);
 
     function getTgId(): number | null {
         const p: any = user as any;
@@ -222,7 +224,7 @@ export default function ChatClient() {
         const current = chats.find(c => c.id === chatId);
         if (!current || current.name !== "New chat") return;
 
-        const newName = firstQuestion.slice(0, 20) + "...";
+        const newName = firstQuestion.slice(0, 25) + "...";
 
         setChats(cs => cs.map(c => (c.id === chatId ? {...c, name: newName} : c)));
 
@@ -239,7 +241,13 @@ export default function ChatClient() {
     }
 
     return (
-        <main style={{display: "grid", gridTemplateRows: "1fr auto", height: "100dvh", background: "#EEE8C9"}}>
+        <main style={{
+            display: "grid",
+            gridTemplateRows: showSuggestions ? "1fr auto auto" : "1fr auto",
+            height: "100dvh",
+            background: "#EEE8C9",
+            overflow: "hidden"
+        }}>
 
             <div
                 ref={listRef}
@@ -353,8 +361,27 @@ export default function ChatClient() {
 
                     {/* status typing… */}
                     {sending && (
-                        <div style={{padding: "0 12px 8px", color: "#979797", fontStyle: "italic"}}>
-                            typing{'.'.repeat(typingDots)}
+                        <div
+                            aria-live="polite"
+                            role="status"
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                alignItems: "flex-end",
+                                gap: 8,
+                                padding: "6px 12px",
+                                color: "#979797",
+                                fontStyle: "italic",
+                            }}
+                        >
+                            <img
+                                src="/chat/obi_icon.svg"
+                                alt="Obi"
+                                width={26}
+                                height={26}
+                                style={{flex: "0 0 26px"}}
+                            />
+                            <div>typing{'.'.repeat(typingDots)}</div>
                         </div>
                     )}
                 </div>
@@ -366,34 +393,34 @@ export default function ChatClient() {
                         </div>
                     )
                 }
-
-                {/* quick suggestions */
-                }
-                {
-                    !loadingHistory && !msgs.some(m => m.role === "user") && (
-                        <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
-                            {SUGGESTIONS.map((s) => (
-                                <button
-                                    key={s}
-                                    onClick={() => send(s)}
-                                    disabled={sending}
-                                    style={{
-                                        border: "1px solid #ADC178",
-                                        padding: "8px 10px",
-                                        borderRadius: 18,
-                                        background: "none",
-                                        color: "#859E4F",
-                                        fontWeight: 400,
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    {s}
-                                </button>
-                            ))}
-                        </div>
-                    )
-                }
             </div>
+
+            {/* quick suggestions */
+            }
+            {
+                showSuggestions  && (
+                    <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
+                        {SUGGESTIONS.map((s) => (
+                            <button
+                                key={s}
+                                onClick={() => send(s)}
+                                disabled={sending}
+                                style={{
+                                    border: "1px solid #ADC178",
+                                    padding: "8px 10px",
+                                    borderRadius: 18,
+                                    background: "none",
+                                    color: "#859E4F",
+                                    fontWeight: 400,
+                                    cursor: "pointer"
+                                }}
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                )
+            }
 
             {/* composer */
             }
