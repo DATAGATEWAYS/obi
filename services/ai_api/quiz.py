@@ -115,6 +115,9 @@ TOTAL = len(QUESTIONS)
 WELCOME_TOKEN_ID = 1000
 WELCOME_INDEX = WELCOME_TOKEN_ID - 1
 
+FIRST_QUESTION_TOKEN_ID = 1001
+FIRST_QUESTION_INDEX = FIRST_QUESTION_TOKEN_ID - 1
+
 @router.get("/onchain_status")
 async def onchain_status():
     if not (oc._w3 and oc._minter):
@@ -373,3 +376,44 @@ async def quiz_minted(privy_id: str, session: AsyncSession = Depends(get_session
     )
     items = [{"token_id": r[0] + 1, "tx_hash": r[1]} for r in rows.all()]
     return {"items": items}
+
+@router.post("/mint-first-chat")
+async def mint_first_chat(payload: WelcomeMintPayload, session: AsyncSession = Depends(get_session)):
+    # 1) user
+    uid = await session.scalar(select(User.id).where(User.privy_id == payload.privy_id))
+    if not uid:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
+    # 2) already minted?
+    existed = await session.scalar(
+        select(NFTMint.user_id).where(and_(NFTMint.user_id == uid, NFTMint.quiz_index == FIRST_QUESTION_INDEX))
+    )
+    if existed:
+        return {"token_id": FIRST_QUESTION_TOKEN_ID, "already": True}
+
+    # 3) wallet
+    addr = await session.scalar(
+        select(UserWallet.address)
+        .where(UserWallet.user_id == uid)
+        .order_by(UserWallet.is_primary.desc(), UserWallet.created_at.asc())
+    )
+    if not addr:
+        raise HTTPException(status_code=400, detail="user_has_no_wallet")
+
+    # 4) mint
+    try:
+        tx_hash = await mint_badge(addr, FIRST_QUESTION_TOKEN_ID)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"mint_error:{e}")
+
+    # 5) save
+    await session.execute(
+        pg_insert(NFTMint)
+        .values(user_id=uid, quiz_index=FIRST_QUESTION_INDEX, tx_hash=tx_hash)
+        .on_conflict_do_nothing()
+    )
+    await session.commit()
+
+    return {"token_id": FIRST_QUESTION_TOKEN_ID, "tx_hash": tx_hash, "already": False}

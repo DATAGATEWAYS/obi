@@ -148,6 +148,17 @@ async def update_chat(payload: ChatUpdatePayload, session: AsyncSession = Depend
 
     return ChatDTO(id=chat.id, name=chat.name)
 
+@router.get("/chat/has-any-user-message")
+async def has_any_user_message(
+    telegram_id: int = Query(...),
+    session: AsyncSession = Depends(get_session),
+):
+    user = await get_or_create_user(session, telegram_id)
+    cnt = await session.scalar(
+        select(func.count()).select_from(QA).where(QA.user_id == user.id)
+    )
+    return {"has_any_message": (cnt or 0) > 0}
+
 
 def from_ai_to_human_readable(raw: str) -> str:
     return markdown_to_telegram_html(raw)

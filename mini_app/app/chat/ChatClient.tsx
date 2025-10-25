@@ -2,6 +2,8 @@
 import {useEffect, useRef, useState} from "react";
 import {usePrivy} from "@privy-io/react-auth";
 import {useRouter} from "next/navigation";
+import MintPopup from "../components/MintPopup";
+import popupCss from "../components/MintPopup.module.css";
 
 type Msg = { role: "user" | "assistant" | "system"; text: string; typing?: boolean; html?: boolean; };
 
@@ -64,6 +66,83 @@ export default function ChatClient() {
 
     const showSuggestions = !loadingHistory && !msgs.some(m => m.role === "user");
 
+    const FIRST_QUESTION_TOKEN_ID = 1001;
+
+    const [mintFirstLoading, setMintFirstLoading] = useState(false);
+    const busy = loadingHistory || sending || mintFirstLoading;
+    const [mintFirstDots, setMintFirstDots] = useState(1);
+    const [mintFirstModal, setMintFirstModal] = useState<{ open: boolean }>({open: false});
+    const mintFirstText = `Minting your new badge${".".repeat(mintFirstDots)}`;
+
+    useEffect(() => {
+        if (!mintFirstLoading) {
+            setMintFirstDots(1);
+            return;
+        }
+        const id = setInterval(() => setMintFirstDots(d => (d % 3) + 1), 500);
+        return () => clearInterval(id);
+    }, [mintFirstLoading]);
+
+    const firstQuestionMintTriedRef = useRef(false);
+
+    async function triggerFirstQuestionMintOnce() {
+        if (firstQuestionMintTriedRef.current) return;
+        firstQuestionMintTriedRef.current = true;
+
+        try {
+            const owned = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
+            if (Array.isArray(owned) && owned.includes(FIRST_QUESTION_TOKEN_ID)) return;
+        } catch {
+        }
+
+        setMintFirstLoading(true);
+        try {
+            const r = await fetch("/api/quiz/mint-first-chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({privy_id: user?.id}),
+            });
+
+            let j: any = null;
+            try {
+                j = await r.json();
+            } catch {
+            }
+
+            if (!r.ok) throw new Error(j?.detail || j?.error || `Mint failed (${r.status})`);
+
+            if (j?.token_id === FIRST_QUESTION_TOKEN_ID) {
+                try {
+                    const local = JSON.parse(localStorage.getItem("owned_tokens") || "[]");
+                    if (!local.includes(FIRST_QUESTION_TOKEN_ID)) {
+                        local.push(FIRST_QUESTION_TOKEN_ID);
+                        localStorage.setItem("owned_tokens", JSON.stringify(local));
+                    }
+                } catch {
+                }
+            }
+
+            setMintFirstModal({open: true});
+        } catch (e: any) {
+            console.error(e?.message || e);
+        } finally {
+            setMintFirstLoading(false);
+        }
+    }
+
+    const hasAnyUserMsgRef = useRef<boolean | null>(null);
+
+    async function hasAnyUserMessage(): Promise<boolean> {
+        if (hasAnyUserMsgRef.current !== null) return hasAnyUserMsgRef.current;
+        const tgId = getTgId();
+        if (!tgId) return false;
+        const r = await fetch(`/api/chat/has-any-user-message?telegram_id=${tgId}`, {cache: "no-store"});
+        if (!r.ok) return false;
+        const j = await r.json();
+        hasAnyUserMsgRef.current = Boolean(j?.has_any_message);
+        return hasAnyUserMsgRef.current;
+    }
+
     function getUserInitial(): string {
         const t = (typeof window !== "undefined" ? (window as any).Telegram : null)?.WebApp?.initDataUnsafe?.user;
         if (t?.first_name) return String(t.first_name).charAt(0).toUpperCase();
@@ -108,12 +187,21 @@ export default function ChatClient() {
 
     async function send(text?: string) {
         const q = (text ?? input).trim();
-        if (!q || sending) return;
+        if (!q || sending || busy) return;
+
+        const hadBefore = await hasAnyUserMessage();
 
         setMsgs(m => [...m, {role: "user", text: q}]);
         setInput("");
 
         void renameChatByFirstQuestion(q);
+
+        hasAnyUserMsgRef.current = true;
+
+        if (!hadBefore) {
+            // TODO uncomment when ready to test
+            // void triggerFirstQuestionMintOnce();
+        }
 
         setSending(true);
 
@@ -262,6 +350,10 @@ export default function ChatClient() {
 
                 {/* header + messages */}
                 <div style={{
+                    position: "sticky",
+                    background: "#EEE8C9",
+                    top: 0,
+                    zIndex: 2,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -398,13 +490,13 @@ export default function ChatClient() {
             {/* quick suggestions */
             }
             {
-                showSuggestions  && (
+                showSuggestions && (
                     <div style={{display: "flex", gap: 8, flexWrap: "wrap", padding: "0 12px 8px"}}>
                         {SUGGESTIONS.map((s) => (
                             <button
                                 key={s}
                                 onClick={() => send(s)}
-                                disabled={sending}
+                                disabled={busy}
                                 style={{
                                     border: "1px solid #ADC178",
                                     padding: "8px 10px",
@@ -427,6 +519,7 @@ export default function ChatClient() {
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
+                    if (busy) return;
                     send();
                 }}
                 style={{display: "flex", gap: 8, padding: 12}}
@@ -435,7 +528,7 @@ export default function ChatClient() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Ask anything about crypto..."
-                    disabled={sending}
+                    disabled={busy}
                     style={{
                         flex: 1,
                         padding: "12px 14px",
@@ -447,7 +540,7 @@ export default function ChatClient() {
                 />
                 <button
                     type="submit"
-                    disabled={sending || !input.trim()}
+                    disabled={busy || !input.trim()}
                     style={{
                         padding: "10px 16px",
                         borderRadius: 18,
@@ -541,6 +634,24 @@ export default function ChatClient() {
                     </div>
                 </aside>
             </div>
+            {mintFirstLoading && (
+                <div className={popupCss.mintBackdrop} aria-live="polite" aria-busy="true">
+                    <p style={{fontSize: 18, fontWeight: 700}}>{mintFirstText}</p>
+                </div>
+            )}
+
+            {mintFirstModal.open && (
+                <MintPopup
+                    tokenId={FIRST_QUESTION_TOKEN_ID}
+                    image={`/assets/nfts/${FIRST_QUESTION_TOKEN_ID}.png`}
+                    name="Obi Badge — First Question"
+                    description="Awarded for asking your first question in Obi."
+                    onClose={() => setMintFirstModal({open: false})}
+                    mode="single"
+                    primaryLabel="Great!"
+                    onPrimary={() => setMintFirstModal({open: false})}
+                />
+            )}
         </main>
     )
         ;
