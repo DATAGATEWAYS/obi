@@ -1,50 +1,51 @@
 "use client";
 
-import {PrivyProvider} from "@privy-io/react-auth";
-import {polygon, polygonAmoy} from "viem/chains";
-import {useEffect} from "react";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { polygon, polygonAmoy } from "viem/chains";
+import { useEffect, useMemo } from "react";
 
-export default function Providers({children}: { children: React.ReactNode }) {
-      useEffect(() => {
-    const tg: any = (window as any)?.Telegram?.WebApp;
-    if (!tg) return;
+function isEmbeddedFrame(): boolean {
+  if (typeof window === "undefined") return false;
+  try { return window.self !== window.top; } catch { return true; }
+}
 
-    const apply = () => {
-      const vh = tg.viewportHeight ?? window.innerHeight;
-      document.documentElement.style.setProperty("--tg-vh", `${vh}px`);
+export default function Providers({ children }: { children: React.ReactNode }) {
+  const embedded = useMemo(isEmbeddedFrame, []);
+  const wcPid = process.env.NEXT_PUBLIC_WC_PROJECT_ID; // можно не указывать, если WalletConnect не нужен
 
-      const safeBottom = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom")) || 0);
-      const overlaySum = Math.max(0, window.innerHeight - vh);
-      const header = Math.max(0, overlaySum - safeBottom);
-      document.documentElement.style.setProperty("--tg-header", `${header}px`);
-    };
+  useEffect(() => {
+    // защитный хак от "Blocked a frame ... accessing a cross-origin frame"
+    if (embedded) {
+      try {
+        if ((window as any).ethereum === undefined) (window as any).ethereum = {};
+      } catch {}
+    }
+  }, [embedded]);
 
-    tg.expand?.();
-    tg.setHeaderColor?.("bg_color");
-
-    apply();
-    tg.onEvent?.("viewportChanged", apply);
-    window.addEventListener("resize", apply);
-
-    return () => {
-      tg.offEvent?.("viewportChanged", apply);
-      window.removeEventListener("resize", apply);
-    };
-  }, []);
-    return (
-        <PrivyProvider
-            appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
-            config={{
-                appearance: {theme: "dark", accentColor: "#2f6b33"},
-                loginMethods: ["telegram"],
-                defaultChain: polygon,
-                supportedChains: [polygon, polygonAmoy],
-                embeddedWallets: {
-                    ethereum: {createOnLogin: "users-without-wallets"},
-                },
-            }}
-        >
-            {children}
-        </PrivyProvider>
-    );
+  return (
+    <PrivyProvider
+      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
+      config={{
+        walletConnectCloudProjectId: wcPid,
+        loginMethods: ["telegram"],
+        defaultChain: polygon,
+        supportedChains: [polygon, polygonAmoy],
+        appearance: {
+          theme: "dark",
+          accentColor: "#2f6b33",
+          walletList: embedded
+            ? []
+            : (wcPid
+                ? ["detected_wallets", "metamask", "coinbase_wallet", "wallet_connect"]
+                : ["detected_wallets", "metamask", "coinbase_wallet"]),
+          walletChainType: "ethereum-only",
+        },
+        embeddedWallets: {
+          ethereum: { createOnLogin: "users-without-wallets" },
+        },
+      }}
+    >
+      {children}
+    </PrivyProvider>
+  );
 }
