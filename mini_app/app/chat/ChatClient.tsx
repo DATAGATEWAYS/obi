@@ -144,11 +144,9 @@ export default function ChatClient() {
     }
 
     function getUserInitial(): string {
-        const t = (typeof window !== "undefined" ? (window as any).Telegram : null)?.WebApp?.initDataUnsafe?.user;
-        if (t?.first_name) return String(t.first_name).charAt(0).toUpperCase();
-        if (t?.username) return String(t.username).charAt(0).toUpperCase();
         try {
-            const u = localStorage.getItem("username");
+            const u = sessionStorage.getItem("onb_username") ||
+            localStorage.getItem("onb_username");
             if (u) return u.charAt(0).toUpperCase();
         } catch {
         }
