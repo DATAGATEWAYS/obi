@@ -227,6 +227,9 @@ export default function Profile() {
         const clean = name.trim();
         if (!clean) return;
 
+        setUsername(clean);
+        setInput(clean);
+
         sessionStorage.setItem("onb_username", clean);
         localStorage.setItem("onb_username", clean);
 
@@ -247,6 +250,7 @@ export default function Profile() {
 
     async function onEdit() {
         try {
+            setInput(username);
             setEdited(true);
         } catch (e) {
             alert("Edit failed");
@@ -423,7 +427,7 @@ export default function Profile() {
                 <p style={{color: "#6C584C", margin: 0}}>
                     My address
                 </p>
-                <p style={{color: "#6C584C", margin: 0}}>
+                <p style={{color: "#6C584C", margin: 0, fontWeight: 600,}}>
                     {shortenAddress(walletAddress) || (walletLoading ? "Creating…" : "—")}
                 </p>
                 <img onClick={onCopy} src="/profile/copy_btn.svg" alt="copy_btn" style={{
@@ -477,44 +481,39 @@ export default function Profile() {
                     justifyContent: "space-between",
                 }}
             >
-                <div>
-                    <p style={{color: "#6C584C", margin: 0}}>
-                        Username
-                    </p>
-                    <div>
-                        {!edited && (
-                            <p style={{color: "#6C584C", margin: 0}}>
-                                {username}
-                            </p>
-                        )}
-                        {!edited && (
-                            <img onClick={onEdit} src="/profile/edit_btn.svg" alt="edit_btn" style={{
-                                cursor: "pointer"
-                            }}/>
-                        )}
-                        {edited && (
-                            <input
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Enter new username"
-                                style={{
-                                    flex: 1,
-                                    padding: "12px 14px",
-                                    borderRadius: 18,
-                                    border: "1px solid #ddd",
-                                    outline: "none",
-                                    background: "#fff",
-                                    color: "#6C584C",
-                                }}
-                            />
-                        )}
-                        {edited && (
-                            <img onClick={() => save(input)} src="/profile/save_btn.svg" alt="edit_btn" style={{
-                                cursor: "pointer"
-                            }}/>
-                        )}
-                    </div>
-                </div>
+                <p style={{color: "#6C584C", margin: 0}}>
+                    Username
+                </p>
+                {edited ? (
+                    <>
+                        <input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Enter new username"
+                            style={{
+                                flex: 1,
+                                padding: "12px 14px",
+                                borderRadius: 18,
+                                border: "1px solid #ddd",
+                                outline: "none",
+                                background: "#fff",
+                                color: "#6C584C",
+                            }}
+                        />
+                        <img onClick={() => save(input)} src="/profile/save_btn.svg" alt="edit_btn" style={{
+                            cursor: "pointer"
+                        }}/>
+                    </>
+                ) : (
+                    <>
+                        <p style={{color: "#6C584C", margin: 0, fontWeight: 600}}>
+                            {username}
+                        </p>
+                        <img onClick={onEdit} src="/profile/edit_btn.svg" alt="edit_btn" style={{
+                            cursor: "pointer"
+                        }}/>
+                    </>
+                )}
             </div>
             {saved && (
                 <div style={{textAlign: "center", fontSize: 12, color: "#6C584C", marginTop: -8, marginBottom: 12}}>
