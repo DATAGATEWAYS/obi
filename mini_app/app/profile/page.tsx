@@ -342,7 +342,7 @@ export default function Profile() {
             {/* To dashboard */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
                 <img
-                     className="curious-icon"
+                     className="profile-back"
                      src="/topics/back_button.png"
                      alt="To dashboard"
                      onClick={() => router.push("/dashboard")}
@@ -449,7 +449,7 @@ export default function Profile() {
                     borderRadius: 10,
                     background: "#859e4f",
                     border: 0,
-                    marginBottom: "2rem",
+                    marginBottom: "3rem",
                     color: "#faf2dd",
                     height: "2rem",
                     display: "flex",

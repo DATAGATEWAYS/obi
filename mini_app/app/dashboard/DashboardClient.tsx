@@ -270,7 +270,7 @@ export default function DashboardClient() {
                     background: COLORS.ctaBg,
                     color: COLORS.ctaText,
                     textDecoration: "none",
-                    marginBottom: "2rem",
+                    marginBottom: "3rem",
                 }}
             >
                 Ask a question

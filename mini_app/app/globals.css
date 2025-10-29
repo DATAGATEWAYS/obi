@@ -151,6 +151,7 @@ small {
     font-weight: 700;
     font-size: 22px;
     line-height: 1.05;
+    text-align: center;
 }
 
 /*========== dashboard ==========*/
@@ -196,6 +197,12 @@ small {
     height: 36px;
     flex: 0 0 auto;
     object-fit: contain;
+    cursor: pointer;
+}
+
+.profile-back {
+    width: 20px;
+    height: 20px;
     cursor: pointer;
 }
 
