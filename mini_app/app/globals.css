@@ -46,6 +46,12 @@ html, body {
 button, input, select, textarea {
     font: inherit;
     letter-spacing: inherit;
+    color: #6C584C;
+}
+
+input::placeholder {
+  color: #979797;
+  opacity: 1;
 }
 
 button {

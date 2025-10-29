@@ -20,7 +20,7 @@ export default function Username() {
 
     // onboarding
     const next = () => {
-        const clean = name.trim();
+        const clean = name.trim().slice(0, 20);
         sessionStorage.setItem("onb_username", clean);
         localStorage.setItem("onb_username", clean);
         router.push("/onboarding/topics");
@@ -28,7 +28,7 @@ export default function Username() {
 
     // edit mode
     const save = async () => {
-        const clean = name.trim();
+        const clean = name.trim().slice(0, 20);
         if (!clean) return;
 
         sessionStorage.setItem("onb_username", clean);
@@ -69,7 +69,8 @@ export default function Username() {
                     className="name-input"
                     placeholder="Start typing..."
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(e.target.value.slice(0, 20))}
+                    maxLength={20}
                     autoComplete="nickname"
                     inputMode="text"
                     enterKeyHint={isEdit ? "done" : "next"}

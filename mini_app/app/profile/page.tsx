@@ -220,11 +220,8 @@ export default function Profile() {
         }
     }
 
-    const [saved, setSaved] = useState(false);
-
-
     const save = async (name: string) => {
-        const clean = name.trim();
+        const clean = name.trim().slice(0, 20);
         if (!clean) return;
 
         setUsername(clean);
@@ -241,8 +238,6 @@ export default function Profile() {
             }).catch(() => {
             });
             setEdited(false);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 1200);
         }
     };
 
@@ -250,7 +245,7 @@ export default function Profile() {
 
     async function onEdit() {
         try {
-            setInput(username);
+            setInput(username.slice(0, 20));
             setEdited(true);
         } catch (e) {
             alert("Edit failed");
@@ -488,16 +483,15 @@ export default function Profile() {
                     <>
                         <input
                             value={input}
-                            onChange={(e) => setInput(e.target.value)}
+                            onChange={(e) => setInput(e.target.value.slice(0, 20))}
+                            maxLength={20}
                             placeholder="Enter new username"
                             style={{
-                                flex: 1,
-                                padding: "12px 14px",
-                                borderRadius: 18,
+                                padding: "5px 5px",
+                                borderRadius: 12,
                                 border: "1px solid #ddd",
                                 outline: "none",
                                 background: "#fff",
-                                color: "#6C584C",
                             }}
                         />
                         <img onClick={() => save(input)} src="/profile/save_btn.svg" alt="edit_btn" style={{
@@ -515,11 +509,6 @@ export default function Profile() {
                     </>
                 )}
             </div>
-            {saved && (
-                <div style={{textAlign: "center", fontSize: 12, color: "#6C584C", marginTop: -8, marginBottom: 12}}>
-                    new name set!
-                </div>
-            )}
             <button
                 onClick={() => router.push("/onboarding/username")}
                 style={{
