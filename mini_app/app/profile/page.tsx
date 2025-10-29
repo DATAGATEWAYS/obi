@@ -480,12 +480,19 @@ export default function Profile() {
                     Username
                 </p>
                 {edited ? (
-                    <>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            save(input);
+                        }}
+                        style={{display: "contents"}}
+                    >
                         <input
                             value={input}
                             onChange={(e) => setInput(e.target.value.slice(0, 20))}
                             maxLength={20}
                             placeholder="Enter new username"
+                            enterKeyHint="done"
                             style={{
                                 padding: "5px 10px",
                                 borderRadius: 12,
@@ -497,15 +504,11 @@ export default function Profile() {
                         <img onClick={() => save(input)} src="/profile/save_btn.svg" alt="edit_btn" style={{
                             cursor: "pointer"
                         }}/>
-                    </>
+                    </form>
                 ) : (
                     <>
-                        <p style={{color: "#6C584C", margin: 0, fontWeight: 600}}>
-                            {username}
-                        </p>
-                        <img onClick={onEdit} src="/profile/edit_btn.svg" alt="edit_btn" style={{
-                            cursor: "pointer"
-                        }}/>
+                        <p style={{color: "#6C584C", margin: 0, fontWeight: 600}}>{username}</p>
+                        <img onClick={onEdit} src="/profile/edit_btn.svg" alt="edit_btn" style={{cursor: "pointer"}}/>
                     </>
                 )}
             </div>
