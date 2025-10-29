@@ -487,7 +487,7 @@ export default function Profile() {
                             maxLength={20}
                             placeholder="Enter new username"
                             style={{
-                                padding: "5px 5px",
+                                padding: "5px 10px",
                                 borderRadius: 12,
                                 border: "1px solid #ddd",
                                 outline: "none",
