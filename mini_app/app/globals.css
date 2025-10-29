@@ -50,8 +50,8 @@ button, input, select, textarea {
 }
 
 input::placeholder {
-  color: #979797;
-  opacity: 1;
+    color: #979797;
+    opacity: 1;
 }
 
 button {
@@ -349,16 +349,20 @@ small {
 /*========== welcome screen ==========*/
 
 .welcome-screen {
-    width: 390px;
-    height: 732px;
+    width: 100%;
+    height: var(--tg-vh);
+    overflow: hidden;
     position: relative;
 }
 
 .welcome-screen .background-image {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 732px;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
     display: block;
-    max-width: 100%;
 }
 
 .welcome-screen .btn-text {
