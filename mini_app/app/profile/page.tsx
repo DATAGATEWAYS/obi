@@ -341,14 +341,20 @@ export default function Profile() {
         <main className="page-inner">
             {/* To dashboard */}
             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+                <img
+                     className="curious-icon"
+                     src="/topics/back_button.png"
+                     alt="To dashboard"
+                     onClick={() => router.push("/dashboard")}
+                />
                 <h2 className="greeting">
                     {greetTitle},{" "}{nameLoaded ? (username || "friend") : Skeleton}!
                 </h2>
                 <img
-                    className="curious-icon"
-                    src="/profile/curious.png"
-                    alt="To dashboard"
-                    onClick={() => router.push("/dashboard")}
+                     className="curious-icon"
+                     src="/profile/curious.png"
+                     alt="To dashboard"
+                     onClick={() => router.push("/dashboard")}
                 />
             </div>
             <div className="back-with-pager">
@@ -443,9 +449,9 @@ export default function Profile() {
                     borderRadius: 10,
                     background: "#859e4f",
                     border: 0,
-                    marginBottom: 12,
+                    marginBottom: "2rem",
                     color: "#faf2dd",
-                    height: "26px",
+                    height: "2rem",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -512,21 +518,6 @@ export default function Profile() {
                     </>
                 )}
             </div>
-            <button
-                onClick={() => router.push("/onboarding/username")}
-                style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0,
-                    marginBottom: 12,
-                    color: "#6C584C"
-                }}
-            >
-                Test
-            </button>
             <button disabled style={{
                 width: "100%",
                 textAlign: "left",
@@ -537,7 +528,8 @@ export default function Profile() {
                 position: "relative",
                 opacity: .6,
                 cursor: "default",
-                color: "#6C584C"
+                color: "#6C584C",
+                marginBottom: "2rem",
             }} aria-disabled="true">
                 Language
                 <img src="/assets/badges/soon.svg" alt="Soon"
@@ -551,19 +543,8 @@ export default function Profile() {
             </button>
 
             {/* Other */}
-            <h4 style={{marginTop: 24, color: "#95654D"}}>Other</h4>
+            <h4 style={{color: "#95654D"}}>Other</h4>
             <div style={{display: "grid", gap: 12, color: "#6c584c"}}>
-                <button onClick={() => router.push("/dashboard")} style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
-                    background: "#f4efdf",
-                    border: 0,
-                    color: "#6C584C"
-                }}>
-                    To dashboard
-                </button>
                 <button onClick={() => openLink("https://obi-onboard.vercel.app/about")} style={{
                     width: "100%",
                     textAlign: "left",

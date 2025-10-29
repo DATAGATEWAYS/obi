@@ -270,13 +270,14 @@ export default function DashboardClient() {
                     background: COLORS.ctaBg,
                     color: COLORS.ctaText,
                     textDecoration: "none",
+                    marginBottom: "2rem",
                 }}
             >
                 Ask a question
             </a>
 
             {/* Explore */}
-            <h4 style={{marginTop: 24, color: "#95654D"}}>Explore Polygon Community</h4>
+            <h4 style={{color: "#95654D"}}>Explore Polygon Community</h4>
             <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
                 <a onClick={() => openLink("https://polygon.technology/ecosystem")}
                    href="#"
@@ -310,6 +311,7 @@ export default function DashboardClient() {
                        justifyContent: "center",
                        display: "flex",
                        alignItems: "center",
+                       marginBottom: "2rem",
                    }}
                 >
                     Community Hub
@@ -317,7 +319,7 @@ export default function DashboardClient() {
             </div>
 
             {/* Still lost */}
-            <h4 style={{marginTop: 24, color: "#95654D"}}>Still lost?</h4>
+            <h4 style={{color: "#95654D"}}>Still lost?</h4>
             <a
                 onClick={() => openLink("https://t.me/OBIonboardAI")}
                 style={{
