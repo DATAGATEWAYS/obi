@@ -408,31 +408,47 @@ export default function Profile() {
             <div
                 style={{
                     width: "100%",
-                    textAlign: "left",
-                    padding: 16,
-                    borderRadius: 16,
+                    padding: "18px 24px",
+                    borderRadius: 24,
                     background: "#f4efdf",
-                    border: 0,
-                    marginBottom: 12,
                     color: "#6C584C",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    gap: 16,
                 }}
             >
-                <div>
-                    <p style={{color: "#6C584C", margin: 0}}>
-                        My address
-                    </p>
-                    <div>
-                        <p style={{color: "#6C584C", margin: 0}}>
-                            {shortenAddress(walletAddress) || (walletLoading ? "Creating…" : "—")}
-                        </p>
-                        <img onClick={onCopy} src="/profile/copy_btn.svg" alt="copy_btn" style={{
-                            cursor: "pointer"
-                        }}/>
-                    </div>
-                </div>
+                <p style={{margin: 0, whiteSpace: "nowrap", fontSize: 18}}>My address</p>
+
+                <p
+                    style={{
+                        margin: 0,
+                        flex: 1,
+                        textAlign: "center",
+                        fontWeight: 700,
+                        fontSize: 22,
+                    }}
+                >
+                    {shortenAddress(walletAddress) || (walletLoading ? "Creating…" : "—")}
+                </p>
+
+                <button
+                    onClick={onCopy}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "6px 12px",
+                        borderRadius: 12,
+                        background: "transparent",
+                        border: "2px solid #A7C470",
+                        color: "#A7C470",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                    }}
+                >
+                    <img src="/profile/copy_btn.svg" alt="copy"/>
+                    copy
+                </button>
             </div>
             {copied && (
                 <div style={{textAlign: "center", fontSize: 12, color: "#6C584C", marginTop: -8, marginBottom: 12}}>
@@ -500,7 +516,7 @@ export default function Profile() {
                             <input
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask anything about crypto..."
+                                placeholder="Enter new username"
                                 style={{
                                     flex: 1,
                                     padding: "12px 14px",
@@ -508,6 +524,7 @@ export default function Profile() {
                                     border: "1px solid #ddd",
                                     outline: "none",
                                     background: "#fff",
+                                    color: "#6C584C",
                                 }}
                             />
                         )}
