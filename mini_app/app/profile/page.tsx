@@ -207,7 +207,7 @@ export default function Profile() {
         />
     );
 
-    const [copied, setCopied] = React.useState(false);
+    const [copied, setCopied] = useState(false);
 
     async function onCopy() {
         if (!walletAddress) return;
@@ -217,6 +217,39 @@ export default function Profile() {
             setTimeout(() => setCopied(false), 1200);
         } catch (e) {
             alert("Copy failed");
+        }
+    }
+
+    const [saved, setSaved] = useState(false);
+
+
+    const save = async (name: string) => {
+        const clean = name.trim();
+        if (!clean) return;
+
+        sessionStorage.setItem("onb_username", clean);
+        localStorage.setItem("onb_username", clean);
+
+        if (ready && authenticated && user?.id) {
+            await fetch("/api/users/update-username", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({privy_id: user.id, username: clean}),
+            }).catch(() => {
+            });
+            setEdited(false);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 1200);
+        }
+    };
+
+    const [edited, setEdited] = useState(false);
+
+    async function onEdit() {
+        try {
+            setEdited(true);
+        } catch (e) {
+            alert("Edit failed");
         }
     }
 
@@ -303,6 +336,8 @@ export default function Profile() {
     }, [mintLoading]);
     const mintLoadingText = `Loading${".".repeat(mintDots)}`;
 
+    const [input, setInput] = useState("");
+
     return (
         <main className="page-inner">
             {/* To dashboard */}
@@ -370,9 +405,7 @@ export default function Profile() {
             </div>
 
             {/* Settings */}
-            <h4 style={{marginTop: 50, color: "#95654D"}}>My address</h4>
-            <button
-                onClick={onCopy}
+            <div
                 style={{
                     width: "100%",
                     textAlign: "left",
@@ -387,11 +420,20 @@ export default function Profile() {
                     justifyContent: "space-between",
                 }}
             >
-                <p style={{color: "#6C584C", margin: 0}}>
-                    {shortenAddress(walletAddress) || (walletLoading ? "Creating…" : "—")}
-                </p>
-                <img src="/profile/copy_btn.svg" alt="copy_btn"/>
-            </button>
+                <div>
+                    <p style={{color: "#6C584C", margin: 0}}>
+                        My address
+                    </p>
+                    <div>
+                        <p style={{color: "#6C584C", margin: 0}}>
+                            {shortenAddress(walletAddress) || (walletLoading ? "Creating…" : "—")}
+                        </p>
+                        <img onClick={onCopy} src="/profile/copy_btn.svg" alt="copy_btn" style={{
+                            cursor: "pointer"
+                        }}/>
+                    </div>
+                </div>
+            </div>
             {copied && (
                 <div style={{textAlign: "center", fontSize: 12, color: "#6C584C", marginTop: -8, marginBottom: 12}}>
                     address copied!
@@ -424,8 +466,7 @@ export default function Profile() {
             </button>
 
             <h4 style={{color: "#95654D"}}>Account Settings</h4>
-            <button
-                onClick={() => router.push("/onboarding/username?edit=1")}
+            <div
                 style={{
                     width: "100%",
                     textAlign: "left",
@@ -434,11 +475,55 @@ export default function Profile() {
                     background: "#f4efdf",
                     border: 0,
                     marginBottom: 12,
-                    color: "#6C584C"
+                    color: "#6C584C",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
                 }}
             >
-                Username
-            </button>
+                <div>
+                    <p style={{color: "#6C584C", margin: 0}}>
+                        Username
+                    </p>
+                    <div>
+                        {!edited && (
+                            <p style={{color: "#6C584C", margin: 0}}>
+                                {username}
+                            </p>
+                        )}
+                        {!edited && (
+                            <img onClick={onEdit} src="/profile/edit_btn.svg" alt="edit_btn" style={{
+                                cursor: "pointer"
+                            }}/>
+                        )}
+                        {edited && (
+                            <input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Ask anything about crypto..."
+                                style={{
+                                    flex: 1,
+                                    padding: "12px 14px",
+                                    borderRadius: 18,
+                                    border: "1px solid #ddd",
+                                    outline: "none",
+                                    background: "#fff",
+                                }}
+                            />
+                        )}
+                        {edited && (
+                            <img onClick={() => save(input)} src="/profile/save_btn.svg" alt="edit_btn" style={{
+                                cursor: "pointer"
+                            }}/>
+                        )}
+                    </div>
+                </div>
+            </div>
+            {saved && (
+                <div style={{textAlign: "center", fontSize: 12, color: "#6C584C", marginTop: -8, marginBottom: 12}}>
+                    new name set!
+                </div>
+            )}
             <button
                 onClick={() => router.push("/onboarding/username")}
                 style={{
