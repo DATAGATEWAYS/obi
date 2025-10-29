@@ -47,7 +47,7 @@ export default function Profile() {
     });
 
     const [tokens, setTokens] = useState<number[]>([]);
-    const [page, setPage] = useState(0); // по 3 на страницу
+    const [page, setPage] = useState(0);
     const pageSize = 3;
 
     const handleLogout = async () => {

@@ -147,7 +147,7 @@ export default function DashboardClient() {
     const [username, setUsername] = useState("");
     const [nameLoaded, setNameLoaded] = useState(false);
 
-    const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number }>({open: false});
+    const [mintModal, setMintModal] = useState<{ open: boolean; tokenId?: number, image?: string; }>({open: false});
 
 
     useEffect(() => {
@@ -243,7 +243,7 @@ export default function DashboardClient() {
             <QuizCard
                 privyId={user?.id || ""}
                 ready={ready && authenticated}
-                onOpenMint={(tokenId) => setMintModal({open: true, tokenId})}
+                onOpenMint={(tokenId) => setMintModal({open: true, tokenId, image:`/assets/nfts/${tokenId}.png`})}
             />
 
             {/* Mint popup */}
@@ -255,6 +255,7 @@ export default function DashboardClient() {
                         setMintModal({open: false});
                         router.push(`/profile?new=${mintModal.tokenId}`);
                     }}
+                    image={mintModal.image}
                 />
             )}
 
