@@ -39,17 +39,29 @@ _minter = (_w3.eth.account.from_key(_PRIVKEY) if (_w3 and _PRIVKEY) else None)
 
 _nonce_lock = threading.Lock()
 
+def _pick_mint_fn(to, token_id):
+    names = {e.get("name") for e in (_abi or []) if e.get("type") == "function"}
+    if "mintTo" in names:
+        return _contract.functions.mintTo(to, int(token_id))
+    if "mint" in names:
+        return _contract.functions.mint(to, int(token_id), 1, b"")
+    if "safeMint" in names:
+        return _contract.functions.safeMint(to, int(token_id))
+    raise RuntimeError("No mint-like function found in ABI")
+
 
 def _mint_sync(to_addr: str, token_id: int) -> str:
     if not (_w3 and _contract and _minter):
         raise RuntimeError("Web3/contract/minter is not configured")
 
     to = Web3.to_checksum_address(to_addr)
-    tx_func = _contract.functions.mintTo(to, int(token_id))
+    tx_func = _pick_mint_fn(to, token_id)
     try:
         _ = tx_func.estimate_gas({"from": _minter.address})
-    except Exception:
-        tx_func = _contract.functions.mint(to, int(token_id), 1, b"")
+    except ContractLogicError as e:
+        raise
+    except Exception as e:
+        raise RuntimeError(f"gas_estimate_failed_for_selected_mint: {e}")
 
     last_err = None
     for _ in range(3):
