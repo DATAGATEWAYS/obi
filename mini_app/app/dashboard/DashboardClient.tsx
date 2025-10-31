@@ -243,7 +243,7 @@ export default function DashboardClient() {
             <QuizCard
                 privyId={user?.id || ""}
                 ready={ready && authenticated}
-                onOpenMint={(tokenId) => setMintModal({open: true, tokenId, image:`/assets/nfts/${tokenId}.png`})}
+                onOpenMint={(tokenId) => setMintModal({open: true, tokenId, image: `/assets/nfts/${tokenId}.png`})}
             />
 
             {/* Mint popup */}
@@ -437,24 +437,33 @@ function QuizCard({privyId, ready, onOpenMint}: {
     }
 
     const disabled = state.locked || banner === "correct" || banner === "wrong";
+    const [answering, setAnswering] = useState(false);
 
     async function choose(i: number) {
-        if (disabled) return;
+        if (disabled || answering) return;
         setSelected(i);
-        const r = await fetch("/api/quiz/answer", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({privy_id: privyId, option_index: i}),
-        });
-        const j = await r.json();
-        if (j?.correct) {
-            setBanner("correct");
-            setState(s => s ? {...s, locked: true, has_unclaimed: true} : s);
-        } else if (j?.locked) {
-            setBanner("locked");
-            setState(s => s ? {...s, locked: true} : s);
-        } else {
-            setBanner("wrong");
+        setAnswering(true);
+        try {
+            const r = await fetch("/api/quiz/answer", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({privy_id: privyId, option_index: i}),
+            });
+            const j = await r.json();
+            if (j?.correct) {
+                setBanner("correct");
+                setState(s => s ? {...s, locked: true, has_unclaimed: true} : s);
+            } else if (j?.locked) {
+                setBanner("locked");
+                setState(s => s ? {...s, locked: true} : s);
+            } else {
+                setBanner("wrong");
+            }
+        } catch (e) {
+            alert("Network error. Try again.");
+            setSelected(null);
+        } finally {
+            setAnswering(false);
         }
     }
 
@@ -524,58 +533,61 @@ function QuizCard({privyId, ready, onOpenMint}: {
                             const isSelected = selected === i;
 
                             const radioName =
-                                banner === "correct" && isSelected
-                                    ? "radio_right"
-                                    : banner === "wrong" && isSelected
-                                        ? "radio_wrong"
-                                        : "radio_default";
+                                banner === "correct" && isSelected ? "radio_right" :
+                                    banner === "wrong" && isSelected ? "radio_wrong" :
+                                        "radio_default";
 
                             const rowColor =
-                                banner === "correct" && isSelected
-                                    ? QUIZ_COLORS.textRight
-                                    : banner === "wrong" && isSelected
-                                        ? QUIZ_COLORS.textWrong
-                                        : QUIZ_COLORS.textDefault;
+                                banner === "correct" && isSelected ? QUIZ_COLORS.textRight :
+                                    banner === "wrong" && isSelected ? QUIZ_COLORS.textWrong :
+                                        QUIZ_COLORS.textDefault;
 
-                            const disabled = state.locked || banner === "correct" || banner === "wrong";
+                            const clickable = !(state.locked || banner === "correct" || banner === "wrong" || answering);
 
                             return (
-                                <label
+                                <div
                                     key={i}
-                                    onClick={() => (!disabled ? choose(i) : null)}
+                                    role="radio"
+                                    aria-checked={isSelected}
+                                    tabIndex={clickable ? 0 : -1}
+                                    onPointerUp={(e) => {
+                                        if (clickable) choose(i);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (clickable && (e.key === "Enter" || e.key === " ")) {
+                                            e.preventDefault();
+                                            choose(i);
+                                        }
+                                    }}
                                     style={{
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 10,
-                                        cursor: disabled ? "default" : "pointer",
+                                        cursor: clickable ? "pointer" : "default",
                                         color: rowColor,
                                         fontWeight: 500,
                                         padding: "6px 2px",
                                         userSelect: "none",
+                                        outline: isSelected && !banner ? "2px solid #6B8749" : "none",
+                                        outlineOffset: 2,
+                                        borderRadius: 8,
+                                        opacity: answering && isSelected ? 0.8 : 1,
                                     }}
                                 >
-                                    <input
-                                        type="radio"
-                                        name={`q-${state.index}`}
-                                        checked={isSelected}
-                                        onChange={() => choose(i)}
-                                        disabled={disabled}
-                                        style={{position: "absolute", opacity: 0, pointerEvents: "none"}}
-                                    />
-                                    <span
-                                        aria-hidden
-                                        style={{
-                                            flex: "0 0 18px",
-                                            width: 18,
-                                            height: 18,
-                                            backgroundImage: `url(${QUIZ_ASSETS[radioName as keyof typeof QUIZ_ASSETS]})`,
-                                            backgroundRepeat: "no-repeat",
-                                            backgroundSize: "100% 100%",
-                                            display: "inline-block",
-                                        }}
-                                    />
+                                  <span
+                                      aria-hidden
+                                      style={{
+                                          flex: "0 0 18px",
+                                          width: 18, height: 18,
+                                          backgroundImage: `url(${QUIZ_ASSETS[radioName as keyof typeof QUIZ_ASSETS]})`,
+                                          backgroundRepeat: "no-repeat",
+                                          backgroundSize: "100% 100%",
+                                          display: "inline-block",
+                                          transform: isSelected && !banner ? "scale(1.06)" : "none",
+                                      }}
+                                  />
                                     <span>{opt}</span>
-                                </label>
+                                </div>
                             );
                         })}
                     </div>
