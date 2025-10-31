@@ -80,8 +80,6 @@ function useHasMounted() {
     return m;
 }
 
-const [answering, setAnswering] = useState(false);
-
 /* ---------- UTC countdown to next day ---------- */
 type UpdateMode = "minute" | "static";
 
@@ -357,6 +355,7 @@ function QuizCard({privyId, ready, onOpenMint}: {
     const router = useRouter();
     const currentTokenId: number | null = state?.index == null ? null : state.index + 1;
     const [minting, setMinting] = useState(false);
+    const [answering, setAnswering] = useState(false);
 
     useEffect(() => {
         if (!ready || !privyId) return;
