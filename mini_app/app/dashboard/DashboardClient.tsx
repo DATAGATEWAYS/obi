@@ -80,6 +80,8 @@ function useHasMounted() {
     return m;
 }
 
+const [answering, setAnswering] = useState(false);
+
 /* ---------- UTC countdown to next day ---------- */
 type UpdateMode = "minute" | "static";
 
@@ -437,7 +439,6 @@ function QuizCard({privyId, ready, onOpenMint}: {
     }
 
     const disabled = state.locked || banner === "correct" || banner === "wrong";
-    const [answering, setAnswering] = useState(false);
 
     async function choose(i: number) {
         if (disabled || answering) return;
