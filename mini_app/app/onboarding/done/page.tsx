@@ -159,36 +159,47 @@ export default function Done() {
         }
     });
 
+    const insertedRef = useRef(false);
+    const initedRef = useRef(false);
+
     useEffect(() => {
-        if (!ready || !authenticated || !walletsReady) return;
+        if (!ready || !authenticated || !walletsReady || initedRef.current) return;
 
-        if (user?.id) {
-            safeSet("privy_id", user.id);
-        }
+        const run = async () => {
+            if (user?.id && !insertedRef.current) {
+                safeSet("privy_id", user.id);
+                await insertToDB(user.id);
+                insertedRef.current = true;
+            }
 
-        const existing = wallets.find(w => w.walletClientType === "privy") ?? wallets[0];
-        if (existing) {
+            let existing = wallets.find(w => w.walletClientType === "privy") ?? wallets[0];
+
+            if (!existing) {
+                try {
+                    const created = await createWallet();
+                    existing = (created as any) ?? null;
+                } catch (e) {
+                }
+                if (!existing) return;
+            }
+
             safeSet("wallet_address", existing.address);
             if ((existing as any).id) safeSet("wallet_id", (existing as any).id);
-            (async () => {
-                await upsertWalletOnce({
-                    privy_id: user?.id,
-                    wallet_id: (existing as any).id ?? null,
-                    chain_type: "ethereum",
-                    address: existing.address,
-                    is_embedded: existing.walletClientType === "privy",
-                    is_primary: true,
-                });
-                triggerWelcomeMintOnce();
-                await insertToDB(user?.id);
-            })();
-            return;
-        }
 
-        if (!creatingRef.current) {
-            creatingRef.current = true;
-            createWallet();
-        }
+            await upsertWalletOnce({
+                privy_id: user?.id ?? null,
+                wallet_id: (existing as any).id ?? null,
+                chain_type: "ethereum",
+                address: existing.address,
+                is_embedded: existing.walletClientType === "privy",
+                is_primary: true,
+            });
+
+            triggerWelcomeMintOnce();
+            initedRef.current = true;
+        };
+
+        void run();
     }, [ready, authenticated, walletsReady, wallets, createWallet, user?.id]);
 
     const complete = async (target: "chat" | "dashboard") => {
